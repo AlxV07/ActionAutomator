@@ -5,13 +5,14 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
 import com.github.kwhat.jnativehook.mouse.NativeMouseInputListener;
 
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ActionSubTaskSequenceBuilder {
     private final KeyboardListener keyListener;
     private final MouseListener mouseListener;
-    private final List<ActionSubTask> events;
+    private List<ActionSubTask> events;
 
     public ActionSubTaskSequenceBuilder() {
         this.keyListener = new KeyboardListener();
@@ -36,18 +37,19 @@ public class ActionSubTaskSequenceBuilder {
     }
 
     public void clearEvents() {
-        this.events.clear();
+        this.events = new ArrayList<>();
     }
 
     private class KeyboardListener implements NativeKeyListener {
         @Override
         public void nativeKeyPressed(NativeKeyEvent event) {
-            events.add(new KeySubTask(KeySubTaskType.PRESSED, Character.toLowerCase(NativeKeyEvent.getKeyText(event.getKeyCode()).charAt(0))));
+            System.out.println(event.getKeyChar());
+            events.add(new KeySubTask(KeySubTaskType.PRESSED, 'l'));
         }
 
         @Override
         public void nativeKeyReleased(NativeKeyEvent event) {
-            events.add(new KeySubTask(KeySubTaskType.RELEASED, Character.toLowerCase(NativeKeyEvent.getKeyText(event.getKeyCode()).charAt(0))));
+            events.add(new KeySubTask(KeySubTaskType.RELEASED, event.getKeyChar()));
         }
     }
 
