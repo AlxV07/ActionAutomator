@@ -14,7 +14,11 @@ public class NativeKeyToVKKeyConverter {
             try {
                 return (int) KeyEvent.class.getDeclaredField("VK_" + s).get(KeyEvent.class);
             } catch (IllegalAccessException | NoSuchFieldException e) {
-                throw new RuntimeException(e);
+                if (s.equals("CTRL")) {
+                    return KeyEvent.VK_CONTROL;
+                } else {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }

@@ -5,7 +5,9 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
 import com.github.kwhat.jnativehook.mouse.NativeMouseInputListener;
 
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,12 +57,12 @@ public class ActionSubTaskSequenceBuilder {
     private class MouseListener implements NativeMouseInputListener {
         @Override
         public void nativeMousePressed(NativeMouseEvent event) {
-            events.add(new MouseSubTask(MouseSubTaskType.PRESSED, event.getButton(), event.getX(), event.getY()));
+            events.add(new MouseSubTask(MouseSubTaskType.PRESSED, 1 << (9 + event.getButton()), event.getX(), event.getY()));
         }
 
         @Override
         public void nativeMouseReleased(NativeMouseEvent event) {
-            events.add(new MouseSubTask(MouseSubTaskType.RELEASED, event.getButton(), event.getX(), event.getY()));
+            events.add(new MouseSubTask(MouseSubTaskType.RELEASED, 1 << (9 + event.getButton()), event.getX(), event.getY()));
         }
 
         @Override

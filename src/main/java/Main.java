@@ -11,7 +11,7 @@ public class Main {
         Thread.sleep(1000);
         System.out.println("Start Doing Stuff:");
         b.registerListeners();
-        Thread.sleep(5000);
+        Thread.sleep(10000);
         System.out.println("\nEnding In 1 Second:");
         Thread.sleep(1000);
         b.removeListeners();
