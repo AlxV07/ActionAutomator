@@ -1,4 +1,4 @@
-package ActionSubTasks;
+package ActionManagement.ActionSubTasks;
 
 public enum MouseSubTaskType {
     PRESSED,

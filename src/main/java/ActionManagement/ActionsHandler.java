@@ -1,4 +1,6 @@
-import ActionSubTasks.ActionSubTask;
+package ActionManagement;
+
+import ActionManagement.ActionSubTasks.ActionSubTask;
 
 import java.awt.*;
 import java.util.HashMap;

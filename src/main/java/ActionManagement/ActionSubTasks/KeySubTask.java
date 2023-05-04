@@ -1,4 +1,4 @@
-package ActionSubTasks;
+package ActionManagement.ActionSubTasks;
 
 public record KeySubTask(KeySubTaskType t, int k) implements ActionSubTask {
     @Override

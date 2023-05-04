@@ -1,4 +1,4 @@
-package ActionSubTasks;
+package ActionManagement.ActionSubTasks;
 
 public interface ActionSubTask {
     boolean isKeyboardTask();

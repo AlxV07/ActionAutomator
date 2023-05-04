@@ -1,7 +1,9 @@
-import ActionSubTasks.ActionSubTask;
-import ActionSubTasks.KeySubTask;
-import ActionSubTasks.KeySubTaskType;
-import ActionSubTasks.MouseSubTask;
+package ActionManagement;
+
+import ActionManagement.ActionSubTasks.ActionSubTask;
+import ActionManagement.ActionSubTasks.KeySubTask;
+import ActionManagement.ActionSubTasks.KeySubTaskType;
+import ActionManagement.ActionSubTasks.MouseSubTask;
 
 import java.awt.*;
 import java.util.List;
