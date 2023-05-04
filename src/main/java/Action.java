@@ -4,7 +4,6 @@ import ActionSubTasks.KeySubTaskType;
 import ActionSubTasks.MouseSubTask;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.util.List;
 
 public class Action {
@@ -27,9 +26,9 @@ public class Action {
             if (s.isKeyboardTask()) {
                 KeySubTask s1 = (KeySubTask) s;
                 if (s1.t() == KeySubTaskType.PRESSED) {
-                    r.keyPress(KeyEvent.getExtendedKeyCodeForChar(s1.c()));
+                    r.keyPress(s1.k());
                 } else {
-                    r.keyRelease(KeyEvent.getExtendedKeyCodeForChar(s1.c()));
+                    r.keyRelease(s1.k());
                 }
             } else {
                 MouseSubTask s2 = (MouseSubTask) s;

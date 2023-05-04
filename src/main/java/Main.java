@@ -3,26 +3,26 @@ import com.github.kwhat.jnativehook.NativeHookException;
 
 public class Main {
     public static void main(String[] args) throws NativeHookException, InterruptedException {
-//        ArrayList<ActionSubTask> s;
-        //        s.add(new KeySubTask(KeySubTaskType.PRESSED, 'H'));
-//        s.add(new KeySubTask(KeySubTaskType.RELEASED, 'H'));
-//        s.add(new MouseSubTask(MouseSubTaskType.MOVED, 1, 100, 100));
-
         GlobalScreen.registerNativeHook();
 
         ActionSubTaskSequenceBuilder b = new ActionSubTaskSequenceBuilder();
         ActionsHandler handler = new ActionsHandler();
 
         Thread.sleep(1000);
+        System.out.println("Start Doing Stuff:");
         b.registerListeners();
         Thread.sleep(5000);
+        System.out.println("\nEnding In 1 Second:");
+        Thread.sleep(1000);
         b.removeListeners();
         GlobalScreen.unregisterNativeHook();
 
-        handler.setAction("a", b.getEvents());
         System.out.println("Event list " + b.getEvents());
+        handler.setAction("a", b.getEvents());
+        b.clearEvents();
 
-        System.out.println("Executing Action");
+        System.out.println("Executing Action:");
+        Thread.sleep(100);
         handler.executeAction("a");
     }
 }

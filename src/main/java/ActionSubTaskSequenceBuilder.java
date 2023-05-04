@@ -43,13 +43,12 @@ public class ActionSubTaskSequenceBuilder {
     private class KeyboardListener implements NativeKeyListener {
         @Override
         public void nativeKeyPressed(NativeKeyEvent event) {
-            System.out.println(event.getKeyChar());
-            events.add(new KeySubTask(KeySubTaskType.PRESSED, 'l'));
+            events.add(new KeySubTask(KeySubTaskType.PRESSED, NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode())));
         }
 
         @Override
         public void nativeKeyReleased(NativeKeyEvent event) {
-            events.add(new KeySubTask(KeySubTaskType.RELEASED, event.getKeyChar()));
+            events.add(new KeySubTask(KeySubTaskType.RELEASED, NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode())));
         }
     }
 
