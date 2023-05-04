@@ -10,6 +10,7 @@ public class Action {
     private final List<ActionSubTask> subTasks;
     private final Thread actionThread;
     private Robot r;
+    private int speed;
 
     public Action(List<ActionSubTask> subTasks) {
         this.subTasks = subTasks;
@@ -18,6 +19,13 @@ public class Action {
 
     public void execute(Robot r) {
         this.r = r;
+        this.speed = 100;
+        actionThread.start();
+    }
+
+    public void execute(Robot r, int speed) {
+        this.r = r;
+        this.speed = speed;
         actionThread.start();
     }
 
@@ -44,7 +52,7 @@ public class Action {
                 }
             }
             try {
-                Thread.sleep(25);
+                Thread.sleep(speed);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
