@@ -35,6 +35,10 @@ public class ActionsHandler {
         actions.get(key).execute(r);
     }
 
+    public void executeAction(String key, int speed) {
+        actions.get(key).execute(r, speed);
+    }
+
     public void interruptAction(String key) {
         actions.get(key).interrupt();
     }
