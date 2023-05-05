@@ -14,6 +14,8 @@ public class ActionSubTaskSequenceBuilder {
     private final KeyboardListener keyListener;
     private final MouseListener mouseListener;
     private List<ActionSubTask> events;
+    private int endKey;
+    private boolean isListening;
 
     public ActionSubTaskSequenceBuilder() {
         this.keyListener = new KeyboardListener();
@@ -21,20 +23,34 @@ public class ActionSubTaskSequenceBuilder {
         this.events = new ArrayList<>();
     }
 
+    public void setEndKey(int endKey) {
+        this.endKey = endKey;
+    }
+
+    public synchronized boolean getIsListening() {
+        return this.isListening;
+    }
+
+    private void setIsListening(boolean b) {
+        this.isListening = b;
+    }
+
     public void registerListeners() {
         GlobalScreen.addNativeKeyListener(this.keyListener);
         GlobalScreen.addNativeMouseListener(this.mouseListener);
         GlobalScreen.addNativeMouseMotionListener(this.mouseListener);
+        this.setIsListening(true);
     }
 
     public void removeListeners() {
         GlobalScreen.removeNativeKeyListener(this.keyListener);
         GlobalScreen.removeNativeMouseListener(this.mouseListener);
         GlobalScreen.removeNativeMouseMotionListener(this.mouseListener);
+        this.setIsListening(false);
     }
 
     public List<ActionSubTask> getEvents() {
-        return this.events;
+        return new ArrayList<>(this.events);
     }
 
     public void clearEvents() {
@@ -44,7 +60,12 @@ public class ActionSubTaskSequenceBuilder {
     private class KeyboardListener implements NativeKeyListener {
         @Override
         public void nativeKeyPressed(NativeKeyEvent event) {
-            events.add(new KeySubTask(KeySubTaskType.PRESSED, NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode())));
+            int n = NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode());
+            if (n == endKey) {
+                removeListeners();
+            } else {
+                events.add(new KeySubTask(KeySubTaskType.PRESSED, n));
+            }
         }
 
         @Override

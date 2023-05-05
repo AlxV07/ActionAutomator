@@ -1,30 +1,17 @@
-import ActionManagement.ActionSubTaskSequenceBuilder;
+import ActionManagement.ActionBuilder;
 import ActionManagement.ActionsHandler;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 
 public class Main {
-    public static void main(String[] args) throws NativeHookException, InterruptedException {
-        GlobalScreen.registerNativeHook();
-
-        ActionSubTaskSequenceBuilder b = new ActionSubTaskSequenceBuilder();
+    public static void main(String[] args) throws NativeHookException {
         ActionsHandler handler = new ActionsHandler();
-
-        Thread.sleep(1000);
-        System.out.println("Start Doing Stuff:");
-        b.registerListeners();
-        Thread.sleep(10000);
-        System.out.println("\nEnding In 1 Second:");
-        Thread.sleep(1000);
-        b.removeListeners();
+        ActionBuilder builder = new ActionBuilder();
+        GlobalScreen.registerNativeHook();
+        handler.setAction("sayHi", builder.buildAction());
+        handler.setAction("sayBy", builder.buildAction());
         GlobalScreen.unregisterNativeHook();
-
-        System.out.println("Event list " + b.getEvents());
-        handler.setAction("a", b.getEvents());
-        b.clearEvents();
-
-        System.out.println("Executing ActionManagement.Action:");
-        Thread.sleep(100);
-        handler.executeAction("a");
+        handler.executeAction("sayHi");
+        handler.executeAction("sayBy");
     }
 }

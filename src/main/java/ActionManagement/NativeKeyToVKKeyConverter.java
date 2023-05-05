@@ -14,13 +14,15 @@ public class NativeKeyToVKKeyConverter {
             String[] p = s.toUpperCase().split(" ");
             s = String.join("_", p);
             try {
-                return (int) KeyEvent.class.getDeclaredField("VK_" + s).get(KeyEvent.class);
-            } catch (IllegalAccessException | NoSuchFieldException e) {
                 if (s.equals("CTRL")) {
                     return KeyEvent.VK_CONTROL;
-                } else {
-                    throw new RuntimeException(e);
                 }
+                if (s.equals("BACKSPACE")) {
+                    return KeyEvent.VK_BACK_SPACE;
+                }
+                return (int) KeyEvent.class.getDeclaredField("VK_" + s).get(KeyEvent.class);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                    throw new RuntimeException(e);
             }
         }
     }
