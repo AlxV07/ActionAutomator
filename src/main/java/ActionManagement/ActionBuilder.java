@@ -13,6 +13,10 @@ public class ActionBuilder {
         builder.setEndKey(endKey);
         builder.registerListeners();
         while (builder.getIsListening()) {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ignore) {
+            }
         }
         Action action = new Action(builder.getEvents());
         builder.clearEvents();
