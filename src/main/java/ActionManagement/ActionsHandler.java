@@ -42,4 +42,10 @@ public class ActionsHandler {
     public void interruptAction(String key) {
         actions.get(key).interrupt();
     }
+
+    public void interruptAll() {
+        for (Action a : actions.values()) {
+            a.interrupt();
+        }
+    }
 }

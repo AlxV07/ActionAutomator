@@ -9,11 +9,6 @@ public class ActionBuilder {
     private final ActionSubTaskSequenceBuilder builder = new ActionSubTaskSequenceBuilder();
 
     public ActionBuilder() {
-        try {
-            GlobalScreen.registerNativeHook();
-        } catch (NativeHookException e) {
-            throw new RuntimeException(e);
-        }
         builder.registerListeners();
     }
 

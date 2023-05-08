@@ -1,6 +1,9 @@
 import ActionManagement.ActionBuilder;
 import ActionManagement.ActionsHandler;
 import com.github.kwhat.jnativehook.GlobalScreen;
+import com.github.kwhat.jnativehook.NativeHookException;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -10,7 +13,7 @@ import java.awt.event.*;
 
 public class Gui {
     private final ActionsHandler actionsHandler = new ActionsHandler();
-    private ActionBuilder builder = new ActionBuilder();
+    private final ActionBuilder builder = new ActionBuilder();
 
     private final JFrame f = new JFrame();
 
@@ -26,7 +29,8 @@ public class Gui {
     private final KeyButton setBuildEndKey = new KeyButton("Set Build End Key:", buildEndKey);
 
     private final JLabel interruptKey = new JLabel("None");
-    private final JButton setInterruptKey = new KeyButton("Set Interrupt Key:", interruptKey);
+    private final KeyButton setInterruptKey = new KeyButton("Set Interrupt Key:", interruptKey);
+    private int interruptKeyCode;
 
 
     private void setUpFrame() {
@@ -54,6 +58,12 @@ public class Gui {
         });
         f.setFocusable(true);
         f.setVisible(true);
+        try {
+            GlobalScreen.registerNativeHook();
+            GlobalScreen.addNativeKeyListener(new InterruptKeyListener());
+        } catch (NativeHookException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void setUpComponents() {
@@ -197,6 +207,15 @@ public class Gui {
                     }
                 }
             });
+        }
+    }
+
+    private class InterruptKeyListener implements NativeKeyListener {
+        @Override
+        public void nativeKeyPressed(NativeKeyEvent e) {
+            if (e.getKeyCode() == setInterruptKey.keyPressed) {
+                actionsHandler.interruptAll();
+            }
         }
     }
 }
