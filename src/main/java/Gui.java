@@ -130,6 +130,10 @@ public class Gui {
         f.add(interruptKey);
     }
 
+    public void start() {
+        this.setUpFrame();
+    }
+
     private class ActionsListUpdater implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
@@ -194,10 +198,5 @@ public class Gui {
                 }
             });
         }
-    }
-
-    public static void main(String[] args) {
-        Gui gui = new Gui();
-        gui.setUpFrame();
     }
 }
