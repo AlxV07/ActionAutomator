@@ -4,9 +4,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 
 public class Gui {
     private final JFrame f = new JFrame();
@@ -78,9 +76,9 @@ public class Gui {
         removeAction.setFont(font);
         removeAction.setFocusPainted(false);
         removeAction.addActionListener(e -> {
-            int i = actions.getSelectedIndex();
+            int i = actions.getMinSelectionIndex();
             if (i != -1) {
-                model.remove(i);
+                model.removeRange(i, actions.getMaxSelectionIndex());
             }
             f.requestFocus();
         });
@@ -99,8 +97,6 @@ public class Gui {
         selectedAction.setFont(font);
         f.add(selectedAction);
     }
-
-
 
     private class ActionsListUpdater implements ListSelectionListener {
         @Override
