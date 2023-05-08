@@ -31,7 +31,7 @@ public class ActionSubTaskSequenceBuilder {
         return this.isListening;
     }
 
-    private void setIsListening(boolean b) {
+    public void setIsListening(boolean b) {
         this.isListening = b;
     }
 
@@ -39,14 +39,12 @@ public class ActionSubTaskSequenceBuilder {
         GlobalScreen.addNativeKeyListener(this.keyListener);
         GlobalScreen.addNativeMouseListener(this.mouseListener);
         GlobalScreen.addNativeMouseMotionListener(this.mouseListener);
-        this.setIsListening(true);
     }
 
     public void removeListeners() {
         GlobalScreen.removeNativeKeyListener(this.keyListener);
         GlobalScreen.removeNativeMouseListener(this.mouseListener);
         GlobalScreen.removeNativeMouseMotionListener(this.mouseListener);
-        this.setIsListening(false);
     }
 
     public List<ActionSubTask> getEvents() {
@@ -61,8 +59,8 @@ public class ActionSubTaskSequenceBuilder {
         @Override
         public void nativeKeyPressed(NativeKeyEvent event) {
             int n = NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode());
-            if (n == endKey) {
-                removeListeners();
+            if (!ActionSubTaskSequenceBuilder.this.isListening || n == endKey) {
+                ActionSubTaskSequenceBuilder.this.setIsListening(false);
             } else {
                 events.add(new KeySubTask(KeySubTaskType.PRESSED, n));
             }
@@ -70,29 +68,39 @@ public class ActionSubTaskSequenceBuilder {
 
         @Override
         public void nativeKeyReleased(NativeKeyEvent event) {
-            events.add(new KeySubTask(KeySubTaskType.RELEASED, NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode())));
+            if (ActionSubTaskSequenceBuilder.this.isListening) {
+                events.add(new KeySubTask(KeySubTaskType.RELEASED, NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode())));
+            }
         }
     }
 
     private class MouseListener implements NativeMouseInputListener {
         @Override
         public void nativeMousePressed(NativeMouseEvent event) {
-            events.add(new MouseSubTask(MouseSubTaskType.PRESSED, 1 << (9 + event.getButton()), event.getX(), event.getY()));
+            if (ActionSubTaskSequenceBuilder.this.isListening) {
+                events.add(new MouseSubTask(MouseSubTaskType.PRESSED, 1 << (9 + event.getButton()), event.getX(), event.getY()));
+            }
         }
 
         @Override
         public void nativeMouseReleased(NativeMouseEvent event) {
-            events.add(new MouseSubTask(MouseSubTaskType.RELEASED, 1 << (9 + event.getButton()), event.getX(), event.getY()));
+            if (ActionSubTaskSequenceBuilder.this.isListening) {
+                events.add(new MouseSubTask(MouseSubTaskType.RELEASED, 1 << (9 + event.getButton()), event.getX(), event.getY()));
+            }
         }
 
         @Override
         public void nativeMouseMoved(NativeMouseEvent event) {
-            events.add(new MouseSubTask(MouseSubTaskType.MOVED, event.getButton(), event.getX(), event.getY()));
+            if (ActionSubTaskSequenceBuilder.this.isListening) {
+                events.add(new MouseSubTask(MouseSubTaskType.MOVED, event.getButton(), event.getX(), event.getY()));
+            }
         }
 
         @Override
         public void nativeMouseDragged(NativeMouseEvent event) {
-            events.add(new MouseSubTask(MouseSubTaskType.DRAGGED, event.getButton(), event.getX(), event.getY()));
+            if (ActionSubTaskSequenceBuilder.this.isListening) {
+                events.add(new MouseSubTask(MouseSubTaskType.DRAGGED, event.getButton(), event.getX(), event.getY()));
+            }
         }
     }
 }

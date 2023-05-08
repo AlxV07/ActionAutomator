@@ -10,7 +10,7 @@ import java.util.List;
 
 public class Action {
     private final List<ActionSubTask> subTasks;
-    private final Thread actionThread;
+    private Thread actionThread;
     private Robot r;
     private int speed;
 
@@ -20,14 +20,13 @@ public class Action {
     }
 
     public void execute(Robot r) {
-        this.r = r;
-        this.speed = 100;
-        actionThread.start();
+        execute(r, 100);
     }
 
     public void execute(Robot r, int speed) {
         this.r = r;
         this.speed = speed;
+        actionThread = new Thread(this::iExecute);
         actionThread.start();
     }
 

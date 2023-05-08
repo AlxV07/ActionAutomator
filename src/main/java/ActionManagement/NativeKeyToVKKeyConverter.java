@@ -20,6 +20,9 @@ public class NativeKeyToVKKeyConverter {
                 if (s.equals("BACKSPACE")) {
                     return KeyEvent.VK_BACK_SPACE;
                 }
+                if (s.equals("META")) {
+                    return KeyEvent.VK_WINDOWS;
+                }
                 return (int) KeyEvent.class.getDeclaredField("VK_" + s).get(KeyEvent.class);
             } catch (IllegalAccessException | NoSuchFieldException e) {
                     throw new RuntimeException(e);

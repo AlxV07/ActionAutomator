@@ -10,7 +10,7 @@ import java.awt.event.*;
 
 public class Gui {
     private final ActionsHandler actionsHandler = new ActionsHandler();
-    private final ActionBuilder builder = new ActionBuilder();
+    private ActionBuilder builder = new ActionBuilder();
 
     private final JFrame f = new JFrame();
 
@@ -44,6 +44,12 @@ public class Gui {
                     actions.clearSelection();
                     actions.setFocusable(false);
                 }
+            }
+        });
+        f.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                builder.end();
             }
         });
         f.setFocusable(true);
@@ -176,13 +182,11 @@ public class Gui {
                 String name = JOptionPane.showInputDialog("Enter name:");
                 if (name != null && !name.isEmpty()) {
                     try {
-                        GlobalScreen.registerNativeHook();
                         if (!buildEndKey.getText().equals("None")) {
                             actionsHandler.setAction(name, builder.buildAction(setBuildEndKey.keyPressed));
                         } else {
                             actionsHandler.setAction(name, builder.buildAction());
                         }
-                        GlobalScreen.unregisterNativeHook();
                         Gui.this.model.addElement(name);
                     } catch (Exception ex) {
                         throw new RuntimeException(ex);
