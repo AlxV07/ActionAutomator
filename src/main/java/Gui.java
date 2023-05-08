@@ -1,10 +1,6 @@
-package Gui;
-
 import ActionManagement.ActionBuilder;
-import ActionManagement.ActionSubTaskSequenceBuilder;
 import ActionManagement.ActionsHandler;
 import com.github.kwhat.jnativehook.GlobalScreen;
-import com.github.kwhat.jnativehook.NativeHookException;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -94,7 +90,11 @@ public class Gui {
         startAction.setMargin(insets);
         startAction.setFont(font);
         startAction.setFocusPainted(false);
-        startAction.addActionListener(e -> actionsHandler.executeAction(actions.getSelectedValue()));
+        startAction.addActionListener(e -> {
+            if (actions.getSelectedValue() != null) {
+                actionsHandler.executeAction(actions.getSelectedValue());
+            }
+        });
         f.add(startAction);
 
         setBuildEndKey.setBounds(170, 60, 80, 20);
