@@ -11,12 +11,10 @@ import java.util.List;
 public class Action {
     private final List<ActionSubTask> subTasks;
     private Thread actionThread;
-    private Robot r;
     private int speed;
 
     public Action(List<ActionSubTask> subTasks) {
         this.subTasks = subTasks;
-        this.actionThread = new Thread(this::iExecute);
     }
 
     public void execute(Robot r) {
@@ -24,13 +22,12 @@ public class Action {
     }
 
     public void execute(Robot r, int speed) {
-        this.r = r;
         this.speed = speed;
-        actionThread = new Thread(this::iExecute);
+        actionThread = new Thread(() -> iExecute(r));
         actionThread.start();
     }
 
-    private void iExecute() {
+    private void iExecute(Robot r) {
         for (ActionSubTask s : subTasks) {
             if (s.isKeyboardTask()) {
                 KeySubTask s1 = (KeySubTask) s;
@@ -54,8 +51,7 @@ public class Action {
             }
             try {
                 Thread.sleep(speed);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+            } catch (InterruptedException ignore) {
             }
         }
     }

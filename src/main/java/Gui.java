@@ -1,5 +1,6 @@
 import ActionManagement.ActionBuilder;
 import ActionManagement.ActionsHandler;
+import ActionManagement.NativeKeyToVKKeyConverter;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
@@ -30,7 +31,6 @@ public class Gui {
 
     private final JLabel interruptKey = new JLabel("None");
     private final KeyButton setInterruptKey = new KeyButton("Set Interrupt Key:", interruptKey);
-    private int interruptKeyCode;
 
 
     private void setUpFrame() {
@@ -175,6 +175,7 @@ public class Gui {
                     keyPressed = e.getKeyCode();
                     label.setText(KeyEvent.getKeyText(keyCode));
                 } else {
+                    keyPressed = 0;
                     label.setText("None");
                 }
                 waitingForKey = false;
@@ -196,12 +197,26 @@ public class Gui {
                 String name = JOptionPane.showInputDialog("Enter name:");
                 if (name != null && !name.isEmpty()) {
                     try {
+                        int p;
                         if (!buildEndKey.getText().equals("None")) {
-                            actionsHandler.setAction(name, builder.buildAction(setBuildEndKey.keyPressed));
+                            p = setBuildEndKey.keyPressed;
                         } else {
-                            actionsHandler.setAction(name, builder.buildAction());
+                            p = KeyEvent.VK_ESCAPE;
                         }
-                        Gui.this.model.addElement(name);
+                        new SwingWorker<>() {
+                            @Override
+                            protected Void doInBackground() {
+                                buildNewAction.setEnabled(false);
+                                actionsHandler.setAction(name, builder.buildAction(p));
+                                Gui.this.model.addElement(name);
+                                return null;
+                            }
+
+                            @Override
+                            protected void done() {
+                                buildNewAction.setEnabled(true);
+                            }
+                        }.execute();
                     } catch (Exception ex) {
                         throw new RuntimeException(ex);
                     }
@@ -213,7 +228,7 @@ public class Gui {
     private class InterruptKeyListener implements NativeKeyListener {
         @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
-            if (e.getKeyCode() == setInterruptKey.keyPressed) {
+            if (setInterruptKey.keyPressed != 0 && NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(e.getKeyCode()) == setInterruptKey.keyPressed) {
                 actionsHandler.interruptAll();
             }
         }
