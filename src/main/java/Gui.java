@@ -26,10 +26,10 @@ public class Gui {
     private final JLabel selectedAction = new JLabel("Default Text But Longer");
     private final JButton startAction = new JButton("Run:");
 
-    private final JLabel buildEndKey = new JLabel("None");
+    private final JLabel buildEndKey = new JLabel("Default (Escape)");
     private final KeyButton setBuildEndKey = new KeyButton("Set Build End Key:", buildEndKey);
 
-    private final JLabel interruptKey = new JLabel("None");
+    private final JLabel interruptKey = new JLabel("Default (Escape)");
     private final KeyButton setInterruptKey = new KeyButton("Set Interrupt Key:", interruptKey);
 
 
@@ -160,7 +160,7 @@ public class Gui {
             super(text);
             this.label = label;
             addActionListener(e -> {
-                this.label.setText("Press a key...");
+                this.label.setText("Press a key... (Backspace For Default)");
                 requestFocusInWindow();
                 waitingForKey = true;
             });
@@ -171,12 +171,12 @@ public class Gui {
         public void keyPressed(KeyEvent e) {
             if (waitingForKey) {
                 int keyCode = e.getKeyCode();
-                if (keyCode != KeyEvent.VK_BACK_SPACE) {
+                if (keyCode == KeyEvent.VK_BACK_SPACE) {
+                    keyPressed = 0;
+                    label.setText("Default (Escape)");
+                } else {
                     keyPressed = e.getKeyCode();
                     label.setText(KeyEvent.getKeyText(keyCode));
-                } else {
-                    keyPressed = 0;
-                    label.setText("None");
                 }
                 waitingForKey = false;
             }
@@ -198,10 +198,10 @@ public class Gui {
                 if (name != null && !name.isEmpty()) {
                     try {
                         int p;
-                        if (!buildEndKey.getText().equals("None")) {
-                            p = setBuildEndKey.keyPressed;
-                        } else {
+                        if (setBuildEndKey.keyPressed == 0) {
                             p = KeyEvent.VK_ESCAPE;
+                        } else {
+                            p = setBuildEndKey.keyPressed;
                         }
                         new SwingWorker<>() {
                             @Override
@@ -228,7 +228,10 @@ public class Gui {
     private class InterruptKeyListener implements NativeKeyListener {
         @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
-            if (setInterruptKey.keyPressed != 0 && NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(e.getKeyCode()) == setInterruptKey.keyPressed) {
+            if (setInterruptKey.keyPressed == 0) {
+                setInterruptKey.keyPressed = KeyEvent.VK_ESCAPE;
+            }
+            if (NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(e.getKeyCode()) == setInterruptKey.keyPressed) {
                 actionsHandler.interruptAll();
             }
         }

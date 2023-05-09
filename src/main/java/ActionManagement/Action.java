@@ -51,12 +51,15 @@ public class Action {
             }
             try {
                 Thread.sleep(speed);
-            } catch (InterruptedException ignore) {
+            } catch (InterruptedException e) {
+                interrupt();
             }
         }
     }
 
     public void interrupt() {
-        actionThread.interrupt();
+        if (actionThread != null) {
+            actionThread.interrupt();
+        }
     }
 }
