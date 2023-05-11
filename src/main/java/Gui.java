@@ -27,6 +27,24 @@ public class Gui {
     private final JButton startAction = new JButton("Run:");
     private final JButton cleanAction = new JButton("Clean Selected Action");
 
+    private final JLabel waitKey = new JLabel("Default (None)");
+    private final KeyButton setWaitKey = new KeyButton("Set Wait Key:", waitKey) {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (waitingForKey) {
+                int keyCode = e.getKeyCode();
+                if (keyCode == KeyEvent.VK_BACK_SPACE) {
+                    keyPressed = -1;
+                    label.setText("Default (None)");
+                } else {
+                    keyPressed = e.getKeyCode();
+                    label.setText(KeyEvent.getKeyText(keyCode));
+                }
+                waitingForKey = false;
+            }
+        }
+    };
+
     private final JLabel buildEndKey = new JLabel("Default (Escape)");
     private final KeyButton setBuildEndKey = new KeyButton("Set Build End Key:", buildEndKey);
 
@@ -114,7 +132,7 @@ public class Gui {
         });
         f.add(startAction);
 
-        cleanAction.setBounds(170, 120, 100, 20);
+        cleanAction.setBounds(170, 150, 100, 20);
         cleanAction.setMargin(insets);
         cleanAction.setFont(font);
         cleanAction.setFocusPainted(false);
@@ -134,6 +152,11 @@ public class Gui {
         setInterruptKey.setMargin(insets);
         setInterruptKey.setFont(font);
         f.add(setInterruptKey);
+
+        setWaitKey.setBounds(170, 120, 80, 20);
+        setWaitKey.setMargin(insets);
+        setWaitKey.setFont(font);
+        f.add(setWaitKey);
     }
 
     private void setUpLabels() {
@@ -150,6 +173,10 @@ public class Gui {
         interruptKey.setBounds(260, 90, 300, 20);
         interruptKey.setFont(font);
         f.add(interruptKey);
+
+        waitKey.setBounds(260, 120, 300, 20);
+        waitKey.setFont(font);
+        f.add(waitKey);
     }
 
     public void start() {
@@ -164,9 +191,9 @@ public class Gui {
     }
 
     private static class KeyButton extends JButton implements KeyListener {
-        private boolean waitingForKey = false;
-        public int keyPressed;
-        private final JLabel label;
+        boolean waitingForKey = false;
+        int keyPressed;
+        final JLabel label;
 
         public KeyButton(String text, JLabel label) {
             super(text);
@@ -214,6 +241,9 @@ public class Gui {
                             p = KeyEvent.VK_ESCAPE;
                         } else {
                             p = setBuildEndKey.keyPressed;
+                        }
+                        if (setWaitKey.keyPressed == -1) {
+
                         }
                         new SwingWorker<>() {
                             @Override

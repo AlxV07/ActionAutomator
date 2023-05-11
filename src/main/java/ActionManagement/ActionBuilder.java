@@ -22,11 +22,12 @@ public class ActionBuilder {
     }
 
     public Action buildAction() {
-        return buildAction(KeyEvent.VK_ESCAPE);
+        return buildAction(KeyEvent.VK_ESCAPE, -1);
     }
 
-    public Action buildAction(int endKey) {
+    public Action buildAction(int endKey, int waitKey) {
         builder.setEndKey(endKey);
+        builder.setWaitKey(waitKey);
         builder.setIsListening(true);
         while (builder.getIsListening()) {
             try {
@@ -37,5 +38,9 @@ public class ActionBuilder {
         Action action = new Action(builder.getEvents());
         builder.clearEvents();
         return action;
+    }
+
+    public Action buildAction(int endKey) {
+        return buildAction(endKey, -1);
     }
 }

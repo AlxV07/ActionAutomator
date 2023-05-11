@@ -52,6 +52,13 @@ public class Action {
                         }
                     }
                 }
+                case ActionSubTaskTypes.WAIT_TASK -> {
+                    try {
+                        Thread.sleep(((WaitSubTask) s).waitTime());
+                    } catch (InterruptedException e) {
+                        interrupt();
+                    }
+                }
             }
             try {
                 Thread.sleep(speed);

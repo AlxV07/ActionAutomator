@@ -1,6 +1,6 @@
 package ActionManagement.ActionSubTasks;
 
-public class WaitSubTask implements ActionSubTask {
+public record WaitSubTask(long waitTime) implements ActionSubTask {
 
     @Override
     public int getTypeOfTask() {

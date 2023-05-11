@@ -15,12 +15,20 @@ public class ActionSubTaskSequenceBuilder {
     private final MouseListener mouseListener;
     private List<ActionSubTask> events;
     private int endKey;
+    private int waitKey;
     private boolean isListening;
+
+    private boolean isWaiting;
+    private long waitStartTime;
 
     public ActionSubTaskSequenceBuilder() {
         this.keyListener = new KeyboardListener();
         this.mouseListener = new MouseListener();
         this.events = new ArrayList<>();
+    }
+
+    public void setWaitKey(int waitKey) {
+        this.waitKey = waitKey;
     }
 
     public void setEndKey(int endKey) {
@@ -55,21 +63,31 @@ public class ActionSubTaskSequenceBuilder {
         this.events = new ArrayList<>();
     }
 
+
     private class KeyboardListener implements NativeKeyListener {
         @Override
         public void nativeKeyPressed(NativeKeyEvent event) {
             int n = NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode());
-            if (!ActionSubTaskSequenceBuilder.this.isListening || n == endKey) {
-                ActionSubTaskSequenceBuilder.this.setIsListening(false);
-            } else {
-                events.add(new KeySubTask(KeySubTaskType.PRESSED, n));
+            if (ActionSubTaskSequenceBuilder.this.isListening) {
+                if (n == endKey) {
+                    ActionSubTaskSequenceBuilder.this.setIsListening(false);
+                } else if (n == waitKey) {
+                    isWaiting = true;
+                    waitStartTime = System.currentTimeMillis();
+                } else {
+                    events.add(new KeySubTask(KeySubTaskType.PRESSED, n));
+                }
             }
         }
 
         @Override
         public void nativeKeyReleased(NativeKeyEvent event) {
             if (ActionSubTaskSequenceBuilder.this.isListening) {
-                events.add(new KeySubTask(KeySubTaskType.RELEASED, NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode())));
+                if (ActionSubTaskSequenceBuilder.this.isWaiting && ActionSubTaskSequenceBuilder.this.waitKey == NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode())) {
+                    events.add(new WaitSubTask(System.currentTimeMillis() - ActionSubTaskSequenceBuilder.this.waitStartTime));
+                } else {
+                    events.add(new KeySubTask(KeySubTaskType.RELEASED, NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode())));
+                }
             }
         }
     }
