@@ -18,6 +18,9 @@ public class Gui {
 
     private final JFrame f = new JFrame();
 
+    private final JTextField speed = new JTextField("100");
+    private final JLabel speedLabel = new JLabel("Execution Speed (ms):");
+
     private final DefaultListModel<String> model = new DefaultListModel<>();
     private final JList<String> actions = new JList<>(model);
     private final ActionsListUpdater actionsListUpdater = new ActionsListUpdater();
@@ -46,14 +49,14 @@ public class Gui {
     };
 
     private final JLabel buildEndKey = new JLabel("Default (Escape)");
-    private final KeyButton setBuildEndKey = new KeyButton("Set Build End Key:", buildEndKey);
+    private final KeyButton setBuildEndKey = new KeyButton("Set Build-End Key:", buildEndKey);
 
     private final JLabel interruptKey = new JLabel("Default (Escape)");
     private final KeyButton setInterruptKey = new KeyButton("Set Interrupt Key:", interruptKey);
 
 
     private void setUpFrame() {
-        f.setSize(500, 400);
+        f.setSize(450, 290);
         f.setTitle("Gui");
         f.setLayout(null);
         f.setResizable(false);
@@ -92,7 +95,7 @@ public class Gui {
     }
 
     private void setUpActionsList() {
-        actions.setBounds(25, 55, 130, 255);
+        actions.setBounds(25, 55, 130, 175);
         actions.setFont(new Font("Arial", Font.PLAIN, 12));
         actions.setFocusable(false);
         actions.addListSelectionListener(actionsListUpdater);
@@ -126,8 +129,14 @@ public class Gui {
         startAction.setFont(font);
         startAction.setFocusPainted(false);
         startAction.addActionListener(e -> {
+            int s;
+            try {
+                s = Integer.parseInt(speed.getText());
+            } catch (ClassCastException ex) {
+                s = 100;
+            }
             if (actions.getSelectedValue() != null) {
-                actionsHandler.executeAction(actions.getSelectedValue());
+                actionsHandler.executeAction(actions.getSelectedValue(), s);
             }
         });
         f.add(startAction);
@@ -157,6 +166,12 @@ public class Gui {
         setWaitKey.setMargin(insets);
         setWaitKey.setFont(font);
         f.add(setWaitKey);
+
+        speed.setBounds(285, 180, 50, 20);
+        speed.setMargin(insets);
+        speed.setFont(font);
+        speed.setHorizontalAlignment(JTextField.CENTER);
+        f.add(speed);
     }
 
     private void setUpLabels() {
@@ -177,6 +192,10 @@ public class Gui {
         waitKey.setBounds(260, 120, 300, 20);
         waitKey.setFont(font);
         f.add(waitKey);
+
+        speedLabel.setBounds(170, 180, 300, 20);
+        speedLabel.setFont(font);
+        f.add(speedLabel);
     }
 
     public void start() {
@@ -242,14 +261,11 @@ public class Gui {
                         } else {
                             p = setBuildEndKey.keyPressed;
                         }
-                        if (setWaitKey.keyPressed == -1) {
-
-                        }
                         new SwingWorker<>() {
                             @Override
                             protected Void doInBackground() {
                                 buildNewAction.setEnabled(false);
-                                actionsHandler.setAction(name, builder.buildAction(p));
+                                actionsHandler.setAction(name, builder.buildAction(p, setWaitKey.keyPressed));
                                 Gui.this.model.addElement(name);
                                 return null;
                             }
