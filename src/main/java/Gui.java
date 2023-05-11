@@ -23,8 +23,9 @@ public class Gui {
     private final ActionsListUpdater actionsListUpdater = new ActionsListUpdater();
     private final JButton buildNewAction = new TextPromptButton("+");
     private final JButton removeAction = new JButton("_");
-    private final JLabel selectedAction = new JLabel("Default Text But Longer");
+    private final JLabel selectedAction = new JLabel("None");
     private final JButton startAction = new JButton("Run:");
+    private final JButton cleanAction = new JButton("Clean Selected Action");
 
     private final JLabel buildEndKey = new JLabel("Default (Escape)");
     private final KeyButton setBuildEndKey = new KeyButton("Set Build End Key:", buildEndKey);
@@ -112,6 +113,17 @@ public class Gui {
             }
         });
         f.add(startAction);
+
+        cleanAction.setBounds(170, 120, 100, 20);
+        cleanAction.setMargin(insets);
+        cleanAction.setFont(font);
+        cleanAction.setFocusPainted(false);
+        cleanAction.addActionListener(e -> {
+            if (actions.getSelectedValue() != null) {
+                actionsHandler.cleanAction(actions.getSelectedValue());
+            }
+        });
+        f.add(cleanAction);
 
         setBuildEndKey.setBounds(170, 60, 80, 20);
         setBuildEndKey.setMargin(insets);

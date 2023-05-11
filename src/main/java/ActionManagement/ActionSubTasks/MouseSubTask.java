@@ -1,9 +1,8 @@
 package ActionManagement.ActionSubTasks;
 
-public record MouseSubTask(MouseSubTaskType t, int button, int x, int y) implements ActionSubTask{
-
+public record MouseSubTask(MouseSubTaskType specType, int button, int x, int y) implements ActionSubTask{
     @Override
-    public boolean isKeyboardTask() {
-        return false;
+    public int getTypeOfTask() {
+        return 1;
     }
 }
