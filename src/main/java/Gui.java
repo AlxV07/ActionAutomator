@@ -54,6 +54,24 @@ public class Gui {
     private final JLabel interruptKey = new JLabel("Default (Escape)");
     private final KeyButton setInterruptKey = new KeyButton("Set Interrupt Key:", interruptKey);
 
+    private final JLabel runKey = new JLabel("Default (None)");
+    private final KeyButton setRunKey = new KeyButton("Set Run Key:", runKey) {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (waitingForKey) {
+                int keyCode = e.getKeyCode();
+                if (keyCode == KeyEvent.VK_BACK_SPACE) {
+                    keyPressed = -1;
+                    label.setText("Default (None)");
+                } else {
+                    keyPressed = e.getKeyCode();
+                    label.setText(KeyEvent.getKeyText(keyCode));
+                }
+                waitingForKey = false;
+            }
+        }
+    };;
+
 
     private void setUpFrame() {
         f.setSize(450, 290);
@@ -82,7 +100,7 @@ public class Gui {
         f.setVisible(true);
         try {
             GlobalScreen.registerNativeHook();
-            GlobalScreen.addNativeKeyListener(new InterruptKeyListener());
+            GlobalScreen.addNativeKeyListener(new InterruptAndRunKeyListener());
         } catch (NativeHookException e) {
             throw new RuntimeException(e);
         }
@@ -141,7 +159,7 @@ public class Gui {
         });
         f.add(startAction);
 
-        cleanAction.setBounds(170, 150, 100, 20);
+        cleanAction.setBounds(170, 180, 100, 20);
         cleanAction.setMargin(insets);
         cleanAction.setFont(font);
         cleanAction.setFocusPainted(false);
@@ -167,7 +185,12 @@ public class Gui {
         setWaitKey.setFont(font);
         f.add(setWaitKey);
 
-        speed.setBounds(285, 180, 50, 20);
+        setRunKey.setBounds(170, 150, 80, 20);
+        setRunKey.setMargin(insets);
+        setRunKey.setFont(font);
+        f.add(setRunKey);
+
+        speed.setBounds(285, 210, 50, 20);
         speed.setMargin(insets);
         speed.setFont(font);
         speed.setHorizontalAlignment(JTextField.CENTER);
@@ -193,7 +216,11 @@ public class Gui {
         waitKey.setFont(font);
         f.add(waitKey);
 
-        speedLabel.setBounds(170, 180, 300, 20);
+        runKey.setBounds(260, 150, 300, 20);
+        runKey.setFont(font);
+        f.add(runKey);
+
+        speedLabel.setBounds(170, 210, 300, 20);
         speedLabel.setFont(font);
         f.add(speedLabel);
     }
@@ -283,14 +310,25 @@ public class Gui {
         }
     }
 
-    private class InterruptKeyListener implements NativeKeyListener {
+    private class InterruptAndRunKeyListener implements NativeKeyListener {
         @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
             if (setInterruptKey.keyPressed == 0) {
                 setInterruptKey.keyPressed = KeyEvent.VK_ESCAPE;
             }
-            if (NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(e.getKeyCode()) == setInterruptKey.keyPressed) {
+            int i = NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(e.getKeyCode());
+            if (i == setInterruptKey.keyPressed) {
                 actionsHandler.interruptAll();
+            } else if (i == setRunKey.keyPressed) {
+                int s;
+                try {
+                    s = Integer.parseInt(speed.getText());
+                } catch (ClassCastException ex) {
+                    s = 100;
+                }
+                if (actions.getSelectedValue() != null) {
+                    actionsHandler.executeAction(actions.getSelectedValue(), s);
+                }
             }
         }
     }
