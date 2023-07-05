@@ -11,6 +11,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.HashMap;
 
 public class Gui {
     private final ActionsHandler actionsHandler = new ActionsHandler();
@@ -23,6 +24,7 @@ public class Gui {
 
     private final DefaultListModel<String> model = new DefaultListModel<>();
     private final JList<String> actions = new JList<>(model);
+
     private final ActionsListUpdater actionsListUpdater = new ActionsListUpdater();
     private final JButton buildNewAction = new TextPromptButton("+");
     private final JButton removeAction = new JButton("_");
@@ -54,6 +56,9 @@ public class Gui {
     private final JLabel interruptKey = new JLabel("Default (Escape)");
     private final KeyButton setInterruptKey = new KeyButton("Set Interrupt Key:", interruptKey);
 
+    private final HashMap<Integer, String> runKeyBindingsToActions = new HashMap<>();
+    private final HashMap<String, Integer> actionsToRunKeyBindings = new HashMap<>();
+
     private final JLabel runKey = new JLabel("Default (None)");
     private final KeyButton setRunKey = new KeyButton("Set Run Key:", runKey) {
         @Override
@@ -61,9 +66,16 @@ public class Gui {
             if (waitingForKey) {
                 int keyCode = e.getKeyCode();
                 if (keyCode == KeyEvent.VK_BACK_SPACE) {
+                    runKeyBindingsToActions.remove(actionsToRunKeyBindings.remove(actions.getSelectedValue()));
+
                     keyPressed = -1;
                     label.setText("Default (None)");
                 } else {
+                    runKeyBindingsToActions.remove(actionsToRunKeyBindings.remove(actions.getSelectedValue()));
+
+                    runKeyBindingsToActions.put(e.getKeyCode(), actions.getSelectedValue());
+                    actionsToRunKeyBindings.put(actions.getSelectedValue(), e.getKeyCode());
+
                     keyPressed = e.getKeyCode();
                     label.setText(KeyEvent.getKeyText(keyCode));
                 }
@@ -136,6 +148,11 @@ public class Gui {
         removeAction.addActionListener(e -> {
             int i = actions.getMinSelectionIndex();
             if (i != -1) {
+                for (int j = i; j < actions.getMaxSelectionIndex(); j++) {
+                    runKeyBindingsToActions.remove(actionsToRunKeyBindings.remove(
+                            model.get(actions.getMinSelectionIndex() + i)
+                    ));
+                }
                 model.removeRange(i, actions.getMaxSelectionIndex());
             }
             f.requestFocus();
@@ -233,6 +250,12 @@ public class Gui {
         @Override
         public void valueChanged(ListSelectionEvent e) {
             selectedAction.setText(actions.getSelectedValue());
+            Integer x = actionsToRunKeyBindings.getOrDefault(actions.getSelectedValue(), -1);
+            if (x == -1) {
+                runKey.setText("Default (None)");
+            } else {
+                runKey.setText(KeyEvent.getKeyText(x));
+            }
         }
     }
 
@@ -316,10 +339,11 @@ public class Gui {
             if (setInterruptKey.keyPressed == 0) {
                 setInterruptKey.keyPressed = KeyEvent.VK_ESCAPE;
             }
+
             int i = NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(e.getKeyCode());
             if (i == setInterruptKey.keyPressed) {
                 actionsHandler.interruptAll();
-            } else if (i == setRunKey.keyPressed) {
+            } else if (runKeyBindingsToActions.get(i) != null) {
                 int s;
                 try {
                     s = Integer.parseInt(speed.getText());
@@ -327,7 +351,7 @@ public class Gui {
                     s = 100;
                 }
                 if (actions.getSelectedValue() != null) {
-                    actionsHandler.executeAction(actions.getSelectedValue(), s);
+                    actionsHandler.executeAction(runKeyBindingsToActions.get(i), s);
                 }
             }
         }
