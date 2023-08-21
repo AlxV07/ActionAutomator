@@ -87,7 +87,7 @@ public class Gui {
 
     private void setUpFrame() {
         f.setSize(450, 290);
-        f.setTitle("Gui");
+        f.setTitle("ActionAutomator");
         f.setLayout(null);
         f.setResizable(false);
         f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
