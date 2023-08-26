@@ -10,7 +10,7 @@ import com.github.kwhat.jnativehook.mouse.NativeMouseInputListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ActionCopyBuilder {
+public class CopyBuilder {
     private final KeyboardListener keyListener;
     private final MouseListener mouseListener;
     private List<SubAction> events;
@@ -21,7 +21,7 @@ public class ActionCopyBuilder {
     private boolean isWaiting;
     private long waitStartTime;
 
-    public ActionCopyBuilder() {
+    public CopyBuilder() {
         this.keyListener = new KeyboardListener();
         this.mouseListener = new MouseListener();
         this.events = new ArrayList<>();
@@ -68,9 +68,9 @@ public class ActionCopyBuilder {
         @Override
         public void nativeKeyPressed(NativeKeyEvent event) {
             int n = NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode());
-            if (ActionCopyBuilder.this.isListening) {
+            if (CopyBuilder.this.isListening) {
                 if (n == endKey) {
-                    ActionCopyBuilder.this.setIsListening(false);
+                    CopyBuilder.this.setIsListening(false);
                 } else if (n == waitKey) {
                     isWaiting = true;
                     waitStartTime = System.currentTimeMillis();
@@ -82,9 +82,9 @@ public class ActionCopyBuilder {
 
         @Override
         public void nativeKeyReleased(NativeKeyEvent event) {
-            if (ActionCopyBuilder.this.isListening) {
-                if (ActionCopyBuilder.this.isWaiting && ActionCopyBuilder.this.waitKey == NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode())) {
-                    events.add(new WaitSubAction(System.currentTimeMillis() - ActionCopyBuilder.this.waitStartTime));
+            if (CopyBuilder.this.isListening) {
+                if (CopyBuilder.this.isWaiting && CopyBuilder.this.waitKey == NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode())) {
+                    events.add(new WaitSubAction(System.currentTimeMillis() - CopyBuilder.this.waitStartTime));
                 } else {
                     events.add(new KeyReleasedSubAction(NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(event.getKeyCode())));
                 }
@@ -95,28 +95,28 @@ public class ActionCopyBuilder {
     private class MouseListener implements NativeMouseInputListener {
         @Override
         public void nativeMousePressed(NativeMouseEvent event) {
-            if (ActionCopyBuilder.this.isListening) {
+            if (CopyBuilder.this.isListening) {
                 events.add(new MousePressedSubAction(1 << (9 + event.getButton())));
             }
         }
 
         @Override
         public void nativeMouseReleased(NativeMouseEvent event) {
-            if (ActionCopyBuilder.this.isListening) {
+            if (CopyBuilder.this.isListening) {
                 events.add(new MouseReleasedSubAction(1 << (9 + event.getButton())));
             }
         }
 
         @Override
         public void nativeMouseMoved(NativeMouseEvent event) {
-            if (ActionCopyBuilder.this.isListening) {
+            if (CopyBuilder.this.isListening) {
                 events.add(new MouseMovedSubAction(event.getX(), event.getY()));
             }
         }
 
         @Override
         public void nativeMouseDragged(NativeMouseEvent event) {
-            if (ActionCopyBuilder.this.isListening) {
+            if (CopyBuilder.this.isListening) {
                 events.add(new MouseMovedSubAction(event.getX(), event.getY()));
             }
         }

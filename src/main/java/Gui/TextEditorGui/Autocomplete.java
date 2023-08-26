@@ -1,16 +1,13 @@
 package Gui.TextEditorGui;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.Serial;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import java.awt.event.ActionEvent;
+import java.io.Serial;
+import java.util.Collections;
+import java.util.List;
 
 public class Autocomplete implements DocumentListener {
 
@@ -52,13 +49,13 @@ public class Autocomplete implements DocumentListener {
         int w;
         for (w = pos; w >= 0; w--) {
             assert content != null;
-            if (!Character.isLetter(content.charAt(w))) {
+            if (Character.isWhitespace(content.charAt(w))) {
                 break;
             }
         }
 
         // Too few chars
-        if (pos - w < 3)
+        if (pos - w < 2)
             return;
 
         String prefix = content.substring(w + 1).toLowerCase();
@@ -79,9 +76,6 @@ public class Autocomplete implements DocumentListener {
     }
 
     public class CommitAction extends AbstractAction {
-        /**
-         *
-         */
         @Serial
         private static final long serialVersionUID = 5794543109646743416L;
 
@@ -90,7 +84,7 @@ public class Autocomplete implements DocumentListener {
             if (mode == Mode.COMPLETION) {
                 int pos = textArea.getSelectionEnd();
                 StringBuilder sb = new StringBuilder(textArea.getText());
-                sb.insert(pos, " ");
+                sb.insert(pos, "()");
                 textArea.setText(sb.toString());
                 textArea.setCaretPosition(pos + 1);
                 mode = Mode.INSERT;
@@ -118,35 +112,4 @@ public class Autocomplete implements DocumentListener {
             mode = Mode.COMPLETION;
         }
     }
-
-    public static void main(String[] args) {
-        final String COMMIT_ACTION = "commit";
-        JTextArea mainTextArea = new JTextArea();
-
-        mainTextArea.setFocusTraversalKeysEnabled(false);
-
-        List<String> keywords = new ArrayList<>(5);
-        keywords.add("example");
-        keywords.add("autocomplete");
-        keywords.add("stackabuse");
-        keywords.add("java");
-        Autocomplete autoComplete = new Autocomplete(mainTextArea, keywords);
-        mainTextArea.getDocument().addDocumentListener(autoComplete);
-
-        mainTextArea.getInputMap().put(KeyStroke.getKeyStroke("TAB"), COMMIT_ACTION);
-        mainTextArea.getActionMap().put(COMMIT_ACTION, autoComplete.new CommitAction());
-        mainTextArea.setFont(Font.getFont("Source Code Pro"));
-        mainTextArea.setTabSize(2);
-
-        JFrame frame = new JFrame();
-        frame.setSize(500, 500);
-        mainTextArea.setBounds(50, 35, 400, 400);
-        frame.add(mainTextArea);
-        frame.setLayout(null);
-        frame.setResizable(false);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setFocusable(true);
-        frame.setVisible(true);
-    }
-
 }

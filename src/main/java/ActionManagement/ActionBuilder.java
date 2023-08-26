@@ -3,17 +3,23 @@ package ActionManagement;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 
-import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 public class ActionBuilder {
-    private final ActionCopyBuilder actionCopyBuilder = new ActionCopyBuilder();
+    private final CopyBuilder copyBuilder;
+    private final ReadBuilder readBuilder;
 
     public ActionBuilder() {
-        actionCopyBuilder.registerListeners();
+        copyBuilder = new CopyBuilder();
+        readBuilder = new ReadBuilder();
+        copyBuilder.registerListeners();
     }
 
     public void end() {
-        actionCopyBuilder.removeListeners();
+        copyBuilder.removeListeners();
         try {
             GlobalScreen.unregisterNativeHook();
         } catch (NativeHookException e) {
@@ -21,26 +27,28 @@ public class ActionBuilder {
         }
     }
 
-    public Action copyBuild() {
-        return copyBuild(KeyEvent.VK_ESCAPE, -1);
-    }
 
     public Action copyBuild(int endKey, int waitKey) {
-        actionCopyBuilder.setEndKey(endKey);
-        actionCopyBuilder.setWaitKey(waitKey);
-        actionCopyBuilder.setIsListening(true);
-        while (actionCopyBuilder.getIsListening()) {
+        copyBuilder.setEndKey(endKey);
+        copyBuilder.setWaitKey(waitKey);
+        copyBuilder.setIsListening(true);
+        while (copyBuilder.getIsListening()) {
             try {
                 Thread.sleep(200);
             } catch (InterruptedException ignore) {
             }
         }
-        Action action = new Action(actionCopyBuilder.getEvents());
-        actionCopyBuilder.clearEvents();
+        Action action = new Action(copyBuilder.getEvents());
+        copyBuilder.clearEvents();
         return action;
     }
 
-    public Action copyBuild(int endKey) {
-        return copyBuild(endKey, -1);
+    public Action readBuild(String actnFilePath) {
+        try {
+            List<String> lines = Files.readAllLines(Path.of(actnFilePath));
+            return readBuilder.parseLinesIntoAction(lines);
+        } catch (IOException e) {
+            return null;
+        }
     }
 }
