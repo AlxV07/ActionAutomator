@@ -20,10 +20,6 @@ public class ActionsHandler {
         }
     }
 
-    public void setAction(String key, List<SubAction> subTasks) {
-        actions.put(key, new Action(subTasks));
-    }
-
     public void setAction(String key, Action a) {
         actions.put(key, a);
     }
