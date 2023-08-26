@@ -1,65 +1,34 @@
 package ActionManagement;
 
-import ActionManagement.ActionSubTasks.*;
+import ActionManagement.SubActions.*;
 
 import java.awt.*;
 import java.util.List;
 
 public class Action {
-    private final List<ActionSubTask> subTasks;
+    private final List<SubAction> subActions;
     private Thread actionThread;
-    private int speed;
+    private int subActionDelayInterval;
 
-    public Action(List<ActionSubTask> subTasks) {
-        this.subTasks = subTasks;
+    public Action(List<SubAction> subActions) {
+        this.subActions = subActions;
     }
 
-    public List<ActionSubTask> getSubTasks() {
-        return this.subTasks;
+    public List<SubAction> getSubActions() {
+        return this.subActions;
     }
 
-    public void execute(Robot r) {
-        execute(r, 100);
+    public void execute(Robot executor, int subActionDelayInterval) {
+        this.subActionDelayInterval = subActionDelayInterval;
+        this.actionThread = new Thread(() -> executeSubActions(executor));
+        this.actionThread.start();
     }
 
-    public void execute(Robot r, int speed) {
-        this.speed = speed;
-        actionThread = new Thread(() -> iExecute(r));
-        actionThread.start();
-    }
-
-    private void iExecute(Robot r) {
-        for (ActionSubTask s : subTasks) {
-            switch (s.getTypeOfTask()) {
-                case ActionSubTaskTypes.KEYBOARD_TASK -> {
-                    KeySubTask s1 = (KeySubTask) s;
-                    if (s1.specType() == KeySubTaskType.PRESSED) {
-                        r.keyPress(s1.k());
-                    } else {
-                        r.keyRelease(s1.k());
-                    }
-                }
-                case ActionSubTaskTypes.MOUSE_TASK -> {
-                    MouseSubTask s2 = (MouseSubTask) s;
-                    switch (s2.specType()) {
-                        case PRESSED -> r.mousePress(s2.button());
-                        case RELEASED -> r.mouseRelease(s2.button());
-                        case MOVED -> r.mouseMove(s2.x(), s2.y());
-                        case DRAGGED -> {
-                            r.mousePress(s2.button());
-                            r.mouseMove(s2.x(), s2.y());
-                            r.mouseRelease(s2.button());
-                        }
-                    }
-                }
-                case ActionSubTaskTypes.WAIT_TASK -> {
-                    try {
-                        Thread.sleep(((WaitSubTask) s).waitTime());
-                    } catch (InterruptedException ignored) {}
-                }
-            }
+    private void executeSubActions(Robot executor) {
+        for (SubAction subAction : subActions) {
             try {
-                Thread.sleep(speed);
+                subAction.execute(executor);
+                Thread.sleep(subActionDelayInterval);
             } catch (InterruptedException e) {
                 break;
             }

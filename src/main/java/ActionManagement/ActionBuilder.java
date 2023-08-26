@@ -6,14 +6,14 @@ import com.github.kwhat.jnativehook.NativeHookException;
 import java.awt.event.KeyEvent;
 
 public class ActionBuilder {
-    private final ActionSubTaskSequenceBuilder builder = new ActionSubTaskSequenceBuilder();
+    private final ActionCopyBuilder actionCopyBuilder = new ActionCopyBuilder();
 
     public ActionBuilder() {
-        builder.registerListeners();
+        actionCopyBuilder.registerListeners();
     }
 
     public void end() {
-        builder.removeListeners();
+        actionCopyBuilder.removeListeners();
         try {
             GlobalScreen.unregisterNativeHook();
         } catch (NativeHookException e) {
@@ -21,26 +21,26 @@ public class ActionBuilder {
         }
     }
 
-    public Action buildAction() {
-        return buildAction(KeyEvent.VK_ESCAPE, -1);
+    public Action copyBuild() {
+        return copyBuild(KeyEvent.VK_ESCAPE, -1);
     }
 
-    public Action buildAction(int endKey, int waitKey) {
-        builder.setEndKey(endKey);
-        builder.setWaitKey(waitKey);
-        builder.setIsListening(true);
-        while (builder.getIsListening()) {
+    public Action copyBuild(int endKey, int waitKey) {
+        actionCopyBuilder.setEndKey(endKey);
+        actionCopyBuilder.setWaitKey(waitKey);
+        actionCopyBuilder.setIsListening(true);
+        while (actionCopyBuilder.getIsListening()) {
             try {
                 Thread.sleep(200);
             } catch (InterruptedException ignore) {
             }
         }
-        Action action = new Action(builder.getEvents());
-        builder.clearEvents();
+        Action action = new Action(actionCopyBuilder.getEvents());
+        actionCopyBuilder.clearEvents();
         return action;
     }
 
-    public Action buildAction(int endKey) {
-        return buildAction(endKey, -1);
+    public Action copyBuild(int endKey) {
+        return copyBuild(endKey, -1);
     }
 }

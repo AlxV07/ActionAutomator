@@ -220,7 +220,7 @@ public class GuiMain {
 
             int i = NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(e.getKeyCode());
             if (i == setInterruptKey.keyPressed) {
-                actionsHandler.interruptAll();
+                actionsHandler.interrupt();
             } else if (runKeyBindingsToActions.get(i) != null) {
                 int s;
                 try {

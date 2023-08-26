@@ -29,7 +29,7 @@ public class TextPromptButton extends PresetButton {
                         @Override
                         protected Void doInBackground() {
                             setEnabled(false);
-                            actionsHandler.setAction(name, builder.buildAction(p, setWaitKey.keyPressed));
+                            actionsHandler.setAction(name, builder.copyBuild(p, setWaitKey.keyPressed));
                             model.addElement(name);
                             return null;
                         }

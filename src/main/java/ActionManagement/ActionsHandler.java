@@ -1,28 +1,26 @@
 package ActionManagement;
 
-import ActionManagement.ActionSubTasks.ActionSubTask;
-import ActionManagement.ActionSubTasks.ActionSubTaskTypes;
-import ActionManagement.ActionSubTasks.MouseSubTask;
-import ActionManagement.ActionSubTasks.MouseSubTaskType;
+import ActionManagement.SubActions.SubAction;
+import ActionManagement.SubActions.SubActionType;
 
 import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 
 public class ActionsHandler {
+    private final Robot actionExecutor;
     private final HashMap<String, Action> actions;
-    private final Robot r;
 
     public ActionsHandler() {
         this.actions = new HashMap<>();
         try {
-            this.r = new Robot();
+            this.actionExecutor = new Robot();
         } catch (AWTException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void setAction(String key, List<ActionSubTask> subTasks) {
+    public void setAction(String key, List<SubAction> subTasks) {
         actions.put(key, new Action(subTasks));
     }
 
@@ -34,19 +32,11 @@ public class ActionsHandler {
         actions.remove(key);
     }
 
-    public void executeAction(String key) {
-        actions.get(key).execute(r);
-    }
-
     public void executeAction(String key, int speed) {
-        actions.get(key).execute(r, speed);
+        actions.get(key).execute(actionExecutor, speed);
     }
 
-    public void interruptAction(String key) {
-        actions.get(key).interrupt();
-    }
-
-    public void interruptAll() {
+    public void interrupt() {
         for (Action a : actions.values()) {
             a.interrupt();
         }
@@ -57,23 +47,19 @@ public class ActionsHandler {
     }
 
     private void removeUnnecessaryMouseMovementsFromAction(String key) {
-        List<ActionSubTask> tasks = actions.get(key).getSubTasks();
+        List<SubAction> tasks = actions.get(key).getSubActions();
         int i;
+        boolean nextSubAction;
         for (i = 0; i < tasks.size() - 1;) {
-            boolean proceed = true;
-            if (tasks.get(i).getTypeOfTask() == ActionSubTaskTypes.MOUSE_TASK) {
-                MouseSubTask s1 = (MouseSubTask) tasks.get(i);
-                if (s1.specType() == MouseSubTaskType.MOVED) {
-                    if (tasks.get(i + 1).getTypeOfTask() == ActionSubTaskTypes.MOUSE_TASK) {
-                        MouseSubTask s2 = (MouseSubTask) tasks.get(i + 1);
-                        if (s2.specType() == MouseSubTaskType.MOVED) {
-                            tasks.remove(i);
-                            proceed = false;
-                        }
-                    }
+            nextSubAction = true;
+            SubAction last_move = tasks.get(i);
+            if (last_move.getType() == SubActionType.MOUSE_MOVED) {
+                if (tasks.get(i + 1).getType() == SubActionType.MOUSE_MOVED) {
+                    tasks.remove(i);
+                    nextSubAction = false;
                 }
             }
-            if (proceed) {
+            if (nextSubAction) {
                 i++;
             }
         }
