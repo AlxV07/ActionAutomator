@@ -1,4 +1,4 @@
-package Gui;
+package Gui.LegacyGui;
 
 import ActionManagement.ActionBuilder;
 import ActionManagement.ActionsHandler;

@@ -1,4 +1,4 @@
-import Gui.GuiMain;
+import Gui.LegacyGui.GuiMain;
 
 public class Main {
     public static void main(String[] args) {

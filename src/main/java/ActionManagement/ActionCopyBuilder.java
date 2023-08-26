@@ -113,5 +113,12 @@ public class ActionCopyBuilder {
                 events.add(new MouseMovedSubAction(event.getX(), event.getY()));
             }
         }
+
+        @Override
+        public void nativeMouseDragged(NativeMouseEvent event) {
+            if (ActionCopyBuilder.this.isListening) {
+                events.add(new MouseMovedSubAction(event.getX(), event.getY()));
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-package Gui;
+package Gui.LegacyGui;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
