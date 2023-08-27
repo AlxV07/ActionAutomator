@@ -1,7 +1,7 @@
 package Gui.TextEditorGui;
 
 public class GuiMain {
-    public static void main(String[] args) {
+    public void start() {
         TextEditorGUI editor = new TextEditorGUI();
     }
 }

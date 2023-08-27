@@ -8,58 +8,71 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 class TextEditorGUI extends JFrame implements ActionListener {
     private final JTextArea mainTextArea;
     private final JFrame f;
-    private ReadBuilder readBuilder = new ReadBuilder();
-    private Robot executor;
+    private final ReadBuilder readBuilder = new ReadBuilder();
+    private final Robot executor;
+    private final ActionList actionsList;
+    private final HashMap<String, String> nameToAction;
 
-    // Constructor
     public TextEditorGUI() {
         try {
             this.executor = new Robot();
         } catch (AWTException e) {
             throw new RuntimeException(e);
         }
+        nameToAction = new HashMap<>();
 
         List<String> keywords = getAutoCompleteKeywordList();
         final String COMMIT_ACTION = "commit";
-        mainTextArea = new JTextArea("speed=100");
+        final String QUOTE_ACTION = "quote";
+
+        mainTextArea = new JTextArea();
         Autocomplete autoComplete = new Autocomplete(mainTextArea, keywords);
         mainTextArea.getDocument().addDocumentListener(autoComplete);
+
         mainTextArea.getInputMap().put(KeyStroke.getKeyStroke("TAB"), COMMIT_ACTION);
         mainTextArea.getActionMap().put(COMMIT_ACTION, autoComplete.new CommitAction());
+        mainTextArea.getInputMap().put(KeyStroke.getKeyStroke("QUOTE"), QUOTE_ACTION);
+        mainTextArea.getActionMap().put(QUOTE_ACTION, autoComplete.new QuoteFinishTask());
+
         mainTextArea.setFont(Font.getFont("Source Code Pro"));
         mainTextArea.setTabSize(2);
+        mainTextArea.setMargin(new Insets(5, 5, 5, 5));
         mainTextArea.setBounds(165, 0, 335, 500);
+
+        actionsList = new ActionList(nameToAction, mainTextArea);
 
         JMenuBar mb = new JMenuBar();
         JMenu m1 = new JMenu("File");
         JMenuItem mi1 = new JMenuItem("New");
-        JMenuItem mi2 = new JMenuItem("Open");
         JMenuItem mi3 = new JMenuItem("Save");
+        JMenuItem mi2 = new JMenuItem("Open");
         mi1.addActionListener(this);
-        mi2.addActionListener(this);
         mi3.addActionListener(this);
+        mi2.addActionListener(this);
         m1.add(mi1);
-        m1.add(mi2);
         m1.add(mi3);
+        m1.add(mi2);
         mb.add(m1);
 
         JButton runButton = new JButton();
         runButton.addActionListener(e -> runAction());
-        runButton.setBounds(20, 20, 40, 20);
-
-        runButton.setFont(new Font("Arial", Font.PLAIN, 10));
+        runButton.setBounds(125, 0, 40, 18);
+        runButton.setFont(new Font("Source Code Pro", Font.PLAIN, 10));
         runButton.setMargin(new Insets(0, 0, 0, 0));
+        runButton.setFocusPainted(false);
         runButton.setText("Run");
 
-        f = new JFrame("Action Automator Text Editor");
+        f = new JFrame("ActionAutomator Manual Editor");
         f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         f.setJMenuBar(mb);
         f.setLayout(null);
+        f.add(actionsList.list);
         f.add(mainTextArea);
         f.add(runButton);
         f.setSize(500, 500);
@@ -71,24 +84,6 @@ class TextEditorGUI extends JFrame implements ActionListener {
         String s = e.getActionCommand();
         switch (s) {
             case "Save" -> {
-                JFileChooser j = new JFileChooser("f:");
-                int r = j.showSaveDialog(null);
-
-                if (r == JFileChooser.APPROVE_OPTION) {
-                    File fi = new File(j.getSelectedFile().getAbsolutePath());
-                    try {
-                        FileWriter wr = new FileWriter(fi, false);
-                        BufferedWriter w = new BufferedWriter(wr);
-                        w.write(mainTextArea.getText());
-                        w.flush();
-                        w.close();
-                    } catch (Exception evt) {
-                        JOptionPane.showMessageDialog(f, evt.getMessage());
-                    }
-                }
-                else {
-                    JOptionPane.showMessageDialog(f, "The User cancelled the operation");
-                }
             }
             case "Open" -> {
                 JFileChooser j = new JFileChooser("f:");
@@ -117,7 +112,15 @@ class TextEditorGUI extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(f, "The User cancelled the operation");
                 }
             }
-            case "New" -> mainTextArea.setText("");
+            case "New" -> {
+                nameToAction.put(actionsList.list.getSelectedValue(), String.join(";", mainTextArea.getText().split("\n")));
+                String input = JOptionPane.showInputDialog("");
+                if (!input.isEmpty()) {
+                    actionsList.addElement(input);
+                    nameToAction.put(input, "speed=100\n");
+                    actionsList.list.setSelectedIndex(actionsList.size() - 1);
+                }
+            }
         }
     }
 
@@ -137,8 +140,11 @@ class TextEditorGUI extends JFrame implements ActionListener {
     public void runAction() {
         List<String> lines = List.of(mainTextArea.getText().strip().split("\n"));
         if (lines.size() > 1 && lines.get(0).startsWith("speed=")) {
-            readBuilder.parseLinesIntoAction(lines.subList(1, lines.size())).execute(executor,
-                                             Integer.parseInt(lines.get(0).substring(6)));
+            try {
+                readBuilder.parseLinesIntoAction(lines.subList(1, lines.size())).execute(executor,
+                                                 Integer.parseInt(lines.get(0).substring(6)));
+            } catch (ReadBuilder.SyntaxError ignored) {
+            }
         }
     }
 }

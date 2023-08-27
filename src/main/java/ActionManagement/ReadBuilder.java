@@ -8,24 +8,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReadBuilder {
-    public Action parseLinesIntoAction(List<String> lines) {
+    public Action parseLinesIntoAction(List<String> lines) throws SyntaxError {
         List<SubAction> subActions = new ArrayList<>();
 
         for (String line : lines) {
             if (line.isBlank()) {
                 continue;
             }
-            String[] parts = line.split("\\(", 2);
-            String[] args = new String[]{""};
-            if (parts[1].length() > 1) {
-                args = parts[1].substring(0, parts[1].length() - 1).split(",");
+            if (!line.endsWith(")")) {
+                throw new SyntaxError();
             }
+            String[] parts = line.split("\\(", 2);
             String command = parts[0];
+            String args = parts[1].strip().substring(0, parts[1].length() - 1);
             switch (command) {
                 case "typewrite" -> {
-                    int i = 1;
-                    for (String arg: args) {
-                        for (char c : arg.toCharArray()) {
+                    if (args.startsWith("'") && args.endsWith("'")) {
+                        args = args.substring(1, args.length() - 1);
+                        for (char c : args.toCharArray()) {
                             int[] vk_key = NativeKeyToVKKeyConverter.convertCharToKeyEventVK(c);
                             assert vk_key != null;
                             if (vk_key.length > 1) {
@@ -37,13 +37,6 @@ public class ReadBuilder {
                                 subActions.add(new KeyPressedSubAction(vk_key[0]));
                                 subActions.add(new KeyReleasedSubAction(vk_key[0]));
                             }
-                        }
-                        if (i < args.length) {
-                            int[] vk_key = NativeKeyToVKKeyConverter.convertCharToKeyEventVK(',');
-                            assert vk_key != null;
-                            subActions.add(new KeyPressedSubAction(vk_key[0]));
-                            subActions.add(new KeyReleasedSubAction(vk_key[0]));
-                            i += 1;
                         }
                     }
                 }
@@ -62,9 +55,18 @@ public class ReadBuilder {
                 case "right_down" -> subActions.add(new MousePressedSubAction(2048));
                 case "right_up" -> subActions.add(new MouseReleasedSubAction(2048));
 
-                case "move" -> subActions.add(new MouseMovedSubAction(Integer.parseInt(args[0].strip()), Integer.parseInt(args[1].strip())));
+                case "move" -> {
+                    String[] x_y = args.split(",");
+                    subActions.add(new MouseMovedSubAction(
+                            Integer.parseInt(x_y[0].strip()),
+                            Integer.parseInt(x_y[1].strip())
+                            )
+                    );
+                }
             }
         }
         return new Action(subActions);
     }
+
+    public static class SyntaxError extends Exception {}
 }

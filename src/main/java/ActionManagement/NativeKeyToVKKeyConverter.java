@@ -232,28 +232,28 @@ public class NativeKeyToVKKeyConverter {
                 return new int[]{VK_SHIFT,VK_BACK_QUOTE};
             }
             case '!' -> {
-                return new int[]{(VK_EXCLAMATION_MARK)};
+                return new int[]{VK_SHIFT, VK_1};
             }
             case '@' -> {
                 return new int[]{(VK_AT)};
             }
             case '#' -> {
-                return new int[]{(VK_NUMBER_SIGN)};
+                return new int[]{VK_SHIFT, VK_3};
             }
             case '$' -> {
-                return new int[]{(VK_DOLLAR)};
+                return new int[]{VK_SHIFT, VK_4};
             }
             case '%' -> {
                 return new int[]{VK_SHIFT,VK_5};
             }
             case '^' -> {
-                return new int[]{(VK_CIRCUMFLEX)};
+                return new int[]{VK_SHIFT, VK_6};
             }
             case '&' -> {
-                return new int[]{(VK_AMPERSAND)};
+                return new int[]{VK_SHIFT, VK_7};
             }
             case '*' -> {
-                return new int[]{(VK_ASTERISK)};
+                return new int[]{VK_SHIFT, VK_8};
             }
             case '(' -> {
                 return new int[]{(VK_LEFT_PARENTHESIS)};

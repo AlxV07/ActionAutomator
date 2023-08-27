@@ -47,7 +47,7 @@ public class ActionBuilder {
         try {
             List<String> lines = Files.readAllLines(Path.of(actnFilePath));
             return readBuilder.parseLinesIntoAction(lines);
-        } catch (IOException e) {
+        } catch (IOException | ReadBuilder.SyntaxError e) {
             return null;
         }
     }

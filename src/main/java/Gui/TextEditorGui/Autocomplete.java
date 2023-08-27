@@ -116,4 +116,16 @@ public class Autocomplete implements DocumentListener {
             mode = Mode.COMPLETION;
         }
     }
+
+    public class QuoteFinishTask extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int pos = textArea.getSelectionEnd();
+            StringBuilder sb = new StringBuilder(textArea.getText());
+            sb.insert(pos, "'");
+            textArea.setText(sb.toString());
+            textArea.setCaretPosition(pos);
+            mode = Mode.INSERT;
+        }
+    }
 }
