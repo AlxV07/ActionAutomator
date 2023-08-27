@@ -16,10 +16,12 @@ public class ActionList extends DefaultListModel<String> {
         this.nameToActionBindings = nameToActionBindings;
         this.mainTextArea = mainTextArea;
         list = new JList<>(this);
-        list.setBounds(0, 0, 124, 160);
+        list.setBounds(-1, 80, 167, 160);
         list.setFont(new Font("Arial", Font.PLAIN, 12));
         list.setFocusable(false);
         list.addListSelectionListener(new ActionListUpdater());
+        list.setBorder(Resources.areaBorder);
+        list.setBackground(Resources.backgrououndColor);
     }
 
     private String previousSelected = "";

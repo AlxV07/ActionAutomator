@@ -1,6 +1,13 @@
-package Gui.TextEditorGui;// Java Program to create a text editor using java
+package Gui.TextEditorGui;
 
+import ActionManagement.NativeKeyToVKKeyConverter;
 import ActionManagement.ReadBuilder;
+import com.github.kwhat.jnativehook.GlobalScreen;
+import com.github.kwhat.jnativehook.NativeHookException;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
+import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
+import com.github.kwhat.jnativehook.mouse.NativeMouseMotionListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,15 +24,22 @@ class TextEditorGUI extends JFrame implements ActionListener {
     private final ReadBuilder readBuilder = new ReadBuilder();
     private final Robot executor;
     private final ActionList actionsList;
-    private final HashMap<String, String> nameToAction;
+    private final HashMap<String, String> actionToCode;
+
+    private final HashMap<Integer, String> keyToAction;
+    private final HashMap<String, Integer> actionToKey;
+    private int mouseX;
+    private int mouseY;
 
     public TextEditorGUI() {
+        keyToAction = new HashMap<>();
+        actionToKey = new HashMap<>();
         try {
             this.executor = new Robot();
         } catch (AWTException e) {
             throw new RuntimeException(e);
         }
-        nameToAction = new HashMap<>();
+        actionToCode = new HashMap<>();
 
         List<String> keywords = getAutoCompleteKeywordList();
         final String COMMIT_ACTION = "commit";
@@ -39,42 +53,69 @@ class TextEditorGUI extends JFrame implements ActionListener {
         mainTextArea.getActionMap().put(COMMIT_ACTION, autoComplete.new CommitAction());
         mainTextArea.getInputMap().put(KeyStroke.getKeyStroke("QUOTE"), QUOTE_ACTION);
         mainTextArea.getActionMap().put(QUOTE_ACTION, autoComplete.new QuoteFinishTask());
-
         mainTextArea.setFont(Font.getFont("Source Code Pro"));
         mainTextArea.setTabSize(2);
-        mainTextArea.setMargin(new Insets(5, 5, 5, 5));
-        mainTextArea.setBounds(165, 0, 335, 500);
+        mainTextArea.setMargin(new Insets(10, 10, 10, 10));
+        mainTextArea.setBounds(165, -1, 335, 501);
+        mainTextArea.setBorder(Resources.areaBorder);
 
-        actionsList = new ActionList(nameToAction, mainTextArea);
+        actionsList = new ActionList(actionToCode, mainTextArea);
 
-        JMenuBar mb = new JMenuBar();
-        JMenu m1 = new JMenu("File");
-        JMenuItem mi1 = new JMenuItem("New");
-        JMenuItem mi3 = new JMenuItem("Save");
-        JMenuItem mi2 = new JMenuItem("Open");
-        mi1.addActionListener(this);
-        mi3.addActionListener(this);
-        mi2.addActionListener(this);
-        m1.add(mi1);
-        m1.add(mi3);
-        m1.add(mi2);
-        mb.add(m1);
+
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.setBorder(Resources.areaBorder);
+        menuBar.setBounds(0, 0, 166, 20);
+        menuBar.setMargin(Resources.margin);
+        JButton[] buttons = new JButton[] {
+            new JButton("New"),
+            new JButton("Save"),
+            new JButton("Open")
+        };
+        for (JButton button : buttons) {
+            button.setFont(Resources.labelFont);
+            button.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+            button.setMargin(Resources.margin);
+            button.setFocusPainted(false);
+            button.addActionListener(this);
+            menuBar.add(button);
+        }
 
         JButton runButton = new JButton();
         runButton.addActionListener(e -> runAction());
-        runButton.setBounds(125, 0, 40, 18);
-        runButton.setFont(new Font("Source Code Pro", Font.PLAIN, 10));
-        runButton.setMargin(new Insets(0, 0, 0, 0));
+        runButton.setBounds(126, -1, 40, 18);
+        runButton.setFont(Resources.labelFont);
+        runButton.setBorder(BorderFactory.createEmptyBorder(5, 11, 5, 10));
+        runButton.setMargin(Resources.margin);
         runButton.setFocusPainted(false);
         runButton.setText("Run");
+        menuBar.add(runButton);
+
+        JLabel mx = new JLabel();
+        JLabel my = new JLabel();
+        mx.setBounds(7, 26, 100, 20);
+        mx.setFont(Resources.labelFont);
+        mx.setText("Mouse X:");
+        mx.setHorizontalAlignment(SwingConstants.LEFT);
+        my.setBounds(7, 48, 100, 20);
+        my.setFont(Resources.labelFont);
+        my.setHorizontalAlignment(SwingConstants.LEFT);
+        my.setText("Mouse Y:");
+        NativeGuiListener guiListener = new NativeGuiListener(mx, my);
+        try {
+            GlobalScreen.registerNativeHook();
+            GlobalScreen.addNativeKeyListener(guiListener);
+            GlobalScreen.addNativeMouseMotionListener(guiListener);
+        } catch (NativeHookException e) {
+            throw new RuntimeException(e);
+        }
 
         f = new JFrame("ActionAutomator Manual Editor");
         f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        f.setJMenuBar(mb);
         f.setLayout(null);
+        f.add(menuBar);
         f.add(actionsList.list);
         f.add(mainTextArea);
-        f.add(runButton);
+        f.add(mx); f.add(my);
         f.setSize(500, 500);
         f.setResizable(false);
         f.setVisible(true);
@@ -108,16 +149,13 @@ class TextEditorGUI extends JFrame implements ActionListener {
                         JOptionPane.showMessageDialog(f, evt.getMessage());
                     }
                 }
-                else {
-                    JOptionPane.showMessageDialog(f, "The User cancelled the operation");
-                }
             }
             case "New" -> {
-                nameToAction.put(actionsList.list.getSelectedValue(), String.join(";", mainTextArea.getText().split("\n")));
-                String input = JOptionPane.showInputDialog("");
-                if (!input.isEmpty()) {
+                actionToCode.put(actionsList.list.getSelectedValue(), String.join(";", mainTextArea.getText().split("\n")));
+                String input = JOptionPane.showInputDialog("Enter New Action Name:");
+                if (input != null && !input.isEmpty()) {
                     actionsList.addElement(input);
-                    nameToAction.put(input, "speed=100\n");
+                    actionToCode.put(input, "speed=100\n");
                     actionsList.list.setSelectedIndex(actionsList.size() - 1);
                 }
             }
@@ -145,6 +183,43 @@ class TextEditorGUI extends JFrame implements ActionListener {
                                                  Integer.parseInt(lines.get(0).substring(6)));
             } catch (ReadBuilder.SyntaxError ignored) {
             }
+        }
+    }
+
+    public void runAction(String action) {
+        List<String> lines = List.of(actionToCode.getOrDefault(action, "").split(";"));
+        if (lines.size() > 1 && lines.get(0).startsWith("speed=")) {
+            try {
+                readBuilder.parseLinesIntoAction(lines.subList(1, lines.size())).execute(executor,
+                        Integer.parseInt(lines.get(0).substring(6)));
+            } catch (ReadBuilder.SyntaxError ignored) {}
+        }
+    }
+
+
+    private class NativeGuiListener implements NativeKeyListener, NativeMouseMotionListener {
+        private final JLabel mx;
+        private final JLabel my;
+
+        public NativeGuiListener(JLabel mx, JLabel my) {
+            this.mx = mx;
+            this.my = my;
+        }
+        @Override
+        public void nativeKeyPressed(NativeKeyEvent e) {
+            int i = NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(e.getKeyCode());
+            String action = keyToAction.getOrDefault(i, null);
+            if (action != null) {
+                runAction(action);
+            }
+        }
+
+        @Override
+        public void nativeMouseMoved(NativeMouseEvent e) {
+            mouseX = e.getX();
+            mouseY = e.getY();
+            mx.setText("Mouse X:  " + mouseX);
+            my.setText("Mouse Y:  " + mouseY);
         }
     }
 }

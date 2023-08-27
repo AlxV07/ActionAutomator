@@ -235,7 +235,7 @@ public class NativeKeyToVKKeyConverter {
                 return new int[]{VK_SHIFT, VK_1};
             }
             case '@' -> {
-                return new int[]{(VK_AT)};
+                return new int[]{VK_SHIFT, VK_2};
             }
             case '#' -> {
                 return new int[]{VK_SHIFT, VK_3};
