@@ -84,7 +84,11 @@ public class Autocomplete implements DocumentListener {
             if (mode == Mode.COMPLETION) {
                 int pos = textArea.getSelectionEnd();
                 StringBuilder sb = new StringBuilder(textArea.getText());
-                sb.insert(pos, "()");
+                if (sb.charAt(sb.length() - 1) != ')') {
+                    sb.insert(pos, "()");
+                } else {
+                    pos -= 1;
+                }
                 textArea.setText(sb.toString());
                 textArea.setCaretPosition(pos + 1);
                 mode = Mode.INSERT;
