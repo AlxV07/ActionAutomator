@@ -22,6 +22,7 @@ class TextEditorGUI extends JFrame implements ActionListener {
     private final JTextArea mainTextArea;
     private final JFrame f;
     private final ReadBuilder readBuilder = new ReadBuilder();
+    private final CodeBuilder codeBuilder = new CodeBuilder();
     private final Robot executor;
     private final ActionList actionsList;
     private final HashMap<String, String> actionToCode;
@@ -45,7 +46,7 @@ class TextEditorGUI extends JFrame implements ActionListener {
         final String COMMIT_ACTION = "commit";
         final String QUOTE_ACTION = "quote";
 
-        mainTextArea = new JTextArea();
+        mainTextArea = new JTextArea("null");
         Autocomplete autoComplete = new Autocomplete(mainTextArea, keywords);
         mainTextArea.getDocument().addDocumentListener(autoComplete);
 
@@ -171,29 +172,26 @@ class TextEditorGUI extends JFrame implements ActionListener {
         keywords.add("right_click()");
         keywords.add("right_down()");
         keywords.add("right_up()");
+        keywords.add("wait");
         keywords.add("move");
         return keywords;
     }
 
     public void runAction() {
         List<String> lines = List.of(mainTextArea.getText().strip().split("\n"));
-        if (lines.size() > 1 && lines.get(0).startsWith("speed=")) {
-            try {
-                readBuilder.parseLinesIntoAction(lines.subList(1, lines.size())).execute(executor,
-                                                 Integer.parseInt(lines.get(0).substring(6)));
-            } catch (ReadBuilder.SyntaxError ignored) {
-            }
+        try {
+            List<String> codeLines = codeBuilder.getActionLinesFromCode(lines);
+            int speed = Integer.parseInt(codeLines.get(0));
+            readBuilder.parseLinesIntoAction(codeLines.subList(1, codeLines.size()))
+                    .execute(executor, speed);
+
+        } catch (IOException | ReadBuilder.SyntaxError e) {
+            throw new RuntimeException(e);
         }
     }
 
     public void runAction(String action) {
-        List<String> lines = List.of(actionToCode.getOrDefault(action, "").split(";"));
-        if (lines.size() > 1 && lines.get(0).startsWith("speed=")) {
-            try {
-                readBuilder.parseLinesIntoAction(lines.subList(1, lines.size())).execute(executor,
-                        Integer.parseInt(lines.get(0).substring(6)));
-            } catch (ReadBuilder.SyntaxError ignored) {}
-        }
+
     }
 
 

@@ -55,6 +55,8 @@ public class ReadBuilder {
                 case "right_down" -> subActions.add(new MousePressedSubAction(2048));
                 case "right_up" -> subActions.add(new MouseReleasedSubAction(2048));
 
+                case "wait" -> subActions.add(new WaitSubAction(Integer.parseInt(args)));
+
                 case "move" -> {
                     String[] x_y = args.split(",");
                     subActions.add(new MouseMovedSubAction(
