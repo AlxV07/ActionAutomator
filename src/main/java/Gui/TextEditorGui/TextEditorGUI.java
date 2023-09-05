@@ -174,6 +174,9 @@ class TextEditorGUI extends JFrame implements ActionListener {
         keywords.add("right_up()");
         keywords.add("wait");
         keywords.add("move");
+        keywords.add("key_press");
+        keywords.add("key_down");
+        keywords.add("key_up");
         return keywords;
     }
 

@@ -31,6 +31,84 @@ public class NativeKeyToVKKeyConverter {
         }
     }
 
+    public static int convertSpecialKeyToKeyEventVK(String key) {
+        switch (key) {
+            case "ALT" -> {
+                return VK_ALT;
+            }
+            case "META" -> {
+                return VK_META;
+            }
+            case "BACKSPACE" -> {
+                return VK_BACK_SPACE;
+            }
+            case "SHIFT" -> {
+                return VK_SHIFT;
+            }
+            case "CTRL" -> {
+                return VK_CONTROL;
+            }
+            case "CAPSLOCK" -> {
+                return VK_CAPS_LOCK;
+            }
+            case "TAB" -> {
+                return VK_TAB;
+            }
+            case "ESCAPE" -> {
+                return VK_ESCAPE;
+            }
+            case "DELETE" -> {
+                return VK_DELETE;
+            }
+            case "HOME" -> {
+                return VK_HOME;
+            }
+            case "END" -> {
+                return VK_END;
+            }
+            case "ENTER" -> {
+                return VK_ENTER;
+            }
+            case "F1" -> {
+                return VK_F1;
+            }
+            case "F2" -> {
+                return VK_F2;
+            }
+            case "F3" -> {
+                return VK_F3;
+            }
+            case "F4" -> {
+                return VK_F4;
+            }
+            case "F5" -> {
+                return VK_F5;
+            }
+            case "F6" -> {
+                return VK_F6;
+            }
+            case "F7" -> {
+                return VK_F7;
+            }
+            case "F8" -> {
+                return VK_F8;
+            }
+            case "F9" -> {
+                return VK_F9;
+            }
+            case "F10" -> {
+                return VK_F10;
+            }
+            case "F11" -> {
+                return VK_F11;
+            }
+            case "F12" -> {
+                return VK_F12;
+            }
+        }
+        return -1;
+    }
+
     public static int[] convertCharToKeyEventVK(char c) {
         switch (c) {
             case 'a' -> {

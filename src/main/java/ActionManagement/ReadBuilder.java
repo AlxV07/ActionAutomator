@@ -15,12 +15,13 @@ public class ReadBuilder {
             if (line.isBlank()) {
                 continue;
             }
-            if (!line.endsWith(")")) {
-                throw new SyntaxError();
-            }
             String[] parts = line.split("\\(", 2);
             String command = parts[0];
-            String args = parts[1].strip().substring(0, parts[1].length() - 1);
+            String args = "";
+            if (parts.length > 1) {
+                args = parts[1].strip().substring(0, parts[1].length() - 1);
+                assert args.endsWith(")");
+            }
             switch (command) {
                 case "typewrite" -> {
                     if (args.startsWith("'") && args.endsWith("'")) {
@@ -38,6 +39,53 @@ public class ReadBuilder {
                                 subActions.add(new KeyReleasedSubAction(vk_key[0]));
                             }
                         }
+                    }
+                }
+
+                case "key_press" -> {
+                    if (args.startsWith("'") && args.endsWith("'")) {
+                        args = args.substring(1, args.length() - 1);
+                        int vk_key = -1;
+                        if (args.length() > 1) {
+                            vk_key = NativeKeyToVKKeyConverter.convertSpecialKeyToKeyEventVK(args);
+                            assert vk_key != -1;
+                        } else if (args.length() == 1) {
+                            int[] t = NativeKeyToVKKeyConverter.convertCharToKeyEventVK(args.charAt(0));
+                            assert t != null;
+                            vk_key = t[0];
+                        }
+                        subActions.add(new KeyPressedSubAction(vk_key));
+                        subActions.add(new KeyReleasedSubAction(vk_key));
+                    }
+                }
+                case "key_down" -> {
+                    if (args.startsWith("'") && args.endsWith("'")) {
+                        args = args.substring(1, args.length() - 1);
+                        int vk_key = -1;
+                        if (args.length() > 1) {
+                            vk_key = NativeKeyToVKKeyConverter.convertSpecialKeyToKeyEventVK(args);
+                            assert vk_key != -1;
+                        } else if (args.length() == 1) {
+                            int[] t = NativeKeyToVKKeyConverter.convertCharToKeyEventVK(args.charAt(0));
+                            assert t != null;
+                            vk_key = t[0];
+                        }
+                        subActions.add(new KeyPressedSubAction(vk_key));
+                    }
+                }
+                case "key_up" -> {
+                    if (args.startsWith("'") && args.endsWith("'")) {
+                        args = args.substring(1, args.length() - 1);
+                        int vk_key = -1;
+                        if (args.length() > 1) {
+                            vk_key = NativeKeyToVKKeyConverter.convertSpecialKeyToKeyEventVK(args);
+                            assert vk_key != -1;
+                        } else if (args.length() == 1) {
+                            int[] t = NativeKeyToVKKeyConverter.convertCharToKeyEventVK(args.charAt(0));
+                            assert t != null;
+                            vk_key = t[0];
+                        }
+                        subActions.add(new KeyReleasedSubAction(vk_key));
                     }
                 }
 

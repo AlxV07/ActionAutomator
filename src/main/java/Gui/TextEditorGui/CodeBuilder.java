@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CodeBuilder {
@@ -36,13 +35,5 @@ public class CodeBuilder {
         }
 
         return List.of(result.toString().split("\\}.\\{"));
-    }
-
-    public static void main(String[] args) {
-        List<String> x = new ArrayList<>();
-        x.add("x = 0");
-        x.add("for _ in range(5):");
-        x.add(" move(x, x)");
-        x.add(" x += 100");
     }
 }
