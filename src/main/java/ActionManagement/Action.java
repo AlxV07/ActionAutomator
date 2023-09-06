@@ -24,6 +24,10 @@ public class Action {
         this.actionThread.start();
     }
 
+    public boolean isRunning() {
+        return this.actionThread.isAlive();
+    }
+
     private void executeSubActions(Robot executor) {
         for (SubAction subAction : subActions) {
             try {

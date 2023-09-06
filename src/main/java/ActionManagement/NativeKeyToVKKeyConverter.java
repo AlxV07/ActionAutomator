@@ -26,7 +26,7 @@ public class NativeKeyToVKKeyConverter {
                 }
                 return (int) KeyEvent.class.getDeclaredField("VK_" + s).get(KeyEvent.class);
             } catch (IllegalAccessException | NoSuchFieldException e) {
-                    throw new RuntimeException(e);
+                throw new RuntimeException(e);
             }
         }
     }

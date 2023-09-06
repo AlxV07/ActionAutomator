@@ -2,6 +2,7 @@ package Gui.TextEditorGui;
 
 import ActionManagement.NativeKeyToVKKeyConverter;
 import ActionManagement.ReadBuilder;
+import ActionManagement.Action;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
@@ -10,10 +11,16 @@ import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
 import com.github.kwhat.jnativehook.mouse.NativeMouseMotionListener;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
+import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +33,31 @@ class TextEditorGUI extends JFrame implements ActionListener {
     private final Robot executor;
     private final ActionList actionsList;
     private final HashMap<String, String> actionToCode;
+
+    private final JLabel runKeyLabel = new JLabel();
+    private final KeybindingButton runKeyBinder = new KeybindingButton("Default(None)", "Set Run Key:", runKeyLabel) {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (waitingForKey) {
+                int keyCode = e.getKeyCode();
+                if (keyCode == KeyEvent.VK_BACK_SPACE) {
+                    actionToKey.remove(keyToAction.remove(key));
+                    key = -1;
+                    label.setText(this.defaultText);
+                } else {
+                    String action = keyToAction.remove(key);
+                    actionToKey.put(action, keyCode);
+                    keyToAction.put(keyCode, action);
+                    key = keyCode;
+                    label.setText(KeyEvent.getKeyText(keyCode));
+                }
+                waitingForKey = false;
+            }
+        }
+    };
+
+    private final JLabel interruptKeyLabel = new JLabel();
+    private final KeybindingButton interruptKeyBinder = new KeybindingButton("Default(Esc)", "Set Interrupt Key:", interruptKeyLabel);
 
     private final HashMap<Integer, String> keyToAction;
     private final HashMap<String, Integer> actionToKey;
@@ -60,18 +92,23 @@ class TextEditorGUI extends JFrame implements ActionListener {
         mainTextArea.setBounds(165, -1, 335, 501);
         mainTextArea.setBorder(Resources.areaBorder);
 
-        actionsList = new ActionList(actionToCode, mainTextArea);
+        actionsList = new ActionList();
 
+        runKeyBinder.setBounds(0, 240, 80, 20);
+        runKeyBinder.setBorderPainted(false);
+        runKeyLabel.setBounds(85, 240, 100, 20);
+        runKeyLabel.setFont(Resources.labelFont);
+
+        interruptKeyBinder.setBounds(0, 270, 80, 20);
+        interruptKeyBinder.setBorderPainted(false);
+        interruptKeyLabel.setBounds(85, 270, 100, 20);
+        interruptKeyLabel.setFont(Resources.labelFont);
 
         JMenuBar menuBar = new JMenuBar();
         menuBar.setBorder(Resources.areaBorder);
         menuBar.setBounds(0, 0, 166, 20);
         menuBar.setMargin(Resources.margin);
-        JButton[] buttons = new JButton[] {
-            new JButton("New"),
-            new JButton("Save"),
-            new JButton("Open")
-        };
+        JButton[] buttons = new JButton[]{new JButton("New"), new JButton("Save"), new JButton("Open")};
         for (JButton button : buttons) {
             button.setFont(Resources.labelFont);
             button.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
@@ -118,6 +155,10 @@ class TextEditorGUI extends JFrame implements ActionListener {
         f.add(mainTextArea);
         f.add(mx); f.add(my);
         f.setSize(500, 500);
+        f.add(runKeyLabel);
+        f.add(runKeyBinder);
+        f.add(interruptKeyLabel);
+        f.add(interruptKeyBinder);
         f.setResizable(false);
         f.setVisible(true);
     }
@@ -180,13 +221,18 @@ class TextEditorGUI extends JFrame implements ActionListener {
         return keywords;
     }
 
+    private Action runningAction = null;
+
     public void runAction() {
         List<String> lines = List.of(mainTextArea.getText().strip().split("\n"));
         try {
             List<String> codeLines = codeBuilder.getActionLinesFromCode(lines);
             int speed = Integer.parseInt(codeLines.get(0));
-            readBuilder.parseLinesIntoAction(codeLines.subList(1, codeLines.size()))
-                    .execute(executor, speed);
+            if (runningAction != null && runningAction.isRunning()) {
+                runningAction.interrupt();
+            }
+            runningAction = readBuilder.parseLinesIntoAction(codeLines.subList(1, codeLines.size()));
+            runningAction.execute(executor, speed);
 
         } catch (IOException | ReadBuilder.SyntaxError e) {
             throw new RuntimeException(e);
@@ -194,7 +240,8 @@ class TextEditorGUI extends JFrame implements ActionListener {
     }
 
     public void runAction(String action) {
-
+        actionsList.list.setSelectedValue(action, true);
+        runAction();
     }
 
 
@@ -209,9 +256,16 @@ class TextEditorGUI extends JFrame implements ActionListener {
         @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
             int i = NativeKeyToVKKeyConverter.convertNativeKeyToKeyEventVK(e.getKeyCode());
-            String action = keyToAction.getOrDefault(i, null);
-            if (action != null) {
-                runAction(action);
+            if (i == interruptKeyBinder.key || (i == KeyEvent.VK_ESCAPE && interruptKeyBinder.key == -1)) {
+                if (runningAction != null && runningAction.isRunning()) {
+                    runningAction.interrupt();
+                }
+            }
+            else if (!interruptKeyBinder.waitingForKey && !runKeyBinder.waitingForKey){
+                String action = keyToAction.getOrDefault(i, null);
+                if (action != null) {
+                    runAction(action);
+                }
             }
         }
 
@@ -223,4 +277,39 @@ class TextEditorGUI extends JFrame implements ActionListener {
             my.setText("Mouse Y:  " + mouseY);
         }
     }
+
+    private class ActionList extends DefaultListModel<String> {
+        public final JList<String> list;
+        public ActionList() {
+            list = new JList<>(this);
+            list.setBounds(-1, 80, 167, 160);
+            list.setFont(new Font("Arial", Font.PLAIN, 12));
+            list.setFocusable(false);
+            list.addListSelectionListener(new ActionListUpdater());
+            list.setBorder(Resources.areaBorder);
+            list.setBackground(Resources.backgrououndColor);
+        }
+
+        private String previousSelected = "";
+
+        private class ActionListUpdater implements ListSelectionListener {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!previousSelected.isBlank()) {
+                    actionToCode.put(previousSelected, String.join(";", mainTextArea.getText().split("\n")));
+                    actionToKey.put(previousSelected, runKeyBinder.key);
+                    keyToAction.put(runKeyBinder.key, previousSelected);
+                }
+                String s = list.getSelectedValue();
+                previousSelected = s;
+                mainTextArea.setText(String.join("\n", actionToCode.get(s).split(";")));
+                Integer key = actionToKey.getOrDefault(s, null);
+                if (key != null) {
+                    runKeyBinder.key = key;
+                    runKeyBinder.label.setText(KeyEvent.getKeyText(key));
+                }
+            }
+        }
+    }
+
 }
