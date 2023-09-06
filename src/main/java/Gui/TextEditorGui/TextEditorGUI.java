@@ -199,6 +199,8 @@ class TextEditorGUI extends JFrame implements ActionListener {
                     actionsList.addElement(input);
                     actionToCode.put(input, "speed=100\n");
                     actionsList.list.setSelectedIndex(actionsList.size() - 1);
+                    runKeyBinder.key = -1;
+                    runKeyBinder.label.setText(runKeyBinder.defaultText);
                 }
             }
         }
@@ -306,7 +308,11 @@ class TextEditorGUI extends JFrame implements ActionListener {
                 Integer key = actionToKey.getOrDefault(s, null);
                 if (key != null) {
                     runKeyBinder.key = key;
-                    runKeyBinder.label.setText(KeyEvent.getKeyText(key));
+                    if (key != -1) {
+                        runKeyBinder.label.setText(KeyEvent.getKeyText(key));
+                    } else {
+                        runKeyBinder.label.setText(runKeyBinder.defaultText);
+                    }
                 }
             }
         }
