@@ -10,9 +10,10 @@ import java.util.List;
 
 public class CodeBuilder {
     public List<String> getActionLinesFromCode(List<String> codeLines) throws IOException {
-        String template_path = "./src/main/java/Gui/TextEditorGui/template.py";
-        String old_content = Files.readString(Path.of(template_path));
-        String[] c = old_content.split("start", 2);
+        String currentDir = "/home/alxv05/.action_automator/";
+        String templatePath = currentDir + "template.py";
+        String oldContent = Files.readString(Path.of(templatePath));
+        String[] c = oldContent.split("start", 2);
 
         StringBuilder code = new StringBuilder();
         for (String s : codeLines) {
@@ -21,7 +22,7 @@ public class CodeBuilder {
             code.append("\n");
         }
         String new_content = c[0] + code + c[1];
-        String run_path = "./src/main/java/Gui/TextEditorGui/runner.py";
+        String run_path =  currentDir + "runner.py";
         FileWriter writer = new FileWriter(run_path);
         writer.write(new_content);
         writer.close();
