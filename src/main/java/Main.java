@@ -1,4 +1,4 @@
-import Gui.TextEditorGui.GuiMain;
+import Gui.GuiMain;
 
 public class Main {
     public static void main(String[] args) {

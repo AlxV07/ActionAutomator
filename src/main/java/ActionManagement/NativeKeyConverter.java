@@ -5,7 +5,7 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import java.awt.event.KeyEvent;
 import static java.awt.event.KeyEvent.*;
 
-public class NativeKeyToVKKeyConverter {
+public class NativeKeyConverter {
     public static int convertNativeKeyToKeyEventVK(int n) {
         String s = NativeKeyEvent.getKeyText(n);
         if (s.length() == 1) {
@@ -26,8 +26,17 @@ public class NativeKeyToVKKeyConverter {
                 }
                 return (int) KeyEvent.class.getDeclaredField("VK_" + s).get(KeyEvent.class);
             } catch (IllegalAccessException | NoSuchFieldException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
+                return -1;
             }
+        }
+    }
+
+    public static int[] convertStringToKeyEventVK(String key) {
+        if (key.length() > 1) {
+            return new int[]{NativeKeyConverter.convertSpecialKeyToKeyEventVK(key)};
+        } else {
+            return NativeKeyConverter.convertCharToKeyEventVK(key.charAt(0));
         }
     }
 

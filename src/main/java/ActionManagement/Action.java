@@ -8,7 +8,6 @@ import java.util.List;
 public class Action {
     private final List<SubAction> subActions;
     private Thread actionThread;
-    private int subActionDelayInterval;
 
     public Action(List<SubAction> subActions) {
         this.subActions = subActions;
@@ -19,29 +18,27 @@ public class Action {
     }
 
     public void execute(Robot executor, int subActionDelayInterval) {
-        this.subActionDelayInterval = subActionDelayInterval;
-        this.actionThread = new Thread(() -> executeSubActions(executor));
+        this.actionThread = new Thread(() ->
+        {
+            for (SubAction subAction : subActions) {
+                try {
+                    subAction.execute(executor);
+                    Thread.sleep(subActionDelayInterval);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        });
         this.actionThread.start();
     }
 
     public boolean isRunning() {
-        return this.actionThread.isAlive();
-    }
-
-    private void executeSubActions(Robot executor) {
-        for (SubAction subAction : subActions) {
-            try {
-                subAction.execute(executor);
-                Thread.sleep(subActionDelayInterval);
-            } catch (InterruptedException e) {
-                break;
-            }
-        }
+        return this.actionThread != null && this.actionThread.isAlive();
     }
 
     public void interrupt() {
-        if (actionThread != null) {
-            actionThread.interrupt();
+        if (this.isRunning()) {
+            this.actionThread.interrupt();
         }
     }
 }

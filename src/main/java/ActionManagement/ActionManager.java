@@ -7,11 +7,11 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 
-public class ActionsHandler {
+public class ActionManager {
     private final Robot actionExecutor;
     private final HashMap<String, Action> actions;
 
-    public ActionsHandler() {
+    public ActionManager() {
         this.actions = new HashMap<>();
         try {
             this.actionExecutor = new Robot();
@@ -29,7 +29,11 @@ public class ActionsHandler {
     }
 
     public void executeAction(String key, int speed) {
-        actions.get(key).execute(actionExecutor, speed);
+        executeAction(actions.get(key), speed);
+    }
+
+    public void executeAction(Action action, int speed) {
+        action.execute(actionExecutor, speed);
     }
 
     public void interrupt() {
@@ -39,11 +43,11 @@ public class ActionsHandler {
     }
 
     public void cleanAction(String key) {
-        removeUnnecessaryMouseMovementsFromAction(key);
+        removeUnnecessaryMouseMovementsFromAction(actions.get(key));
     }
 
-    private void removeUnnecessaryMouseMovementsFromAction(String key) {
-        List<SubAction> tasks = actions.get(key).getSubActions();
+    private void removeUnnecessaryMouseMovementsFromAction(Action action) {
+        List<SubAction> tasks = action.getSubActions();
         int i;
         boolean nextSubAction;
         for (i = 0; i < tasks.size() - 1;) {
