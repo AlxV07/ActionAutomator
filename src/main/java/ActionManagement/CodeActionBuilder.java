@@ -85,6 +85,14 @@ public class CodeActionBuilder {
                         }
                     }
 
+                    case "speed" -> {
+                        try {
+                            subActions.add(new ChangeSpeedSubAction(Integer.parseInt(args.strip())));
+                        } catch (NumberFormatException e) {
+                            throw new SyntaxError();
+                        }
+                    }
+
                     case "move" -> {
                         String[] x_y = args.strip().split(",");
                         try {

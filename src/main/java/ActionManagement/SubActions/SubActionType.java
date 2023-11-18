@@ -9,4 +9,5 @@ public enum SubActionType {
     MOUSE_MOVED,
 
     WAIT,
+    CHANGE_SPEED,
 }

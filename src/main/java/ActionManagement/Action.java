@@ -20,10 +20,14 @@ public class Action {
     public void execute(Robot executor, int subActionDelayInterval) {
         this.actionThread = new Thread(() ->
         {
+            long speed = subActionDelayInterval;
             for (SubAction subAction : subActions) {
                 try {
+                    if (subAction.getType() == SubActionType.CHANGE_SPEED) {
+                       speed = ((ChangeSpeedSubAction) subAction).getSpeed();
+                    }
                     subAction.execute(executor);
-                    Thread.sleep(subActionDelayInterval);
+                    Thread.sleep(speed);
                 } catch (InterruptedException e) {
                     break;
                 }
