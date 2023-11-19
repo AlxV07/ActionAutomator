@@ -3,46 +3,60 @@ package Gui;
 import BindingManagement.BindingManager;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 
-import java.util.Arrays;
+import java.awt.*;
 
 public class BindingButton extends TexturedButton {
-    private final BindingPanel parentBindingPanel;
+    private final BindingPanel bindingPanel;
     private final int idx;
-    public int key;
 
-    public BindingButton(BindingManager bindingManager, BindingPanel parentBindingPanel, int idx) {
+    public BindingButton(BindingManager bindingManager, BindingPanel bindingPanel, int idx) {
         super();
         super.setFocusable(false);
-        this.parentBindingPanel = parentBindingPanel;
-        this.idx = idx;
         super.setFont(GuiResources.bindButtonFont);
+        this.bindingPanel = bindingPanel;
+        this.idx = idx;
         addActionListener(e -> {
             bindingManager.startBindingButton(this);
             super.setText("Binding...");
-            requestFocusInWindow();
+            super.requestFocusInWindow();
         });
-        super.setAlignmentX(0);
     }
 
-    public void completeBind(int key) {
-        this.key = key;
-        if (parentBindingPanel.getBinding().containsKey(key)) {
-            this.key = -1;
-        }
-        parentBindingPanel.getBinding().setKey(idx, this.key);
-        String k;
-        if (this.key == -1) {
-            if (idx + 1 < parentBindingPanel.getButtons().length) {
-                parentBindingPanel.getButtons()[idx + 1].completeBind(-1);
-                parentBindingPanel.getButtons()[idx + 1].setEnabled(false);
+    /**
+     * Set key text to be displayed on button, updates background color if marker position
+     * @param key The key whose text is to be displayed (NativeKeyEvent VC)
+     */
+    public void setKeyText(int key) {
+        if (key == -1) {
+            if (super.isEnabled()) {
+                super.setBackground(Color.LIGHT_GRAY);
+            } else {
+                super.setBackground(Color.WHITE);
             }
-            k = "null";
+            super.setText("null");
         } else {
-            k = NativeKeyEvent.getKeyText(this.key);
-            if (idx + 1 < parentBindingPanel.getButtons().length) {
-                parentBindingPanel.getButtons()[idx + 1].setEnabled(true);
+            super.setBackground(Color.WHITE);
+            super.setText(NativeKeyEvent.getKeyText(key));
+        }
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        if (enabled) {
+            if (super.getText().equals("null")) {
+                super.setBackground(Color.LIGHT_GRAY);
+            } else {
+                super.setBackground(Color.WHITE);
             }
         }
-        super.setText(k);
+        super.setEnabled(enabled);
+    }
+
+    /**
+     * Complete a binding process with the binding panel
+     * @param key The resulting key of the binding process (NativeKeyEvent VC)
+     */
+    public void completeBind(int key) {
+        bindingPanel.completeBind(this.idx, key);
     }
 }

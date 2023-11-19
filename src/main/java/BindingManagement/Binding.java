@@ -3,69 +3,129 @@ package BindingManagement;
 import java.util.Arrays;
 
 public class Binding {
-    private final int[] binding;
-    private int length;
+    private String name;
+    private String code;
+    private final int[] keySequence;
+    private int nofKeys;
 
-    public Binding() {
-        this.binding = new int[] {-1, -1, -1, -1};
+    public Binding(String name) {
+        this.name = name;
+        this.keySequence = new int[] {-1, -1, -1, -1};
+        this.nofKeys = 0;
     }
 
-    public int[] getBinding() {
-        return this.binding;
+    /**
+     * @return the name of the binding
+     */
+    public String getName() {
+        return this.name;
     }
 
-    public void addKey(int key) {
-        if (length < binding.length) {
-            if (!containsKey(key)) {
-                binding[length] = key;
-                length += 1;
-            }
-        }
+    /**
+     * Rename the binding
+     * @param name A new name for the binding
+     */
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public boolean containsKey(int key) {
-        for (int i : binding) {
-            if (i == key) {
+    /**
+     * @return The action code of the binding
+     */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * Set the action code of the binding
+     * @param code New action code
+     */
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    /**
+     * @return The key sequence of the binding
+     */
+    public int[] getKeySequence() {
+        return this.keySequence;
+    }
+
+    public int getNofKeys() {
+        return this.nofKeys;
+    }
+
+    /**
+     *
+     * @param tarKey The key to check for (NativeKeyEvent VC)
+     * @return If {@code tarKey} is contained in the key sequence of the binding
+     */
+    private boolean containsKey(int tarKey) {
+        for (int canKey : keySequence) {
+            if (canKey == tarKey) {
                 return true;
+            }
+            if (canKey == -1) {
+                break;
             }
         }
         return false;
     }
 
+    /**
+     * Set a key in the key sequence of the binding, if the key is not already contained in the key sequence
+     * @param idx The index to set {@code key} in the key sequence of the binding
+     * @param key The key to set in the key sequence of the binding (NativeKeyEvent VC)
+     */
     public void setKey(int idx, int key) {
-        if (idx < binding.length) {
-            binding[idx] = key;
-            if (idx == length) {
-                length += 1;
+        if (!containsKey(key)) {
+            keySequence[idx] = key;
+            if (idx == nofKeys) {
+                nofKeys += 1;
             }
         }
     }
 
+    /**
+     * Add a new key to the end of the key sequence of the binding
+     * @param key The new key to be added (NativeKeyEvent VC)
+     */
+    public void addKey(int key) {
+        this.setKey(nofKeys, key);
+    }
+
+    /**
+     * Removes the given key from the key sequence and shifts all following keys to fill
+     * @param key The key to remove from the key sequence (NativeKeyEvent VC)
+     */
     public void removeKey(int key) {
-        for (int i = 0; i < binding.length; i++) {
-            if (binding[i] == key) {
-                binding[i] = -1;
-                for (int j = i; j < binding.length - 1; j++) {
-                    binding[j] = binding[j + 1];
+        if (key == -1) {  // Should only be called on initial BindingPanel constructor bind
+            return;
+        }
+        for (int i = 0; i < keySequence.length; i++) {
+            if (keySequence[i] == key) {
+                keySequence[i] = -1;
+                for (int j = i; j < keySequence.length - 1; j++) {
+                    keySequence[j] = keySequence[j + 1];
                 }
-                binding[binding.length - 1] = -1;
-                length -= 1;
+                keySequence[keySequence.length - 1] = -1;
+                nofKeys -= 1;
                 return;
             }
         }
     }
 
-    public boolean equals(Binding b) {
-        for (int i = 0; i < binding.length; i++) {
-            if (b.getBinding()[i] != this.getBinding()[i]) {
-                return false;
-            }
-        }
-        return true;
+    /**
+     * Check if the key sequences of two bindings are equal
+     * @param tarBinding The binding to compare key sequences with
+     * @return If the key sequences of the binding and {@code tarBinding} are equal
+     */
+    public boolean keysEqual(Binding tarBinding) {
+        return Arrays.equals(keySequence, tarBinding.keySequence);
     }
 
     @Override
     public String toString() {
-        return Arrays.toString(binding);
+        return "(" + this.name + " " + Arrays.toString(keySequence) + ")";
     }
 }

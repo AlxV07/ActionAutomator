@@ -1,44 +1,69 @@
 package BindingManagement;
 
 import Gui.BindingButton;
-import Gui.BindingPanel;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 
 import java.util.HashMap;
 
 public class BindingManager {
-    public final HashMap<String, String> ActionNameToCode;
-    public final HashMap<Binding, String> BindingToActionName;
-    public final HashMap<String, Binding> ActionNameToBinding;
-    public final HashMap<String, BindingPanel> ActionNameToBindingPanel;
+    public final HashMap<String, Binding> bindings;
     private BindingButton activeBindingButton;
 
     public BindingManager() {
-        ActionNameToCode = new HashMap<>();
-        ActionNameToBinding = new HashMap<>();
-        BindingToActionName = new HashMap<>();
-        ActionNameToBindingPanel = new HashMap<>();
+        this.bindings = new HashMap<>();
     }
 
-    public String getActionNameFromBinding(Binding binding) {
-        for (Binding b : BindingToActionName.keySet()) {
-            if (b.equals(binding)) {
-                return BindingToActionName.get(b);
+    /**
+     * Creates and adds a new binding to the stored bindings, if a binding with the given name does not already exit
+     * @param name The name to set the new binding to
+     */
+    public void createNewBinding(String name) {
+        bindings.put(name, new Binding(name));
+    }
+
+    /**
+     * Removes a binding with the given name from the stored bindings
+     * @param name The name of the target binding
+     */
+    public void removeBinding(String name) {
+        bindings.remove(name);
+    }
+
+    /**
+     * @param name The name of the target Binding
+     * @return The Binding object with the given name
+     */
+    public Binding getBinding(String name) {
+        return bindings.get(name);
+    }
+
+    public Binding findBinding(Binding candBinding) {
+        //TODO: Optimize find process
+        for (Binding binding : bindings.values()) {
+            if (binding.keysEqual(candBinding)) {
+                return binding;
             }
         }
         return null;
     }
 
-    public void bindActionNameToCode(String actionName, String code) {
-        ActionNameToCode.put(actionName, code);
+    /**
+     * Sets the code of the target binding
+     * @param name The name of the target binding
+     * @param code The new code to be set
+     */
+    public void setBindingCode(String name, String code) {
+        bindings.get(name).setCode(code);
     }
 
-    public void bindActionNameToBinding(String actionName, Binding binding) {
-        ActionNameToBinding.put(actionName, binding);
-    }
-
-    public void bindBindingToActionName(Binding binding, String actionName) {
-        BindingToActionName.put(binding, actionName);
+    /**
+     * Renames the target binding
+     * @param oldName The name of the target binding
+     * @param newName The new name for the target binding
+     */
+    public void setBindingName(String oldName, String newName) {
+        bindings.get(oldName).setName(newName);
+        bindings.put(newName, bindings.remove(oldName));
     }
 
     public void startBindingButton(BindingButton bindingButton) {
@@ -49,32 +74,20 @@ public class BindingManager {
     }
 
     public void cancelBindingButton() {
-        if (activeBindingButton != null) {
-            activeBindingButton.completeBind(-1);
-            activeBindingButton = null;
-        }
+        activeBindingButton.completeBind(-1);
+        activeBindingButton = null;
     }
 
     public void completeBindingButton(int key) {
-        if (activeBindingButton != null) {
-            if (key == NativeKeyEvent.VC_ESCAPE) {
-                activeBindingButton.completeBind(-1);
-            } else {
-                activeBindingButton.completeBind(key);
-            }
-            activeBindingButton = null;
+        if (key == NativeKeyEvent.VC_ESCAPE) {
+            activeBindingButton.completeBind(-1);
+        } else {
+            activeBindingButton.completeBind(key);
         }
+        activeBindingButton = null;
     }
 
-    public boolean isBinding() {
+    public boolean isBindingButton() {
         return activeBindingButton != null;
-    }
-
-    public BindingPanel getBindingPanelFromActionName(String actionName) {
-        return ActionNameToBindingPanel.get(actionName);
-    }
-
-    public void bindActionNameTOBindingPanel(String actionName, BindingPanel bindingPanel) {
-        this.ActionNameToBindingPanel.put(actionName, bindingPanel);
     }
 }

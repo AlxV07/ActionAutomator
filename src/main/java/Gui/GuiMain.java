@@ -14,23 +14,25 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
+import java.util.HashMap;
 
 public class GuiMain extends JFrame {
     private final ActionManager actionManager;
-    private final JLabel pressedLabel;
     private Action runningAction = null;
     private final BindingManager bindingManager;
     private final CodeActionBuilder codeActionBuilder;
-
-    private final JButton newActionButton;
-    private final JButton removeActionButton;
 
     private final MainMenuBar mainMenuBar;
     private final CodeTextPane codeTextPane;
     private final ActionList actionList;
 
+    private final JButton newActionButton;
+    private final JButton removeActionButton;
     private final JButton runButton;
+
     private final JLabel coordLabel;
+    private final JLabel pressedLabel;
+    private final JLabel debugLabel;
 
 
     public GuiMain() {
@@ -47,7 +49,6 @@ public class GuiMain extends JFrame {
 
         codeTextPane = new CodeTextPane();
         codeTextPane.setBounds(0, 300, 250, 200);
-        codeTextPane.setText("null null");
         super.add(codeTextPane);
 
         newActionButton = new TexturedButton("New Action");
@@ -60,6 +61,21 @@ public class GuiMain extends JFrame {
         removeActionButton.setFocusable(false);
         mainMenuBar.add(removeActionButton);
 
+        coordLabel = new JLabel("Mouse Coord Label");
+        coordLabel.setBounds(350, 340, 100, 40);
+        super.add(coordLabel);
+
+        pressedLabel = new JLabel("Pressed Keys Label");
+        pressedLabel.setBounds(250, 360, 250, 40);
+        pressedLabel.setText(pressedKeys.toString());
+        pressedLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        super.add(pressedLabel);
+
+        debugLabel = new JLabel("Debug Label");
+        debugLabel.setBounds(250, 380, 250, 40);
+        debugLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        super.add(debugLabel);
+
         runButton = new TexturedButton("RUN");
         runButton.addActionListener(e -> {
             try {
@@ -69,20 +85,10 @@ public class GuiMain extends JFrame {
                 runningAction = codeActionBuilder.parseCodeIntoAction(codeTextPane.getText());
                 actionManager.executeAction(runningAction, 100);
             } catch (CodeActionBuilder.SyntaxError e1) {
-                e1.printStackTrace();
+                debugLabel.setText(toString());
             }
         });
         mainMenuBar.add(runButton);
-
-        coordLabel = new JLabel();
-        coordLabel.setBounds(350, 350, 100, 40);
-        super.add(coordLabel);
-
-        pressedLabel = new JLabel();
-        pressedLabel.setBounds(250, 370, 250, 40);
-        pressedLabel.setText(pressedKeys.toString());
-        pressedLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        super.add(pressedLabel);
     }
 
     public void start() {
@@ -94,38 +100,39 @@ public class GuiMain extends JFrame {
         nativeGlobalListener.register();
     }
 
-    private final Binding pressedKeys = new Binding();
+    private final Binding pressedKeys = new Binding("PressedKeys");
 
     private final NativeGlobalListener nativeGlobalListener = new NativeGlobalListener() {
         @Override
         public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
             int key = nativeKeyEvent.getKeyCode();
 
-            if (bindingManager.isBinding()) {
+            if (bindingManager.isBindingButton()) {
                 bindingManager.completeBindingButton(key);
                 return;
             }
 
-            pressedKeys.addKey(key);
-            String actionName = bindingManager.getActionNameFromBinding(pressedKeys);
-            pressedLabel.setText(pressedKeys + " " +actionName);
-            if (actionName != null) {
-                try {
-                    if (runningAction != null) {
-                        runningAction.interrupt();
+            if (pressedKeys.getNofKeys() < pressedKeys.getKeySequence().length) {
+                pressedKeys.addKey(key);
+                Binding binding = bindingManager.findBinding(pressedKeys);
+                pressedLabel.setText(pressedKeys + " \n" + binding);
+                if (binding != null) {
+                    try {
+                        if (runningAction != null) {
+                            runningAction.interrupt();
+                        }
+                        runningAction = codeActionBuilder.parseCodeIntoAction(binding.getCode());
+                        actionManager.executeAction(runningAction, 100);
+                    } catch (Exception e) {
+                        debugLabel.setText(e.toString());
                     }
-                    runningAction = codeActionBuilder.parseCodeIntoAction(bindingManager.ActionNameToCode.get(actionName));
-                    actionManager.executeAction(runningAction, 100);
-                } catch (CodeActionBuilder.SyntaxError e) {
-                    e.printStackTrace();
                 }
             }
         }
 
         @Override
         public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {
-            int x = nativeKeyEvent.getKeyCode();
-            pressedKeys.removeKey(x);
+            pressedKeys.removeKey(nativeKeyEvent.getKeyCode());
             pressedLabel.setText(String.valueOf(pressedKeys));
         }
 
@@ -137,14 +144,15 @@ public class GuiMain extends JFrame {
 
     class ActionList extends JList<String> {
         private final DefaultListModel<String> defaultListModel;
+        private final HashMap<String, BindingPanel> bindingPanels;
 
         public ActionList() {
             super(new DefaultListModel<>());
-            defaultListModel = (DefaultListModel<String>) super.getModel();
+            this.defaultListModel = (DefaultListModel<String>) super.getModel();
             super.setFont(new Font("Arial", Font.PLAIN, 12));
             super.setBorder(GuiResources.areaBorder);
             super.setBackground(GuiResources.backgrououndColor);
-            super.addListSelectionListener(e -> codeTextPane.setText(bindingManager.ActionNameToCode.get(getSelectedValue())));
+            super.addListSelectionListener(e -> codeTextPane.setText(bindingManager.getBinding(getSelectedValue()).getCode()));
             super.setCellRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -157,10 +165,10 @@ public class GuiMain extends JFrame {
                     } else {
                         label.setBackground(Color.GRAY);
                     }
-
                     return label;
                 }
             });
+            this.bindingPanels = new HashMap<>();
         }
 
         public void newAction() {
@@ -173,10 +181,11 @@ public class GuiMain extends JFrame {
                 if (defaultListModel.contains(actionName)) {
                     JOptionPane.showMessageDialog(this, String.format("\"%s\" already exists.", actionName));
                 } else {
-                    BindingPanel bindingPanel = new BindingPanel(bindingManager, actionName);
+                    bindingManager.createNewBinding(actionName);
+                    BindingPanel bindingPanel = new BindingPanel(bindingManager, bindingManager.getBinding(actionName));
                     getRootPane().add(bindingPanel);
                     bindingPanel.setBounds(250, 20 + defaultListModel.getSize() * 30);
-                    bindingManager.bindActionNameTOBindingPanel(actionName, bindingPanel);
+                    bindingPanels.put(actionName, bindingPanel);
                     defaultListModel.add(defaultListModel.getSize(), actionName);
                     super.setSelectedIndex(defaultListModel.getSize() - 1);
                     codeTextPane.setText("");
@@ -193,14 +202,13 @@ public class GuiMain extends JFrame {
                 return;
             }
             if (JOptionPane.showConfirmDialog(this, String.format("Remove Action \"%s\"?", actionName)) == JOptionPane.YES_OPTION) {
-                int i = getSelectedIndex();
-                bindingManager.ActionNameToCode.remove(actionName);
-                BindingPanel panel = bindingManager.getBindingPanelFromActionName(actionName);
-                panel.deleteComponents();
+                bindingManager.removeBinding(actionName);
+                BindingPanel panel = this.bindingPanels.remove(actionName);
+                panel.removeComponents();
                 getRootPane().remove(panel);
                 getRootPane().revalidate();
                 getRootPane().repaint();
-                bindingManager.ActionNameToBindingPanel.remove(actionName);
+                int i = getSelectedIndex();
                 defaultListModel.remove(i);
                 if (defaultListModel.getSize() > 0) {
                     super.setSelectedIndex(Math.max(i - 1, 0));
@@ -237,7 +245,11 @@ public class GuiMain extends JFrame {
             });
         }
         private void update() {
-            bindingManager.bindActionNameToCode(actionList.getSelectedValue(), codeTextPane.getText());
+            if (actionList.getSelectedValue() == null) {
+                debugLabel.setText("No selected Action to edit.");
+                return;
+            }
+            bindingManager.setBindingCode(actionList.getSelectedValue(), codeTextPane.getText());
             SwingUtilities.invokeLater(this::updateFirstWordColor);
         }
 
@@ -253,13 +265,15 @@ public class GuiMain extends JFrame {
                         }
                         i += 1;
                     }
-                    MutableAttributeSet attrs = new SimpleAttributeSet();
-                    StyleConstants.setForeground(attrs, Color.RED);
-                    doc.setCharacterAttributes(idx, i, attrs, false);
+                    MutableAttributeSet redAttr = new SimpleAttributeSet();
+                    StyleConstants.setForeground(redAttr, Color.RED);
+                    doc.setCharacterAttributes(idx, i, redAttr, true);
+                    MutableAttributeSet normAttr = new SimpleAttributeSet();
+                    doc.setCharacterAttributes(idx + i, line.length() - i, normAttr, true);
                     idx += line.length() + 1;
                 }
             } catch (BadLocationException e) {
-                e.printStackTrace();
+                debugLabel.setText(e.toString());
             }
         }
     }
