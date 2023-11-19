@@ -8,12 +8,8 @@ import java.util.List;
 
 public class CodeActionBuilder {
     public Action parseCodeIntoAction(String code) throws SyntaxError {
-        return parseLinesIntoAction(code.split("\n"));
-    }
-
-    public Action parseLinesIntoAction(String[] lines) throws SyntaxError {
         List<SubAction> subActions = new ArrayList<>();
-        for (String line : lines) {
+        for (String line : code.split("\n")) {
             if (line.isBlank()) {
                 continue;
             }

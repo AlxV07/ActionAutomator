@@ -1,4 +1,4 @@
-package ListenManagement;
+package GlobalListener;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;

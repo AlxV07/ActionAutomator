@@ -1,11 +1,11 @@
 package Gui;
 
+import ActionManagement.ActionExecutor;
 import ActionManagement.CodeActionBuilder;
-import ActionManagement.Action;
-import ActionManagement.ActionManager;
 import BindingManagement.Binding;
 import BindingManagement.BindingManager;
-import ListenManagement.NativeGlobalListener;
+import GlobalListener.NativeGlobalListener;
+import Gui.AAComponents.*;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
 
@@ -16,13 +16,12 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.util.HashMap;
 
-public class GuiMain extends JFrame {
-    private final ActionManager actionManager;
-    private Action runningAction = null;
+public class GuiMain extends AAFrame {
+    private final ActionExecutor actionExecutor;
     private final BindingManager bindingManager;
-    private final CodeActionBuilder codeActionBuilder;
+    private final Binding pressedKeys;
 
-    private final MainMenuBar mainMenuBar;
+    private final AAMenuBar AAMenuBar;
     private final CodeTextPane codeTextPane;
     private final ActionList actionList;
 
@@ -36,13 +35,13 @@ public class GuiMain extends JFrame {
 
 
     public GuiMain() {
-        actionManager = new ActionManager();
+        actionExecutor = new ActionExecutor();
         bindingManager = new BindingManager();
-        codeActionBuilder = new CodeActionBuilder();
+        pressedKeys = new Binding("PressedKeys");
 
-        mainMenuBar = new MainMenuBar();
-        mainMenuBar.setBounds(0, 0, 500, 20);
-        super.add(mainMenuBar);
+        AAMenuBar = new AAMenuBar();
+        AAMenuBar.setBounds(0, 0, 500, 20);
+        super.add(AAMenuBar);
         actionList = new ActionList();
         actionList.setBounds(0, 20, 250, 280);
         super.add(actionList);
@@ -51,15 +50,15 @@ public class GuiMain extends JFrame {
         codeTextPane.setBounds(0, 300, 250, 200);
         super.add(codeTextPane);
 
-        newActionButton = new TexturedButton("New Action");
+        newActionButton = new AAButton("New Action");
         newActionButton.addActionListener(e -> actionList.newAction());
         newActionButton.setFocusable(false);
-        mainMenuBar.add(newActionButton);
+        AAMenuBar.add(newActionButton);
 
-        removeActionButton = new TexturedButton("Remove Action");
+        removeActionButton = new AAButton("Remove Action");
         removeActionButton.addActionListener(e -> actionList.removeSelectedAction());
         removeActionButton.setFocusable(false);
-        mainMenuBar.add(removeActionButton);
+        AAMenuBar.add(removeActionButton);
 
         coordLabel = new JLabel("Mouse Coord Label");
         coordLabel.setBounds(350, 340, 100, 40);
@@ -76,19 +75,16 @@ public class GuiMain extends JFrame {
         debugLabel.setHorizontalAlignment(SwingConstants.CENTER);
         super.add(debugLabel);
 
-        runButton = new TexturedButton("RUN");
+        runButton = new AAButton("RUN");
         runButton.addActionListener(e -> {
             try {
-                if (runningAction != null) {
-                    runningAction.interrupt();
-                }
-                runningAction = codeActionBuilder.parseCodeIntoAction(codeTextPane.getText());
-                actionManager.executeAction(runningAction, 100);
+                actionExecutor.interrupt();
+                actionExecutor.executeActionFromCode(codeTextPane.getText(), 100);
             } catch (CodeActionBuilder.SyntaxError e1) {
                 debugLabel.setText(toString());
             }
         });
-        mainMenuBar.add(runButton);
+        AAMenuBar.add(runButton);
     }
 
     public void start() {
@@ -97,10 +93,9 @@ public class GuiMain extends JFrame {
         super.setLayout(null);
         super.setSize(500, 500);
         super.setVisible(true);
+        updateColorTheme(Color.BLACK, Color.GRAY, Color.GREEN);
         nativeGlobalListener.register();
     }
-
-    private final Binding pressedKeys = new Binding("PressedKeys");
 
     private final NativeGlobalListener nativeGlobalListener = new NativeGlobalListener() {
         @Override
@@ -118,11 +113,8 @@ public class GuiMain extends JFrame {
                 pressedLabel.setText(pressedKeys + " \n" + binding);
                 if (binding != null) {
                     try {
-                        if (runningAction != null) {
-                            runningAction.interrupt();
-                        }
-                        runningAction = codeActionBuilder.parseCodeIntoAction(binding.getCode());
-                        actionManager.executeAction(runningAction, 100);
+                        actionExecutor.interrupt();
+                        actionExecutor.executeActionFromCode(binding.getCode(), 100);
                     } catch (Exception e) {
                         debugLabel.setText(e.toString());
                     }
@@ -142,12 +134,12 @@ public class GuiMain extends JFrame {
         }
     };
 
-    class ActionList extends JList<String> {
+    class ActionList extends AAList<String> {
         private final DefaultListModel<String> defaultListModel;
         private final HashMap<String, BindingPanel> bindingPanels;
 
         public ActionList() {
-            super(new DefaultListModel<>());
+            super();
             this.defaultListModel = (DefaultListModel<String>) super.getModel();
             super.setFont(new Font("Arial", Font.PLAIN, 12));
             super.setBorder(GuiResources.areaBorder);
@@ -159,12 +151,12 @@ public class GuiMain extends JFrame {
                     JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                     int preferredHeight = 30;
                     label.setPreferredSize(new Dimension(label.getPreferredSize().width, preferredHeight));
-
                     if (index % 2 == 0) {
-                        label.setBackground(Color.LIGHT_GRAY); // Set alternate background color for even-indexed cells
+                        label.setBackground(getAlternateColor()); // Set alternate background color for even-indexed cells
                     } else {
-                        label.setBackground(Color.GRAY);
+                        label.setBackground(getBackground());
                     }
+                    label.setBorder(BorderFactory.createLineBorder(getForeground()));
                     return label;
                 }
             });
@@ -222,7 +214,7 @@ public class GuiMain extends JFrame {
         }
     }
 
-    class CodeTextPane extends JTextPane {
+    class CodeTextPane extends AATextPane {
 
         public CodeTextPane() {
             super();
@@ -265,9 +257,9 @@ public class GuiMain extends JFrame {
                         }
                         i += 1;
                     }
-                    MutableAttributeSet redAttr = new SimpleAttributeSet();
-                    StyleConstants.setForeground(redAttr, Color.RED);
-                    doc.setCharacterAttributes(idx, i, redAttr, true);
+                    MutableAttributeSet colored = new SimpleAttributeSet();
+                    StyleConstants.setForeground(colored, getAlternateColor());
+                    doc.setCharacterAttributes(idx, i, colored, true);
                     MutableAttributeSet normAttr = new SimpleAttributeSet();
                     doc.setCharacterAttributes(idx + i, line.length() - i, normAttr, true);
                     idx += line.length() + 1;

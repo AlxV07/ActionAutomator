@@ -2,11 +2,12 @@ package Gui;
 
 import BindingManagement.Binding;
 import BindingManagement.BindingManager;
+import Gui.AAComponents.AAPanel;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class BindingPanel extends JPanel {
+public class BindingPanel extends AAPanel {
     /**
      * JPanel interface for interacting w/ Binding classes through GUI
      */
