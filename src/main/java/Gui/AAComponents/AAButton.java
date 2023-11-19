@@ -6,7 +6,9 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AAButton extends JButton implements AAComponent {
-    private Color alternateColor;
+    protected Color alternateColor;
+    protected Color primaryColor;
+    protected Color secondaryColor;
 
     public AAButton() {
         super();
@@ -21,14 +23,12 @@ public class AAButton extends JButton implements AAComponent {
         super.setMargin(GuiResources.noMargin);
     }
 
-    public Color getAlternateColor() {
-        return this.alternateColor;
-    }
-
     @Override
     public void updateColorTheme(Color primaryColor, Color secondaryColor, Color alternateColor) {
         super.setForeground(primaryColor);
         super.setBackground(secondaryColor);
+        this.primaryColor = primaryColor;
+        this.secondaryColor = secondaryColor;
         this.alternateColor = alternateColor;
     }
 }

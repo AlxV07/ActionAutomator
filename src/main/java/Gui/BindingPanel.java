@@ -17,7 +17,7 @@ public class BindingPanel extends AAPanel {
 
     public BindingPanel(BindingManager bindingManager, Binding binding) {
         super();
-        super.setBorder(GuiResources.areaBorder);
+        super.setBorder(GuiResources.defaultBorder);
         this.bindingManager = bindingManager;
         this.binding = binding;
         this.buttons = new BindingButton[] {
@@ -61,6 +61,14 @@ public class BindingPanel extends AAPanel {
             }
             i++;
         }
+    }
+
+    @Override
+    public void updateColorTheme(Color primaryColor, Color secondaryColor, Color alternateColor) {
+        for (BindingButton button : buttons) {
+            button.updateColorTheme(primaryColor, secondaryColor, alternateColor);
+        }
+        super.updateColorTheme(primaryColor, secondaryColor, alternateColor);
     }
 
     /**

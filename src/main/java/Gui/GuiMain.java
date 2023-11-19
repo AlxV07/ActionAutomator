@@ -21,13 +21,8 @@ public class GuiMain extends AAFrame {
     private final BindingManager bindingManager;
     private final Binding pressedKeys;
 
-    private final AAMenuBar AAMenuBar;
     private final CodeTextPane codeTextPane;
     private final ActionList actionList;
-
-    private final JButton newActionButton;
-    private final JButton removeActionButton;
-    private final JButton runButton;
 
     private final JLabel coordLabel;
     private final JLabel pressedLabel;
@@ -39,26 +34,16 @@ public class GuiMain extends AAFrame {
         bindingManager = new BindingManager();
         pressedKeys = new Binding("PressedKeys");
 
-        AAMenuBar = new AAMenuBar();
-        AAMenuBar.setBounds(0, 0, 500, 20);
+        AAMenuBar AAMenuBar = new AAMenuBar();
+        AAMenuBar.setBounds(0, 0, 500, 21);
         super.add(AAMenuBar);
         actionList = new ActionList();
-        actionList.setBounds(0, 20, 250, 280);
+        actionList.setBounds(0, 20, 250, 250);
         super.add(actionList);
 
         codeTextPane = new CodeTextPane();
-        codeTextPane.setBounds(0, 300, 250, 200);
+        codeTextPane.setBounds(0, 250, 250, 250);
         super.add(codeTextPane);
-
-        newActionButton = new AAButton("New Action");
-        newActionButton.addActionListener(e -> actionList.newAction());
-        newActionButton.setFocusable(false);
-        AAMenuBar.add(newActionButton);
-
-        removeActionButton = new AAButton("Remove Action");
-        removeActionButton.addActionListener(e -> actionList.removeSelectedAction());
-        removeActionButton.setFocusable(false);
-        AAMenuBar.add(removeActionButton);
 
         coordLabel = new JLabel("Mouse Coord Label");
         coordLabel.setBounds(350, 340, 100, 40);
@@ -75,7 +60,17 @@ public class GuiMain extends AAFrame {
         debugLabel.setHorizontalAlignment(SwingConstants.CENTER);
         super.add(debugLabel);
 
-        runButton = new AAButton("RUN");
+        JButton newActionButton = new AAButton("New Action");
+        newActionButton.addActionListener(e -> actionList.newAction());
+        newActionButton.setFocusable(false);
+        AAMenuBar.add(newActionButton);
+
+        JButton removeActionButton = new AAButton("Remove Action");
+        removeActionButton.addActionListener(e -> actionList.removeSelectedAction());
+        removeActionButton.setFocusable(false);
+        AAMenuBar.add(removeActionButton);
+
+        JButton runButton = new AAButton("Run Action");
         runButton.addActionListener(e -> {
             try {
                 actionExecutor.interrupt();
@@ -139,12 +134,12 @@ public class GuiMain extends AAFrame {
         private final HashMap<String, BindingPanel> bindingPanels;
 
         public ActionList() {
-            super();
             this.defaultListModel = (DefaultListModel<String>) super.getModel();
-            super.setFont(new Font("Arial", Font.PLAIN, 12));
-            super.setBorder(GuiResources.areaBorder);
-            super.setBackground(GuiResources.backgrououndColor);
-            super.addListSelectionListener(e -> codeTextPane.setText(bindingManager.getBinding(getSelectedValue()).getCode()));
+            super.addListSelectionListener(e -> {
+                if (getSelectedValue() != null) {
+                    codeTextPane.setText(bindingManager.getBinding(getSelectedValue()).getCode());
+                }
+            });
             super.setCellRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -181,6 +176,7 @@ public class GuiMain extends AAFrame {
                     defaultListModel.add(defaultListModel.getSize(), actionName);
                     super.setSelectedIndex(defaultListModel.getSize() - 1);
                     codeTextPane.setText("");
+                    bindingPanel.updateColorTheme(Color.BLACK, Color.GRAY, Color.GREEN);
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Empty Action name.");
@@ -217,10 +213,6 @@ public class GuiMain extends AAFrame {
     class CodeTextPane extends AATextPane {
 
         public CodeTextPane() {
-            super();
-            super.setFont(Font.getFont("Source Code Pro"));
-            super.setMargin(new Insets(10, 10, 10, 10));
-            super.setBorder(GuiResources.areaBorder);
             super.getDocument().addDocumentListener(new DocumentListener() {
                 @Override
                 public void insertUpdate(DocumentEvent e) {

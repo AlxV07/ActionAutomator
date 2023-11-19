@@ -4,8 +4,6 @@ import BindingManagement.BindingManager;
 import Gui.AAComponents.AAButton;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 
-import java.awt.*;
-
 public class BindingButton extends AAButton {
     private final BindingPanel bindingPanel;
     private final int idx;
@@ -30,13 +28,16 @@ public class BindingButton extends AAButton {
     public void setKeyText(int key) {
         if (key == -1) {
             if (super.isEnabled()) {
-                super.setBackground(getAlternateColor());
+                super.setBackground(alternateColor);
+                super.setForeground(primaryColor);
             } else {
-                super.setBackground(getBackground());
+                super.setBackground(secondaryColor);
+                super.setForeground(alternateColor);
             }
             super.setText("null");
         } else {
-            super.setBackground(getBackground());
+            super.setBackground(primaryColor);
+            super.setForeground(alternateColor);
             super.setText(NativeKeyEvent.getKeyText(key));
         }
     }
@@ -45,10 +46,15 @@ public class BindingButton extends AAButton {
     public void setEnabled(boolean enabled) {
         if (enabled) {
             if (super.getText().equals("null")) {
-                super.setBackground(getAlternateColor());
+                super.setBackground(alternateColor);
+                super.setForeground(primaryColor);
             } else {
-                super.setBackground(getBackground());
+                super.setBackground(primaryColor);
+                super.setForeground(alternateColor);
             }
+        } else {
+            super.setBackground(secondaryColor);
+            super.setForeground(alternateColor);
         }
         super.setEnabled(enabled);
     }
