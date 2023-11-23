@@ -12,9 +12,15 @@ import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.util.HashMap;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class GuiMain extends AAFrame {
     private final ActionExecutor actionExecutor;
@@ -22,56 +28,62 @@ public class GuiMain extends AAFrame {
     private final Binding pressedKeys;
 
     private final CodeTextPane codeTextPane;
-    private final ActionList actionList;
+    private final BindingPanelBox bindingPanelBox;
 
-    private final JLabel coordLabel;
-    private final JLabel pressedLabel;
-    private final JLabel debugLabel;
+    private final AALabel coordLabel;
+    private final AATextArea pressedLabel;
+    private final AALabel debugLabel;
 
 
     public GuiMain() {
         actionExecutor = new ActionExecutor();
         bindingManager = new BindingManager();
-        pressedKeys = new Binding("PressedKeys");
+        pressedKeys = new Binding("Pressed Keys");
 
         AAMenuBar AAMenuBar = new AAMenuBar();
         AAMenuBar.setBounds(0, 0, 500, 21);
         super.add(AAMenuBar);
-        actionList = new ActionList();
-        actionList.setBounds(0, 20, 250, 250);
-        super.add(actionList);
 
         codeTextPane = new CodeTextPane();
         codeTextPane.setBounds(0, 250, 250, 250);
         super.add(codeTextPane);
 
-        coordLabel = new JLabel("Mouse Coord Label");
-        coordLabel.setBounds(350, 340, 100, 40);
+        bindingPanelBox = new BindingPanelBox(bindingManager, codeTextPane);
+        bindingPanelBox.setBounds(0, 20, 500, 230);
+        super.add(bindingPanelBox);
+
+        coordLabel = new AALabel("Mouse Coord Label");
+        coordLabel.setBounds(250, 250, 250, 50);
+        coordLabel.setHorizontalAlignment(SwingConstants.CENTER);
         super.add(coordLabel);
 
-        pressedLabel = new JLabel("Pressed Keys Label");
-        pressedLabel.setBounds(250, 360, 250, 40);
-        pressedLabel.setText(pressedKeys.toString());
-        pressedLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        pressedLabel = new AATextArea();
+        pressedLabel.setText("\n   Pressed Keys: ");
+        pressedLabel.setBounds(250, 300, 250, 50);
+        pressedLabel.setFont(GuiResources.defaultFont);
         super.add(pressedLabel);
 
-        debugLabel = new JLabel("Debug Label");
-        debugLabel.setBounds(250, 380, 250, 40);
+        debugLabel = new AALabel(" Debug Label ");
+        debugLabel.setBounds(250, 350, 250, 50);
         debugLabel.setHorizontalAlignment(SwingConstants.CENTER);
         super.add(debugLabel);
 
-        JButton newActionButton = new AAButton("New Action");
-        newActionButton.addActionListener(e -> actionList.newAction());
+        AAButton newActionButton = new AAButton(" New Action ");
+        newActionButton.addActionListener(e -> bindingPanelBox.newBinding());
         newActionButton.setFocusable(false);
         AAMenuBar.add(newActionButton);
 
-        JButton removeActionButton = new AAButton("Remove Action");
-        removeActionButton.addActionListener(e -> actionList.removeSelectedAction());
+        AAButton removeActionButton = new AAButton(" Remove Action ");
+        removeActionButton.addActionListener(e -> bindingPanelBox.removeSelectedBinding());
         removeActionButton.setFocusable(false);
         AAMenuBar.add(removeActionButton);
 
-        JButton runButton = new AAButton("Run Action");
+        AAButton runButton = new AAButton(" Run Action ");
         runButton.addActionListener(e -> {
+            if (bindingPanelBox.getSelected() == null) {
+                JOptionPane.showMessageDialog(this, "No selected Action to run.");
+                return;
+            }
             try {
                 actionExecutor.interrupt();
                 actionExecutor.executeActionFromCode(codeTextPane.getText(), 100);
@@ -82,13 +94,23 @@ public class GuiMain extends AAFrame {
         AAMenuBar.add(runButton);
     }
 
-    public void start() {
-        super.setTitle("ActionAutomator");
-        super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        super.setLayout(null);
-        super.setSize(500, 500);
+    public void start(boolean darkMode) {
+        super.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try (FileWriter writer = new FileWriter("/home/alxv05/.action_automator/codes.txt")){
+                    for (Binding binding : bindingManager.bindings.values()) {
+                        writer.write(binding.getName() + "\n");
+                        writer.write(binding.getCode() + "\n");
+                        writer.write("===\n");
+                    }
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+        super.updateColorTheme(darkMode, Color.GREEN, Color.GRAY);
         super.setVisible(true);
-        updateColorTheme(Color.BLACK, Color.GRAY, Color.GREEN);
         nativeGlobalListener.register();
     }
 
@@ -103,9 +125,18 @@ public class GuiMain extends AAFrame {
             }
 
             if (pressedKeys.getNofKeys() < pressedKeys.getKeySequence().length) {
-                pressedKeys.addKey(key);
+                if (!pressedKeys.containsKey(key)) {
+                    pressedKeys.addKey(key);
+                }
                 Binding binding = bindingManager.findBinding(pressedKeys);
-                pressedLabel.setText(pressedKeys + " \n" + binding);
+                StringBuilder keyString = new StringBuilder("\n   Pressed Keys: ");
+                for (int k : pressedKeys.getKeySequence()) {
+                    if (k == -1) {
+                        break;
+                    }
+                    keyString.append(NativeKeyEvent.getKeyText(k)).append("+");
+                }
+                pressedLabel.setText(keyString.substring(0, Math.max(0, keyString.length() - 1)));
                 if (binding != null) {
                     try {
                         actionExecutor.interrupt();
@@ -120,99 +151,38 @@ public class GuiMain extends AAFrame {
         @Override
         public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {
             pressedKeys.removeKey(nativeKeyEvent.getKeyCode());
-            pressedLabel.setText(String.valueOf(pressedKeys));
+            StringBuilder keyString = new StringBuilder("\n   Pressed Keys: ");
+            for (int k : pressedKeys.getKeySequence()) {
+                if (k == -1) {
+                    break;
+                }
+                keyString.append(NativeKeyEvent.getKeyText(k)).append("+");
+            }
+            pressedLabel.setText(keyString.substring(0, Math.max(0, keyString.length() - 1)));
         }
 
         @Override
         public void nativeMouseMoved(NativeMouseEvent nativeMouseEvent) {
-            coordLabel.setText(nativeMouseEvent.getX() + " " + nativeMouseEvent.getY());
+            coordLabel.setText("Mouse Coords: " + nativeMouseEvent.getX() + "-X, " + nativeMouseEvent.getY() + "-Y");
         }
     };
 
-    class ActionList extends AAList<String> {
-        private final DefaultListModel<String> defaultListModel;
-        private final HashMap<String, BindingPanel> bindingPanels;
+    public class CodeTextPane extends AATextPane {
+        private final SimpleAttributeSet defaultAttributeSet;
+        private final SimpleAttributeSet coloredAttributeSet;
 
-        public ActionList() {
-            this.defaultListModel = (DefaultListModel<String>) super.getModel();
-            super.addListSelectionListener(e -> {
-                if (getSelectedValue() != null) {
-                    codeTextPane.setText(bindingManager.getBinding(getSelectedValue()).getCode());
-                }
-            });
-            super.setCellRenderer(new DefaultListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    int preferredHeight = 30;
-                    label.setPreferredSize(new Dimension(label.getPreferredSize().width, preferredHeight));
-                    if (index % 2 == 0) {
-                        label.setBackground(getAlternateColor()); // Set alternate background color for even-indexed cells
-                    } else {
-                        label.setBackground(getBackground());
-                    }
-                    label.setBorder(BorderFactory.createLineBorder(getForeground()));
-                    return label;
-                }
-            });
-            this.bindingPanels = new HashMap<>();
-        }
-
-        public void newAction() {
-            String actionName = JOptionPane.showInputDialog("Enter Action name:");
-            if (actionName == null) {
-                return;
-            }
-            actionName = actionName.strip();
-            if (!actionName.isEmpty()) {
-                if (defaultListModel.contains(actionName)) {
-                    JOptionPane.showMessageDialog(this, String.format("\"%s\" already exists.", actionName));
-                } else {
-                    bindingManager.createNewBinding(actionName);
-                    BindingPanel bindingPanel = new BindingPanel(bindingManager, bindingManager.getBinding(actionName));
-                    getRootPane().add(bindingPanel);
-                    bindingPanel.setBounds(250, 20 + defaultListModel.getSize() * 30);
-                    bindingPanels.put(actionName, bindingPanel);
-                    defaultListModel.add(defaultListModel.getSize(), actionName);
-                    super.setSelectedIndex(defaultListModel.getSize() - 1);
-                    codeTextPane.setText("");
-                    bindingPanel.updateColorTheme(Color.BLACK, Color.GRAY, Color.GREEN);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Empty Action name.");
-            }
-        }
-
-        public void removeSelectedAction() {
-            String actionName = getSelectedValue();
-            if (actionName == null) {
-                JOptionPane.showMessageDialog(this, "No selected Action to remove.");
-                return;
-            }
-            if (JOptionPane.showConfirmDialog(this, String.format("Remove Action \"%s\"?", actionName)) == JOptionPane.YES_OPTION) {
-                bindingManager.removeBinding(actionName);
-                BindingPanel panel = this.bindingPanels.remove(actionName);
-                panel.removeComponents();
-                getRootPane().remove(panel);
-                getRootPane().revalidate();
-                getRootPane().repaint();
-                int i = getSelectedIndex();
-                defaultListModel.remove(i);
-                if (defaultListModel.getSize() > 0) {
-                    super.setSelectedIndex(Math.max(i - 1, 0));
-                }
-            }
-        }
-
-        @Override
-        public String getSelectedValue() {
-            return super.getSelectedValue();
-        }
-    }
-
-    class CodeTextPane extends AATextPane {
 
         public CodeTextPane() {
+            super();
+            super.setFont(GuiResources.defaultFont);
+            super.setMargin(GuiResources.defaultMargin);
+            StyledDocument doc = super.getStyledDocument();
+            defaultAttributeSet = new SimpleAttributeSet();
+            StyleConstants.setLeftIndent(defaultAttributeSet, 2);
+            StyleConstants.setRightIndent(defaultAttributeSet, 2);
+            StyleConstants.setSpaceAbove(defaultAttributeSet, 2);
+            coloredAttributeSet = new SimpleAttributeSet();
+            doc.setParagraphAttributes(0, doc.getLength(), defaultAttributeSet, true);
             super.getDocument().addDocumentListener(new DocumentListener() {
                 @Override
                 public void insertUpdate(DocumentEvent e) {
@@ -228,17 +198,18 @@ public class GuiMain extends AAFrame {
                 public void changedUpdate(DocumentEvent e) {}
             });
         }
+
         private void update() {
-            if (actionList.getSelectedValue() == null) {
+            if (bindingPanelBox.getSelected() == null) {
                 debugLabel.setText("No selected Action to edit.");
                 return;
             }
-            bindingManager.setBindingCode(actionList.getSelectedValue(), codeTextPane.getText());
+            bindingManager.setBindingCode(bindingPanelBox.getSelected(), getText());
             SwingUtilities.invokeLater(this::updateFirstWordColor);
         }
 
-        private void updateFirstWordColor() {
-            StyledDocument doc = super.getStyledDocument();
+        void updateFirstWordColor() {
+            StyledDocument doc = getStyledDocument();
             try {
                 int idx = 0;
                 for (String line: doc.getText(0, doc.getLength()).split("\n")) {
@@ -249,11 +220,16 @@ public class GuiMain extends AAFrame {
                         }
                         i += 1;
                     }
-                    MutableAttributeSet colored = new SimpleAttributeSet();
-                    StyleConstants.setForeground(colored, getAlternateColor());
-                    doc.setCharacterAttributes(idx, i, colored, true);
-                    MutableAttributeSet normAttr = new SimpleAttributeSet();
-                    doc.setCharacterAttributes(idx + i, line.length() - i, normAttr, true);
+                    StyleConstants.setForeground(coloredAttributeSet, primaryColor);
+                    doc.setCharacterAttributes(idx, i, coloredAttributeSet, true);
+                    if (darkMode) {
+                        setCaretColor(GuiResources.lightThemeColor);
+                        StyleConstants.setForeground(defaultAttributeSet, GuiResources.lightThemeColor);
+                    } else {
+                        setCaretColor(GuiResources.darkThemeColor);
+                        StyleConstants.setForeground(defaultAttributeSet, GuiResources.darkThemeColor);
+                    }
+                    doc.setCharacterAttributes(idx + i, line.length() - i, defaultAttributeSet, true);
                     idx += line.length() + 1;
                 }
             } catch (BadLocationException e) {

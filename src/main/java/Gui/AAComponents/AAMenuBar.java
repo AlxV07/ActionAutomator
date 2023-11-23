@@ -12,18 +12,30 @@ public class AAMenuBar extends JMenuBar implements AAComponent {
 
     public AAMenuBar() {
         super();
-        super.setFont(Font.getFont("Source Code Pro"));
-        super.setMargin(GuiResources.noMargin);
-        super.setBorder(GuiResources.defaultBorder);
+        super.setFont(GuiResources.defaultFont);
+        super.setMargin(GuiResources.defaultMargin);
+        super.setFocusable(false);
         aaComponents = new ArrayList<>();
     }
 
+    protected Color primaryColor;
+    protected Color secondaryColor;
+
     @Override
-    public void updateColorTheme(Color primaryColor, Color secondaryColor, Color alternateColor) {
-        super.setForeground(primaryColor);
-        super.setBackground(secondaryColor);
+    public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
+        this.primaryColor = primaryColor;
+        this.secondaryColor = secondaryColor;
+        if (darkMode) {
+            setForeground(primaryColor);
+            setBackground(GuiResources.darkThemeColor);
+            setBorder(GuiResources.darkThemeBorder);
+        } else {
+            setForeground(secondaryColor);
+            setBackground(GuiResources.lightThemeColor);
+            setBorder(GuiResources.lightThemeBorder);
+        }
         for (AAComponent aaComponent : aaComponents) {
-            aaComponent.updateColorTheme(primaryColor, secondaryColor, alternateColor);
+            aaComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);
         }
     }
 
@@ -39,7 +51,7 @@ public class AAMenuBar extends JMenuBar implements AAComponent {
     @Override
     public void remove(Component component) {
         try {
-            aaComponents.add((AAComponent) component);
+            aaComponents.remove((AAComponent) component);
         } catch (ClassCastException ignored) {
         }
         super.remove(component);

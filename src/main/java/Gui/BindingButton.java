@@ -9,14 +9,15 @@ public class BindingButton extends AAButton {
     private final int idx;
 
     public BindingButton(BindingManager bindingManager, BindingPanel bindingPanel, int idx) {
-        super();
-        super.setFocusable(false);
-        super.setFont(GuiResources.bindButtonFont);
+        super("null");
+        super.setFont(GuiResources.smallerFont);
         this.bindingPanel = bindingPanel;
         this.idx = idx;
         addActionListener(e -> {
             bindingManager.startBindingButton(this);
             super.setText("Binding...");
+            super.setForeground(secondaryColor);
+            super.setBackground(primaryColor);
             super.requestFocusInWindow();
         });
     }
@@ -27,35 +28,14 @@ public class BindingButton extends AAButton {
      */
     public void setKeyText(int key) {
         if (key == -1) {
-            if (super.isEnabled()) {
-                super.setBackground(alternateColor);
-                super.setForeground(primaryColor);
-            } else {
-                super.setBackground(secondaryColor);
-                super.setForeground(alternateColor);
-            }
             super.setText("null");
         } else {
-            super.setBackground(primaryColor);
-            super.setForeground(alternateColor);
             super.setText(NativeKeyEvent.getKeyText(key));
         }
     }
 
     @Override
     public void setEnabled(boolean enabled) {
-        if (enabled) {
-            if (super.getText().equals("null")) {
-                super.setBackground(alternateColor);
-                super.setForeground(primaryColor);
-            } else {
-                super.setBackground(primaryColor);
-                super.setForeground(alternateColor);
-            }
-        } else {
-            super.setBackground(secondaryColor);
-            super.setForeground(alternateColor);
-        }
         super.setEnabled(enabled);
     }
 
@@ -64,6 +44,12 @@ public class BindingButton extends AAButton {
      * @param key The resulting key of the binding process (NativeKeyEvent VC)
      */
     public void completeBind(int key) {
+        super.setForeground(primaryColor);
+        if (darkMode) {
+            super.setBackground(GuiResources.darkThemeColor);
+        } else {
+            super.setBackground(GuiResources.lightThemeColor);
+        }
         bindingPanel.completeBind(this.idx, key);
     }
 }

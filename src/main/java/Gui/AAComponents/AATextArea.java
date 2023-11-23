@@ -5,13 +5,16 @@ import Gui.GuiResources;
 import javax.swing.*;
 import java.awt.*;
 
-public class AAButton extends JButton implements AAComponent {
+public class AATextArea extends JTextArea implements AAComponent {
 
-    public AAButton(String title) {
-        super(title);
-        super.setFont(GuiResources.defaultFont);
-        super.setMargin(GuiResources.defaultMargin);
+    public AATextArea() {
+        super();
+        super.setFont(GuiResources.smallerFont);
         super.setFocusable(false);
+        super.setOpaque(true);
+        super.setWrapStyleWord(true);
+        super.setLineWrap(true);
+        super.setMargin(GuiResources.defaultMargin);
     }
 
     protected Color primaryColor;

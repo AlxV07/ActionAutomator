@@ -60,7 +60,7 @@ public class Binding {
      * @param tarKey The key to check for (NativeKeyEvent VC)
      * @return If {@code tarKey} is contained in the key sequence of the binding
      */
-    private boolean containsKey(int tarKey) {
+    public boolean containsKey(int tarKey) {
         for (int canKey : keySequence) {
             if (canKey == tarKey) {
                 return true;
@@ -78,11 +78,9 @@ public class Binding {
      * @param key The key to set in the key sequence of the binding (NativeKeyEvent VC)
      */
     public void setKey(int idx, int key) {
-        if (!containsKey(key)) {
-            keySequence[idx] = key;
-            if (idx == nofKeys) {
-                nofKeys += 1;
-            }
+        keySequence[idx] = key;
+        if (idx == nofKeys) {
+            nofKeys += 1;
         }
     }
 

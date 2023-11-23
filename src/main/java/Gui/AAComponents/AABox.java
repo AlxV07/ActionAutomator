@@ -7,34 +7,33 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AAFrame extends JFrame implements AAComponent {
+public class AABox extends Box implements AAComponent{
     protected final List<AAComponent> aaComponents;
 
-    public AAFrame() {
-        super();
+    public AABox() {
+        super(BoxLayout.Y_AXIS);
         super.setFont(GuiResources.defaultFont);
         super.setFocusable(false);
-        super.setTitle("ActionAutomator");
-        super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        super.setLayout(null);
-        super.setSize(500, 500);
-        super.setResizable(false);
         aaComponents = new ArrayList<>();
     }
 
+    protected boolean darkMode;
     protected Color primaryColor;
     protected Color secondaryColor;
 
     @Override
     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
+        this.darkMode = darkMode;
         this.primaryColor = primaryColor;
         this.secondaryColor = secondaryColor;
         if (darkMode) {
             setForeground(primaryColor);
-            super.getContentPane().setBackground(GuiResources.darkThemeColor);
+            setBackground(GuiResources.darkThemeColor);
+            setBorder(GuiResources.darkThemeBorder);
         } else {
             setForeground(secondaryColor);
-            super.getContentPane().setBackground(GuiResources.lightThemeColor);
+            setBackground(GuiResources.lightThemeColor);
+            setBorder(GuiResources.lightThemeBorder);
         }
         for (AAComponent aaComponent : aaComponents) {
             aaComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);

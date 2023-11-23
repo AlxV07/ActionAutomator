@@ -6,24 +6,23 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AATextPane extends JTextPane implements AAComponent {
-
-    private Color alternateColor;
-
-    public AATextPane() {
-        super();
-        super.setFont(Font.getFont("Source Code Pro"));
-        super.setMargin(new Insets(10, 10, 10, 10));
-        super.setBorder(GuiResources.defaultBorder);
-    }
-
-    public Color getAlternateColor() {
-        return this.alternateColor;
-    }
+    protected boolean darkMode;
+    protected Color primaryColor;
+    protected Color secondaryColor;
 
     @Override
-    public void updateColorTheme(Color primaryColor, Color secondaryColor, Color alternateColor) {
-        super.setForeground(primaryColor);
-        super.setBackground(secondaryColor);
-        this.alternateColor = alternateColor;
+    public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
+        this.darkMode = darkMode;
+        this.primaryColor = primaryColor;
+        this.secondaryColor = secondaryColor;
+        if (darkMode) {
+            setForeground(primaryColor);
+            setBackground(GuiResources.darkThemeColor);
+            setBorder(GuiResources.darkThemeBorder);
+        } else {
+            setForeground(secondaryColor);
+            setBackground(GuiResources.lightThemeColor);
+            setBorder(GuiResources.lightThemeBorder);
+        }
     }
 }

@@ -2,7 +2,10 @@ package Gui;
 
 import BindingManagement.Binding;
 import BindingManagement.BindingManager;
+import Gui.AAComponents.AAButton;
+import Gui.AAComponents.AALabel;
 import Gui.AAComponents.AAPanel;
+import Gui.AAComponents.AATextArea;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,37 +14,37 @@ public class BindingPanel extends AAPanel {
     /**
      * JPanel interface for interacting w/ Binding classes through GUI
      */
-    private final BindingManager bindingManager;
     private final Binding binding;
-    private final BindingButton[] buttons;
+    private final BindingButton[] bindingButtons;
+    private final AAButton editButton;
+    private final AATextArea nameLabel;
 
-    public BindingPanel(BindingManager bindingManager, Binding binding) {
+    public BindingPanel(BindingManager bindingManager, Binding binding, BindingPanelBox scrollPane) {
         super();
-        super.setBorder(GuiResources.defaultBorder);
-        this.bindingManager = bindingManager;
+        super.setBorder(GuiResources.darkThemeBorder);
+        this.setLayout(null);
         this.binding = binding;
-        this.buttons = new BindingButton[] {
+        this.nameLabel = new AATextArea();
+        this.nameLabel.setText(binding.getName());
+        this.editButton = new AAButton("Edit");
+        add(nameLabel);
+        this.editButton.addActionListener(e -> scrollPane.setSelected(scrollPane.names.indexOf(binding.getName())));
+        add(editButton);
+        this.bindingButtons = new BindingButton[] {
             new BindingButton(bindingManager, this, 0),
             new BindingButton(bindingManager, this, 1),
             new BindingButton(bindingManager, this, 2),
             new BindingButton(bindingManager, this, 3),
         };
-        for (BindingButton button : buttons) {
-            super.add(button);
+        for (BindingButton button : bindingButtons) {
+            add(button);
         }
         this.completeBind(0, -1);
     }
 
-    /**
-     * Remove BindingButton components from this panel, in preparation for removal of this panel
-     */
-    public void removeComponents() {
-        bindingManager.removeBinding(binding.getName());
-        for (BindingButton button : buttons) {
-            super.remove(button);
-        }
-        revalidate();
-        repaint();
+    @Override
+    public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
+        super.updateColorTheme(darkMode, primaryColor, secondaryColor);
     }
 
     /**
@@ -49,26 +52,24 @@ public class BindingPanel extends AAPanel {
      * @param x X coord
      * @param y Y coord
      */
-    public void setBounds(int x, int y) {
-        super.setBounds(x, y, 300, 30);
+    public void setBounds(int x, int y, int width, int height) {
+        super.setBounds(x, y, width, height);
+        height -= 10;
         int i = 0;
-        for (BindingButton button : buttons) {
+        int compX = 5;
+        int compY = 5;
+        int buttonW = 85;
+        nameLabel.setBounds(compX, compY, 80, height);
+        editButton.setBounds(compX + 80, compY, 50, height);
+        for (BindingButton button : bindingButtons) {
             if (i > 0) {
-                JButton b = buttons[i - 1];
-                button.setBounds(b.getX() + b.getWidth(), y, 50, 20);
+                JButton b = bindingButtons[i - 1];
+                button.setBounds(b.getX() + b.getWidth(), compY, buttonW, height);
             } else {
-                button.setBounds(0, 0, 50, 20);
+                button.setBounds(compX + 140, compY, buttonW, height);
             }
             i++;
         }
-    }
-
-    @Override
-    public void updateColorTheme(Color primaryColor, Color secondaryColor, Color alternateColor) {
-        for (BindingButton button : buttons) {
-            button.updateColorTheme(primaryColor, secondaryColor, alternateColor);
-        }
-        super.updateColorTheme(primaryColor, secondaryColor, alternateColor);
     }
 
     /**
@@ -77,22 +78,23 @@ public class BindingPanel extends AAPanel {
      * @param key The key that was bound (NativeKeyEvent VC)
      */
     public void completeBind(int idx, int key) {
-        if (key == -1) {
+        if (key == -1 || binding.containsKey(key)) {
             binding.removeKey(binding.getKeySequence()[idx]);
             for (int i = idx; i < binding.getNofKeys() + 1; i++) {
-                buttons[i].setEnabled(true);
-                buttons[i].setKeyText(binding.getKeySequence()[i]);
+                bindingButtons[i].setEnabled(true);
+                bindingButtons[i].setKeyText(binding.getKeySequence()[i]);
             }
             for (int i = binding.getNofKeys() + 1; i < binding.getKeySequence().length; i++) {
-                buttons[i].setEnabled(false);
-                buttons[i].setKeyText(binding.getKeySequence()[i]);
+                bindingButtons[i].setEnabled(false);
+                bindingButtons[i].setKeyText(binding.getKeySequence()[i]);
             }
         } else {
             binding.setKey(idx, key);
-            if (binding.getNofKeys() < buttons.length) {
-                buttons[binding.getNofKeys()].setEnabled(true);
+            if (binding.getNofKeys() < bindingButtons.length) {
+                bindingButtons[binding.getNofKeys()].setEnabled(true);
             }
-            buttons[idx].setKeyText(key);
+            bindingButtons[idx].setKeyText(key);
         }
+        bindingButtons[0].setEnabled(true);
     }
 }

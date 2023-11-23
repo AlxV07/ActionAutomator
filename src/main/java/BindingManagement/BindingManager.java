@@ -18,7 +18,11 @@ public class BindingManager {
      * @param name The name to set the new binding to
      */
     public void createNewBinding(String name) {
-        bindings.put(name, new Binding(name));
+        this.setBinding(name, new Binding(name));
+    }
+
+    public void setBinding(String name, Binding binding) {
+        bindings.put(name, binding);
     }
 
     /**
