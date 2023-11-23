@@ -1,10 +1,10 @@
 package Gui.Components;
 
+import ActionManagement.NativeKeyConverter;
 import BindingManagement.Binding;
 import BindingManagement.BindingManager;
 import Gui.GuiMain.CodeTextPane;
 import Gui.GuiResources;
-import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -132,11 +132,11 @@ public class BindingPanelBox extends ThemedBox {
         if (idx == -1) {
             this.selected = null;
             codeTextPane.setText("null");
-            codeTextPane.updateFirstWordColor();
+            codeTextPane.updateTextColor();
         } else {
             this.selected = names.get(idx);
             codeTextPane.setText(bindingManager.getBinding(selected).getCode());
-            codeTextPane.updateFirstWordColor();
+            codeTextPane.updateTextColor();
         }
         updatePanels();
     }
@@ -249,7 +249,7 @@ public class BindingPanelBox extends ThemedBox {
                 if (key == -1) {
                     super.setText("null");
                 } else {
-                    super.setText(NativeKeyEvent.getKeyText(key));
+                    super.setText(NativeKeyConverter.nativeKeyToString(key));
                 }
             }
 

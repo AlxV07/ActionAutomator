@@ -39,7 +39,7 @@ public class CodeActionBuilder {
                     case "type" -> {
                         for (char c : args.toCharArray()) {
                             List<Integer> vk_keys = new ArrayList<>();
-                            int[] vk_key_supplemental = NativeKeyConverter.convertCharToKeyEventVK(c);
+                            int[] vk_key_supplemental = NativeKeyConverter.charToKeyEventVK(c);
                             if (vk_key_supplemental == null) {
                                 throw new SyntaxError();
                             }
@@ -56,7 +56,7 @@ public class CodeActionBuilder {
                         }
                     }
                     case "kdown" -> {
-                        int[] vk_keys = NativeKeyConverter.convertStringToKeyEventVK(args);
+                        int[] vk_keys = NativeKeyConverter.stringToKeyEventVK(args);
                         if (vk_keys == null) {
                             throw new SyntaxError();
                         }
@@ -65,7 +65,7 @@ public class CodeActionBuilder {
                         }
                     }
                     case "kup" -> {
-                        int[] vk_keys = NativeKeyConverter.convertStringToKeyEventVK(args);
+                        int[] vk_keys = NativeKeyConverter.stringToKeyEventVK(args);
                         if (vk_keys == null) {
                             throw new SyntaxError();
                         }

@@ -12,25 +12,7 @@ public class GuiResources {
     public static final Border darkThemeBorder = BorderFactory.createLineBorder(Color.WHITE);
     public static final Color lightThemeColor = Color.WHITE;
     public static final Color darkThemeColor = Color.BLACK;
-    public static Border roundedBorder = new RoundedBorder(20);
 
-    public static class RoundedBorder implements Border {
-        private final int radius;
+    public static String pressedKeysLabel = "\n   Pressed Keys: ";
 
-        RoundedBorder(int radius) {
-            this.radius = radius;
-        }
-
-        public Insets getBorderInsets(Component c) {
-            return new Insets(this.radius+1, this.radius+1, this.radius+2, this.radius);
-        }
-
-        public boolean isBorderOpaque() {
-            return true;
-        }
-
-        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-            g.drawRoundRect(x, y, width-1, height-1, radius, radius);
-        }
-    }
 }

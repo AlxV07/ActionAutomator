@@ -2,46 +2,33 @@ package ActionManagement;
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 
-import java.awt.event.KeyEvent;
 import static java.awt.event.KeyEvent.*;
 
 public class NativeKeyConverter {
-    public static int convertNativeKeyToKeyEventVK(int n) {
-        String s = NativeKeyEvent.getKeyText(n);
-        if (s.length() == 1) {
-            return KeyEvent.getExtendedKeyCodeForChar(s.charAt(0));
+    public static String nativeKeyToString(int key) {
+        String str = NativeKeyEvent.getKeyText(key);
+        if (str.startsWith("Unknown")) {
+            return "Unknown";
         }
-        else {
-            String[] p = s.toUpperCase().split(" ");
-            s = String.join("_", p);
-            try {
-                if (s.equals("CTRL")) {
-                    return KeyEvent.VK_CONTROL;
-                }
-                if (s.equals("BACKSPACE")) {
-                    return KeyEvent.VK_BACK_SPACE;
-                }
-                if (s.equals("META")) {
-                    return KeyEvent.VK_WINDOWS;
-                }
-                return (int) KeyEvent.class.getDeclaredField("VK_" + s).get(KeyEvent.class);
-            } catch (IllegalAccessException | NoSuchFieldException e) {
-                e.printStackTrace();
-                return -1;
-            }
+        switch (str) {
+            case "Open Bracket" -> {return "[";}
+            case "Close Bracket" -> {return "]";}
+            case "Back Slash" -> {return "\\";}
+            case "Back Quote" -> {return "`";}
+            default -> {return str;}
         }
     }
 
-    public static int[] convertStringToKeyEventVK(String key) {
-        if (key.length() > 1) {
-            return new int[]{NativeKeyConverter.convertSpecialKeyToKeyEventVK(key)};
+    public static int[] stringToKeyEventVK(String str) {
+        if (str.length() > 1) {
+            return new int[]{NativeKeyConverter.specialStringToKeyEventVK(str)};
         } else {
-            return NativeKeyConverter.convertCharToKeyEventVK(key.charAt(0));
+            return NativeKeyConverter.charToKeyEventVK(str.charAt(0));
         }
     }
 
-    public static int convertSpecialKeyToKeyEventVK(String key) {
-        switch (key) {
+    public static int specialStringToKeyEventVK(String str) {
+        switch (str) {
             case "ALT" -> {
                 return VK_ALT;
             }
@@ -118,7 +105,7 @@ public class NativeKeyConverter {
         return -1;
     }
 
-    public static int[] convertCharToKeyEventVK(char c) {
+    public static int[] charToKeyEventVK(char c) {
         switch (c) {
             case 'a' -> {
                 return new int[]{(VK_A)};
