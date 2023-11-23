@@ -1,4 +1,4 @@
-package Gui.AAComponents;
+package Gui.Components;
 
 import Gui.GuiResources;
 
@@ -7,21 +7,22 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AAPanel extends JPanel implements AAComponent {
-    protected final List<AAComponent> aaComponents;
-
-    public AAPanel() {
-        super();
-        super.setFont(GuiResources.defaultFont);
-        super.setFocusable(false);
-        this.aaComponents = new ArrayList<>();
-    }
-
+public class ThemedBox extends Box implements ThemedComponent {
+    protected final List<ThemedComponent> themedComponents;
+    protected boolean darkMode;
     protected Color primaryColor;
     protected Color secondaryColor;
 
+    public ThemedBox() {
+        super(BoxLayout.Y_AXIS);
+        super.setFont(GuiResources.defaultFont);
+        super.setFocusable(false);
+        themedComponents = new ArrayList<>();
+    }
+
     @Override
     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
+        this.darkMode = darkMode;
         this.primaryColor = primaryColor;
         this.secondaryColor = secondaryColor;
         if (darkMode) {
@@ -33,15 +34,15 @@ public class AAPanel extends JPanel implements AAComponent {
             setBackground(GuiResources.lightThemeColor);
             setBorder(GuiResources.lightThemeBorder);
         }
-        for (AAComponent aaComponent : aaComponents) {
-            aaComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);
+        for (ThemedComponent themedComponent : themedComponents) {
+            themedComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);
         }
     }
 
     @Override
     public Component add(Component component) {
         try {
-            aaComponents.add((AAComponent) component);
+            themedComponents.add((ThemedComponent) component);
         } catch (ClassCastException ignored) {
         }
         return super.add(component);
@@ -50,7 +51,7 @@ public class AAPanel extends JPanel implements AAComponent {
     @Override
     public void remove(Component component) {
         try {
-            aaComponents.remove((AAComponent) component);
+            themedComponents.remove((ThemedComponent) component);
         } catch (ClassCastException ignored) {
         }
         super.remove(component);

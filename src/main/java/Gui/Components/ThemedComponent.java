@@ -1,7 +1,7 @@
-package Gui.AAComponents;
+package Gui.Components;
 
 import java.awt.*;
 
-public interface AAComponent {
+public interface ThemedComponent {
     void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor);
 }

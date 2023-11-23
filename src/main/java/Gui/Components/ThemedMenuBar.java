@@ -1,4 +1,4 @@
-package Gui.AAComponents;
+package Gui.Components;
 
 import Gui.GuiResources;
 
@@ -7,19 +7,20 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AABox extends Box implements AAComponent{
-    protected final List<AAComponent> aaComponents;
-
-    public AABox() {
-        super(BoxLayout.Y_AXIS);
-        super.setFont(GuiResources.defaultFont);
-        super.setFocusable(false);
-        aaComponents = new ArrayList<>();
-    }
-
+public class ThemedMenuBar extends JMenuBar implements ThemedComponent {
     protected boolean darkMode;
     protected Color primaryColor;
     protected Color secondaryColor;
+    protected final List<ThemedComponent> themedComponents;
+
+    public ThemedMenuBar() {
+        super();
+        super.setFont(GuiResources.defaultFont);
+        super.setMargin(GuiResources.defaultMargin);
+        super.setFocusable(false);
+        themedComponents = new ArrayList<>();
+    }
+
 
     @Override
     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
@@ -35,15 +36,15 @@ public class AABox extends Box implements AAComponent{
             setBackground(GuiResources.lightThemeColor);
             setBorder(GuiResources.lightThemeBorder);
         }
-        for (AAComponent aaComponent : aaComponents) {
-            aaComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);
+        for (ThemedComponent themedComponent : themedComponents) {
+            themedComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);
         }
     }
 
     @Override
     public Component add(Component component) {
         try {
-            aaComponents.add((AAComponent) component);
+            themedComponents.add((ThemedComponent) component);
         } catch (ClassCastException ignored) {
         }
         return super.add(component);
@@ -52,7 +53,7 @@ public class AABox extends Box implements AAComponent{
     @Override
     public void remove(Component component) {
         try {
-            aaComponents.remove((AAComponent) component);
+            themedComponents.remove((ThemedComponent) component);
         } catch (ClassCastException ignored) {
         }
         super.remove(component);

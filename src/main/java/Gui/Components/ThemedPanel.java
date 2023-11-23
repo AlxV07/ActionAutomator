@@ -1,4 +1,4 @@
-package Gui.AAComponents;
+package Gui.Components;
 
 import Gui.GuiResources;
 
@@ -7,22 +7,22 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AAMenuBar extends JMenuBar implements AAComponent {
-    protected final List<AAComponent> aaComponents;
-
-    public AAMenuBar() {
-        super();
-        super.setFont(GuiResources.defaultFont);
-        super.setMargin(GuiResources.defaultMargin);
-        super.setFocusable(false);
-        aaComponents = new ArrayList<>();
-    }
-
+public class ThemedPanel extends JPanel implements ThemedComponent {
+    protected boolean darkMode;
     protected Color primaryColor;
     protected Color secondaryColor;
+    protected final List<ThemedComponent> themedComponents;
+
+    public ThemedPanel() {
+        super();
+        super.setFont(GuiResources.defaultFont);
+        super.setFocusable(false);
+        this.themedComponents = new ArrayList<>();
+    }
 
     @Override
     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
+        this.darkMode = darkMode;
         this.primaryColor = primaryColor;
         this.secondaryColor = secondaryColor;
         if (darkMode) {
@@ -34,15 +34,15 @@ public class AAMenuBar extends JMenuBar implements AAComponent {
             setBackground(GuiResources.lightThemeColor);
             setBorder(GuiResources.lightThemeBorder);
         }
-        for (AAComponent aaComponent : aaComponents) {
-            aaComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);
+        for (ThemedComponent themedComponent : themedComponents) {
+            themedComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);
         }
     }
 
     @Override
     public Component add(Component component) {
         try {
-            aaComponents.add((AAComponent) component);
+            themedComponents.add((ThemedComponent) component);
         } catch (ClassCastException ignored) {
         }
         return super.add(component);
@@ -51,7 +51,7 @@ public class AAMenuBar extends JMenuBar implements AAComponent {
     @Override
     public void remove(Component component) {
         try {
-            aaComponents.remove((AAComponent) component);
+            themedComponents.remove((ThemedComponent) component);
         } catch (ClassCastException ignored) {
         }
         super.remove(component);

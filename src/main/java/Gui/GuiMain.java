@@ -5,7 +5,7 @@ import ActionManagement.CodeActionBuilder;
 import BindingManagement.Binding;
 import BindingManagement.BindingManager;
 import GlobalListener.NativeGlobalListener;
-import Gui.AAComponents.*;
+import Gui.Components.*;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
 
@@ -22,17 +22,17 @@ import java.awt.event.WindowEvent;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class GuiMain extends AAFrame {
+public class GuiMain extends ThemedFrame {
     private final ActionExecutor actionExecutor;
     private final BindingManager bindingManager;
     private final Binding pressedKeys;
 
     private final CodeTextPane codeTextPane;
-    private final BindingPanelBox bindingPanelBox;
+    private final BindingPanelBox bindingPanels;
 
-    private final AALabel coordLabel;
-    private final AATextArea pressedLabel;
-    private final AALabel debugLabel;
+    private final ThemedLabel coordLabel;
+    private final ThemedTextArea pressedLabel;
+    private final ThemedLabel debugLabel;
 
 
     public GuiMain() {
@@ -40,7 +40,7 @@ public class GuiMain extends AAFrame {
         bindingManager = new BindingManager();
         pressedKeys = new Binding("Pressed Keys");
 
-        AAMenuBar AAMenuBar = new AAMenuBar();
+        ThemedMenuBar AAMenuBar = new ThemedMenuBar();
         AAMenuBar.setBounds(0, 0, 500, 21);
         super.add(AAMenuBar);
 
@@ -48,39 +48,39 @@ public class GuiMain extends AAFrame {
         codeTextPane.setBounds(0, 250, 250, 250);
         super.add(codeTextPane);
 
-        bindingPanelBox = new BindingPanelBox(bindingManager, codeTextPane);
-        bindingPanelBox.setBounds(0, 20, 500, 230);
-        super.add(bindingPanelBox);
+        bindingPanels = new BindingPanelBox(bindingManager, codeTextPane);
+        bindingPanels.setBounds(0, 20, 500, 230);
+        super.add(bindingPanels);
 
-        coordLabel = new AALabel("Mouse Coord Label");
+        coordLabel = new ThemedLabel("Mouse Coord Label");
         coordLabel.setBounds(250, 250, 250, 50);
         coordLabel.setHorizontalAlignment(SwingConstants.CENTER);
         super.add(coordLabel);
 
-        pressedLabel = new AATextArea();
+        pressedLabel = new ThemedTextArea();
         pressedLabel.setText("\n   Pressed Keys: ");
         pressedLabel.setBounds(250, 300, 250, 50);
         pressedLabel.setFont(GuiResources.defaultFont);
         super.add(pressedLabel);
 
-        debugLabel = new AALabel(" Debug Label ");
+        debugLabel = new ThemedLabel(" Debug Label ");
         debugLabel.setBounds(250, 350, 250, 50);
         debugLabel.setHorizontalAlignment(SwingConstants.CENTER);
         super.add(debugLabel);
 
-        AAButton newActionButton = new AAButton(" New Action ");
-        newActionButton.addActionListener(e -> bindingPanelBox.newBinding());
+        ThemedButton newActionButton = new ThemedButton(" New Action ");
+        newActionButton.addActionListener(e -> bindingPanels.newBinding());
         newActionButton.setFocusable(false);
         AAMenuBar.add(newActionButton);
 
-        AAButton removeActionButton = new AAButton(" Remove Action ");
-        removeActionButton.addActionListener(e -> bindingPanelBox.removeSelectedBinding());
+        ThemedButton removeActionButton = new ThemedButton(" Remove Action ");
+        removeActionButton.addActionListener(e -> bindingPanels.removeSelectedBinding());
         removeActionButton.setFocusable(false);
         AAMenuBar.add(removeActionButton);
 
-        AAButton runButton = new AAButton(" Run Action ");
+        ThemedButton runButton = new ThemedButton(" Run Action ");
         runButton.addActionListener(e -> {
-            if (bindingPanelBox.getSelected() == null) {
+            if (bindingPanels.getSelected() == null) {
                 JOptionPane.showMessageDialog(this, "No selected Action to run.");
                 return;
             }
@@ -94,7 +94,7 @@ public class GuiMain extends AAFrame {
         AAMenuBar.add(runButton);
     }
 
-    public void start(boolean darkMode) {
+    public void start(boolean darkMode, Color primaryColor, Color secondaryColor) {
         super.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -109,7 +109,7 @@ public class GuiMain extends AAFrame {
                 }
             }
         });
-        super.updateColorTheme(darkMode, Color.GREEN, Color.GRAY);
+        super.updateColorTheme(darkMode, primaryColor, secondaryColor);
         super.setVisible(true);
         nativeGlobalListener.register();
     }
@@ -167,7 +167,7 @@ public class GuiMain extends AAFrame {
         }
     };
 
-    public class CodeTextPane extends AATextPane {
+    public class CodeTextPane extends ThemedTextPane {
         private final SimpleAttributeSet defaultAttributeSet;
         private final SimpleAttributeSet coloredAttributeSet;
 
@@ -200,15 +200,15 @@ public class GuiMain extends AAFrame {
         }
 
         private void update() {
-            if (bindingPanelBox.getSelected() == null) {
+            if (bindingPanels.getSelected() == null) {
                 debugLabel.setText("No selected Action to edit.");
                 return;
             }
-            bindingManager.setBindingCode(bindingPanelBox.getSelected(), getText());
+            bindingManager.setBindingCode(bindingPanels.getSelected(), getText());
             SwingUtilities.invokeLater(this::updateFirstWordColor);
         }
 
-        void updateFirstWordColor() {
+        public void updateFirstWordColor() {
             StyledDocument doc = getStyledDocument();
             try {
                 int idx = 0;

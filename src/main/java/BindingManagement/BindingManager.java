@@ -1,6 +1,6 @@
 package BindingManagement;
 
-import Gui.BindingButton;
+import Gui.Components.BindingPanelBox.BindingPanel.BindingButton;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 
 import java.util.HashMap;
@@ -78,15 +78,15 @@ public class BindingManager {
     }
 
     public void cancelBindingButton() {
-        activeBindingButton.completeBind(-1);
+        activeBindingButton.completeButtonBind(-1);
         activeBindingButton = null;
     }
 
     public void completeBindingButton(int key) {
         if (key == NativeKeyEvent.VC_ESCAPE) {
-            activeBindingButton.completeBind(-1);
+            activeBindingButton.completeButtonBind(-1);
         } else {
-            activeBindingButton.completeBind(key);
+            activeBindingButton.completeButtonBind(key);
         }
         activeBindingButton = null;
     }

@@ -1,22 +1,19 @@
-package Gui.AAComponents;
+package Gui.Components;
 
 import Gui.GuiResources;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class AALabel extends JLabel implements AAComponent {
+public class ThemedButton extends JButton implements ThemedComponent {
     protected Color primaryColor;
     protected Color secondaryColor;
+    protected boolean darkMode;
 
-    public AALabel() {
-        this("");
-    }
-
-    public AALabel(String title) {
+    public ThemedButton(String title) {
         super(title);
-        super.setOpaque(true);
         super.setFont(GuiResources.defaultFont);
+        super.setMargin(GuiResources.defaultMargin);
         super.setFocusable(false);
     }
 
@@ -24,6 +21,7 @@ public class AALabel extends JLabel implements AAComponent {
     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
         this.primaryColor = primaryColor;
         this.secondaryColor = secondaryColor;
+        this.darkMode = darkMode;
         setForeground(primaryColor);
         if (darkMode) {
             setBackground(GuiResources.darkThemeColor);

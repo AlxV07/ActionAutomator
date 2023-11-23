@@ -1,4 +1,4 @@
-package Gui.AAComponents;
+package Gui.Components;
 
 import Gui.GuiResources;
 
@@ -7,10 +7,13 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AAFrame extends JFrame implements AAComponent {
-    protected final List<AAComponent> aaComponents;
+public class ThemedFrame extends JFrame implements ThemedComponent {
+    protected boolean darkMode;
+    protected Color primaryColor;
+    protected Color secondaryColor;
+    protected final List<ThemedComponent> themedComponents;
 
-    public AAFrame() {
+    public ThemedFrame() {
         super();
         super.setFont(GuiResources.defaultFont);
         super.setFocusable(false);
@@ -19,14 +22,12 @@ public class AAFrame extends JFrame implements AAComponent {
         super.setLayout(null);
         super.setSize(500, 500);
         super.setResizable(false);
-        aaComponents = new ArrayList<>();
+        themedComponents = new ArrayList<>();
     }
-
-    protected Color primaryColor;
-    protected Color secondaryColor;
 
     @Override
     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
+        this.darkMode = darkMode;
         this.primaryColor = primaryColor;
         this.secondaryColor = secondaryColor;
         if (darkMode) {
@@ -36,15 +37,15 @@ public class AAFrame extends JFrame implements AAComponent {
             setForeground(secondaryColor);
             super.getContentPane().setBackground(GuiResources.lightThemeColor);
         }
-        for (AAComponent aaComponent : aaComponents) {
-            aaComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);
+        for (ThemedComponent themedComponent : themedComponents) {
+            themedComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);
         }
     }
 
     @Override
     public Component add(Component component) {
         try {
-            aaComponents.add((AAComponent) component);
+            themedComponents.add((ThemedComponent) component);
         } catch (ClassCastException ignored) {
         }
         return super.add(component);
@@ -53,7 +54,7 @@ public class AAFrame extends JFrame implements AAComponent {
     @Override
     public void remove(Component component) {
         try {
-            aaComponents.remove((AAComponent) component);
+            themedComponents.remove((ThemedComponent) component);
         } catch (ClassCastException ignored) {
         }
         super.remove(component);

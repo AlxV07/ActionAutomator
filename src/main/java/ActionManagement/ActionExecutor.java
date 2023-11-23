@@ -9,7 +9,6 @@ import java.util.List;
 
 public class ActionExecutor {
     private final Robot actionExecutor;
-    private final CodeActionBuilder codeActionBuilder;
     private Thread runningActionThread;
 
     public ActionExecutor() {
@@ -18,7 +17,6 @@ public class ActionExecutor {
         } catch (AWTException e) {
             throw new RuntimeException(e);
         }
-        codeActionBuilder = new CodeActionBuilder();
     }
 
     public void executeAction(Action action, int delay) {
@@ -41,7 +39,7 @@ public class ActionExecutor {
     }
 
     public void executeActionFromCode(String code, int delay) throws CodeActionBuilder.SyntaxError {
-        this.executeAction(codeActionBuilder.parseCodeIntoAction(code), delay);
+        this.executeAction(CodeActionBuilder.parseCodeIntoAction(code), delay);
     }
 
     public boolean isRunning() {
@@ -51,25 +49,6 @@ public class ActionExecutor {
     public void interrupt() {
         if (this.isRunning()) {
             this.runningActionThread.interrupt();
-        }
-    }
-
-    public void cleanAction(Action action) {
-        List<SubAction> tasks = action.subActions();
-        int i;
-        boolean nextSubAction;
-        for (i = 0; i < tasks.size() - 1;) {
-            nextSubAction = true;
-            SubAction last_move = tasks.get(i);
-            if (last_move.getType() == SubActionType.MOUSE_MOVED) {
-                if (tasks.get(i + 1).getType() == SubActionType.MOUSE_MOVED) {
-                    tasks.remove(i);
-                    nextSubAction = false;
-                }
-            }
-            if (nextSubAction) {
-                i++;
-            }
         }
     }
 }

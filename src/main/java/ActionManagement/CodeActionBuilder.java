@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class CodeActionBuilder {
-    public Action parseCodeIntoAction(String code) throws SyntaxError {
+    public static Action parseCodeIntoAction(String code) throws SyntaxError {
         List<SubAction> subActions = new ArrayList<>();
         for (String line : code.split("\n")) {
             if (line.isBlank()) {

@@ -1,10 +1,14 @@
 package BindingManagement;
 
+import ActionManagement.Action;
+import ActionManagement.CodeActionBuilder;
+
 import java.util.Arrays;
 
 public class Binding {
     private String name;
     private String code;
+    private Action action;
     private final int[] keySequence;
     private int nofKeys;
 
@@ -37,11 +41,17 @@ public class Binding {
     }
 
     /**
-     * Set the action code of the binding
+     * Set the action code for the binding
      * @param code New action code
      */
     public void setCode(String code) {
         this.code = code;
+//        this.action = CodeActionBuilder.parseCodeIntoAction(code);
+    }
+
+
+    public Action getAction() {
+        return this.action;
     }
 
     /**
@@ -97,7 +107,7 @@ public class Binding {
      * @param key The key to remove from the key sequence (NativeKeyEvent VC)
      */
     public void removeKey(int key) {
-        if (key == -1) {  // Should only be called on initial BindingPanel constructor bind
+        if (key == -1) {
             return;
         }
         for (int i = 0; i < keySequence.length; i++) {
