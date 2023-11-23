@@ -132,12 +132,11 @@ public class BindingPanelBox extends ThemedBox {
         if (idx == -1) {
             this.selected = null;
             codeTextPane.setText("null");
-            codeTextPane.updateTextColor();
         } else {
             this.selected = names.get(idx);
             codeTextPane.setText(bindingManager.getBinding(selected).getCode());
-            codeTextPane.updateTextColor();
         }
+        SwingUtilities.invokeLater(codeTextPane::updateTextColor);
         updatePanels();
     }
 

@@ -15,6 +15,14 @@ public class NativeKeyConverter {
             case "Close Bracket" -> {return "]";}
             case "Back Slash" -> {return "\\";}
             case "Back Quote" -> {return "`";}
+            case "Comma" -> {return ",";}
+            case "Period" -> {return ".";}
+            case "Quote" -> {return "'";}
+            case "Semicolon" -> {return ";";}
+            case "Equals" -> {return "=";}
+            case "Minus" -> {return "-";}
+            case "Slash" -> {return "/";}
+
             default -> {return str;}
         }
     }
