@@ -14,5 +14,5 @@ public class GuiResources {
     public static final Color darkThemeColor = Color.BLACK;
 
     public static String pressedKeysLabel = "\n   Pressed Keys: ";
-
+    public static String cachePath = System.getProperty("user.home") + "/.actionAutomatorCache.action";
 }

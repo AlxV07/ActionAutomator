@@ -4,6 +4,7 @@ import ActionManagement.ActionExecutor;
 import ActionManagement.CodeActionBuilder;
 import ActionManagement.NativeKeyConverter;
 import BindingManagement.Binding;
+import BindingManagement.BindingFileManager;
 import BindingManagement.BindingManager;
 import GlobalListener.NativeGlobalListener;
 import Gui.Components.*;
@@ -13,6 +14,7 @@ import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -20,36 +22,32 @@ import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class GuiMain extends ThemedFrame {
     private final ActionExecutor actionExecutor;
     private final BindingManager bindingManager;
+    private final BindingFileManager bindingFileManager;
     private final Binding pressedKeys;
 
     private final CodeTextPane codeTextPane;
-    private final ThemedLabel selectedLabel;
+    private final ThemedTextArea selectedLabel;
     private final BindingPanelBox bindingPanels;
 
     private final ThemedLabel coordLabel;
     private final ThemedTextArea pressedLabel;
     private final ThemedLabel debugLabel;
 
-
     public GuiMain() {
         actionExecutor = new ActionExecutor();
         bindingManager = new BindingManager();
         pressedKeys = new Binding("Pressed Keys");
 
-        ThemedMenuBar MainMenuBar = new ThemedMenuBar();
-        MainMenuBar.setBounds(0, 0, 500, 21);
-        super.add(MainMenuBar);
+        ThemedMenuBar mainMenuBar = new ThemedMenuBar();
+        mainMenuBar.setBounds(0, 0, 500, 21);
+        super.add(mainMenuBar);
 
         codeTextPane = new CodeTextPane();
         codeTextPane.setBounds(0, 270, 250, 230);
@@ -63,34 +61,16 @@ public class GuiMain extends ThemedFrame {
         });
         super.add(enableEditing);
 
-        selectedLabel = new ThemedLabel("null") {@Override public void setText(String text) {super.setText(" " + text);}};
+        selectedLabel = new ThemedTextArea() {@Override public void setText(String text) {super.setText(" " + text);}};
+        selectedLabel.setFont(GuiResources.defaultFont);
         selectedLabel.setBounds(60, 250, 190, 20);
         super.add(selectedLabel);
 
         bindingPanels = new BindingPanelBox();
         bindingPanels.setBounds(0, 20, 500, 230);
         super.add(bindingPanels);
-        SwingUtilities.invokeLater(() -> {
-            try {
-                List<String> lines = Files.readAllLines(Path.of("/home/alxv05/.action_automator/codes.txt"));
-                int idx = 0;
-                while (idx < lines.size()) {
-                    String name = lines.get(idx);
-                    StringBuilder code = new StringBuilder();
-                    idx += 1;
-                    while (!lines.get(idx).equals("===")) {
-                        code.append(lines.get(idx)).append("\n");
-                        idx += 1;
-                    }
-                    Binding binding = new Binding(name);
-                    binding.setCode(code.toString());
-                    bindingPanels.addBinding(name, binding);
-                    idx += 1;
-                }
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+
+        bindingFileManager = new BindingFileManager(bindingManager, bindingPanels);
 
         coordLabel = new ThemedLabel("Mouse Coords");
         coordLabel.setBounds(250, 250, 250, 50);
@@ -110,13 +90,23 @@ public class GuiMain extends ThemedFrame {
 
         ThemedButton newActionButton = new ThemedButton(" New Action ");
         newActionButton.addActionListener(e -> bindingPanels.newBinding());
-        newActionButton.setFocusable(false);
-        MainMenuBar.add(newActionButton);
+        mainMenuBar.add(newActionButton);
+
+        JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter fileNameExtensionFilter = new FileNameExtensionFilter("ActionAutomator File", "action");
+        fileChooser.setFileFilter(fileNameExtensionFilter);
+        ThemedButton openActionButton = new ThemedButton(" Open Action ");
+        openActionButton.addActionListener(e -> {
+            fileChooser.showDialog(openActionButton, "Select");
+            File file = fileChooser.getSelectedFile();
+            if (file == null) return;
+            bindingFileManager.readBindings(file.getAbsolutePath());
+        });
+        mainMenuBar.add(openActionButton);
 
         ThemedButton removeActionButton = new ThemedButton(" Remove Action ");
         removeActionButton.addActionListener(e -> bindingPanels.removeSelectedBinding());
-        removeActionButton.setFocusable(false);
-        MainMenuBar.add(removeActionButton);
+        mainMenuBar.add(removeActionButton);
 
         ThemedButton runButton = new ThemedButton(" Run Action ");
         runButton.addActionListener(e -> {
@@ -131,24 +121,18 @@ public class GuiMain extends ThemedFrame {
                 debugLabel.setText(toString());
             }
         });
-        MainMenuBar.add(runButton);
-    }
+        mainMenuBar.add(runButton);
 
-    public void start(boolean darkMode, Color primaryColor, Color secondaryColor) {
+        SwingUtilities.invokeLater(() -> bindingFileManager.readBindings(GuiResources.cachePath));
         super.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                try (FileWriter writer = new FileWriter("/home/alxv05/.action_automator/codes.txt")){
-                    for (Binding binding : bindingManager.bindings.values()) {
-                        writer.write(binding.getName() + "\n");
-                        writer.write(binding.getCode() + "\n");
-                        writer.write("===\n");
-                    }
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
+                bindingFileManager.writeBindings(GuiResources.cachePath);
             }
         });
+    }
+
+    public void start(boolean darkMode, Color primaryColor, Color secondaryColor) {
         super.updateColorTheme(darkMode, primaryColor, secondaryColor);
         super.setVisible(true);
         nativeGlobalListener.register();
@@ -276,7 +260,7 @@ public class GuiMain extends ThemedFrame {
     }
 
     public class BindingPanelBox extends ThemedBox {
-        final ArrayList<String> names;
+        public final ArrayList<String> names;
         private final HashMap<String, BindingPanel> bindingPanels;
         private String selected;
 
