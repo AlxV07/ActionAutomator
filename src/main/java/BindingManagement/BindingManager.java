@@ -1,6 +1,6 @@
 package BindingManagement;
 
-import Gui.Components.BindingPanelBox.BindingPanel.BindingButton;
+import Gui.GuiMain.BindingPanelBox.BindingPanel.BindingButton;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 
 import java.util.HashMap;
