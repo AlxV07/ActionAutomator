@@ -1,6 +1,6 @@
 package com.actionautomator.BindingManagement;
 
-import com.actionautomator.Gui.GuiMain.BindingPanelBox;
+import com.actionautomator.Gui.GuiMain.BindingPanelContainer;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,9 +10,9 @@ import java.util.List;
 
 public class BindingFileManager {
     private final BindingManager bindingManager;
-    private final BindingPanelBox bindingPanels;
+    private final BindingPanelContainer bindingPanels;
 
-    public BindingFileManager(BindingManager bindingManager, BindingPanelBox bindingPanels) {
+    public BindingFileManager(BindingManager bindingManager, BindingPanelContainer bindingPanels) {
         this.bindingManager = bindingManager;
         this.bindingPanels = bindingPanels;
     }
@@ -21,6 +21,7 @@ public class BindingFileManager {
             for (String bindingName : bindingPanels.names) {
                 Binding binding = bindingManager.getBinding(bindingName);
                 writer.write(binding.getName().strip() + "\n");
+                if (binding.getCode() == null) binding.setCode("");
                 writer.write(binding.getCode().strip() + "\n");
                 writer.write("===\n");
             }

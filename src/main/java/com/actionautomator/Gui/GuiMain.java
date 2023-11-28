@@ -34,7 +34,7 @@ public class GuiMain extends ThemedFrame {
 
     private final CodeTextPane codeTextPane;
     private final ThemedTextArea selectedLabel;
-    private final BindingPanelBox bindingPanels;
+    private final BindingPanelContainer bindingPanels;
 
     private final ThemedLabel coordLabel;
     private final ThemedTextArea pressedLabel;
@@ -50,7 +50,10 @@ public class GuiMain extends ThemedFrame {
         super.add(mainMenuBar);
 
         codeTextPane = new CodeTextPane();
+//        ThemedScrollPane codeScrollPane = new ThemedScrollPane(codeTextPane);
         codeTextPane.setBounds(0, 270, 250, 230);
+//        codeScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+//        codeScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         super.add(codeTextPane);
 
         ThemedButton enableEditing = new ThemedButton("Lock");
@@ -66,9 +69,12 @@ public class GuiMain extends ThemedFrame {
         selectedLabel.setBounds(60, 250, 190, 20);
         super.add(selectedLabel);
 
-        bindingPanels = new BindingPanelBox();
-        bindingPanels.setBounds(0, 20, 500, 230);
-        super.add(bindingPanels);
+        bindingPanels = new BindingPanelContainer();
+        ThemedScrollPane scrollPane = new ThemedScrollPane(bindingPanels);
+        scrollPane.setBounds(0, 20, 500, 230);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        super.add(scrollPane);
 
         bindingFileManager = new BindingFileManager(bindingManager, bindingPanels);
 
@@ -233,7 +239,7 @@ public class GuiMain extends ThemedFrame {
             StyledDocument doc = getStyledDocument();
             try {
                 int idx = 0;
-                for (String line: doc.getText(0, doc.getLength()).split("\n")) {
+                for (String line : doc.getText(0, doc.getLength()).split("\n")) {
                     int i = 0;
                     while (i < line.length()) {
                         if (line.charAt(i) == ' ') {
@@ -259,13 +265,14 @@ public class GuiMain extends ThemedFrame {
         }
     }
 
-    public class BindingPanelBox extends ThemedBox {
+    public class BindingPanelContainer extends JPanel {
         public final ArrayList<String> names;
         private final HashMap<String, BindingPanel> bindingPanels;
         private String selected;
 
-        public BindingPanelBox() {
+        public BindingPanelContainer() {
             super();
+            super.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             this.names = new ArrayList<>();
             this.bindingPanels = new HashMap<>();
         }
@@ -367,17 +374,18 @@ public class GuiMain extends ThemedFrame {
             private final Binding binding;
             private final BindingButton[] bindingButtons;
             public final ThemedButton editButton;
-            private final ThemedTextArea nameLabel;
 
             public BindingPanel(Binding binding) {
                 super();
-                this.setLayout(null);
+                this.setPreferredSize(new Dimension(500, 50));
                 this.binding = binding;
-                this.nameLabel = new ThemedTextArea();
-                this.nameLabel.setText(binding.getName());
-                this.editButton = new ThemedButton("Edit");
+                ThemedTextArea nameLabel = new ThemedTextArea();
+                nameLabel.setText(binding.getName());
                 add(nameLabel);
-                this.editButton.addActionListener(e -> setSelected(names.indexOf(binding.getName())));
+                nameLabel.setPreferredSize(new Dimension(105, 40));
+                this.editButton = new ThemedButton("Edit");
+                editButton.setPreferredSize(new Dimension(45, 40));
+                editButton.addActionListener(e -> setSelected(names.indexOf(binding.getName())));
                 add(editButton);
                 this.bindingButtons = new BindingButton[] {
                         new BindingButton(0),
@@ -386,35 +394,12 @@ public class GuiMain extends ThemedFrame {
                         new BindingButton(3),
                 };
                 for (BindingButton button : bindingButtons) {
+                    button.setPreferredSize(new Dimension(70, 40));
                     add(button);
                 }
                 this.completeBind(0, -1);
             }
 
-            /**
-             * Set bounds for this panel and all it's BindingButtons
-             * @param x X coord
-             * @param y Y coord
-             */
-            public void setBounds(int x, int y, int width, int height) {
-                super.setBounds(x, y, width, height);
-                height -= 20;
-                int i = 0;
-                int compX = 5;
-                int compY = 10;
-                int buttonW = 85;
-                nameLabel.setBounds(compX, compY, 80, height);
-                editButton.setBounds(compX + 80, compY, 50, height);
-                for (BindingButton button : bindingButtons) {
-                    if (i > 0) {
-                        JButton b = bindingButtons[i - 1];
-                        button.setBounds(b.getX() + b.getWidth(), compY, buttonW, height);
-                    } else {
-                        button.setBounds(compX + 140, compY, buttonW, height);
-                    }
-                    i++;
-                }
-            }
 
             /**
              * Complete the binding for a given index and key

@@ -7,9 +7,9 @@ import java.awt.*;
 public class Main {
     /*
     TODO:
-        - Cleaner look for all components
+        - Binding management cleanup
         - CodeTextArea IDE functionality
-        - Waypoint saving, Action interruption, variables, math, looping, etc.
+            - Waypoint saving, Action interruption, variables, math, looping, etc.
      */
     public static void main(String[] args) {
         GuiMain guiMain = new GuiMain();

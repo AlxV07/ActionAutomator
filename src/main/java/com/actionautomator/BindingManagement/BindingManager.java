@@ -1,6 +1,6 @@
 package com.actionautomator.BindingManagement;
 
-import com.actionautomator.Gui.GuiMain.BindingPanelBox.BindingPanel.BindingButton;
+import com.actionautomator.Gui.GuiMain.BindingPanelContainer.BindingPanel.BindingButton;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 
 import java.util.HashMap;
