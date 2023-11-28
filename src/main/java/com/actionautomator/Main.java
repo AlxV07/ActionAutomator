@@ -8,8 +8,9 @@ public class Main {
     /*
     TODO:
         - Binding management cleanup
+        - Waypoint saving, Action interruption
         - CodeTextArea IDE functionality
-            - Waypoint saving, Action interruption, variables, math, looping, etc.
+            - variables, math, looping, etc.
      */
     public static void main(String[] args) {
         GuiMain guiMain = new GuiMain();
