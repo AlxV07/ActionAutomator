@@ -1,4 +1,4 @@
-package com.actionautomator.GlobalListener;
+package com.actionautomator.ActionManagement;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;

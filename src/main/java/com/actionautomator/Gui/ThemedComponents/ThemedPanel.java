@@ -1,4 +1,4 @@
-package com.actionautomator.Gui.Components;
+package com.actionautomator.Gui.ThemedComponents;
 
 import com.actionautomator.Gui.GuiResources;
 
@@ -7,17 +7,17 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ThemedBox extends Box implements ThemedComponent {
-    protected final List<ThemedComponent> themedComponents;
+public class ThemedPanel extends JPanel implements ThemedComponent {
     protected boolean darkMode;
     protected Color primaryColor;
     protected Color secondaryColor;
+    protected final List<ThemedComponent> themedComponents;
 
-    public ThemedBox() {
-        super(BoxLayout.Y_AXIS);
+    public ThemedPanel() {
+        super();
         super.setFont(GuiResources.defaultFont);
         super.setFocusable(false);
-        themedComponents = new ArrayList<>();
+        this.themedComponents = new ArrayList<>();
     }
 
     @Override

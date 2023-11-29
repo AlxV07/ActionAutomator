@@ -1,4 +1,4 @@
-package com.actionautomator.Gui.Components;
+package com.actionautomator.Gui.ThemedComponents;
 
 import com.actionautomator.Gui.GuiResources;
 
@@ -7,18 +7,20 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ThemedPanel extends JPanel implements ThemedComponent {
+public class ThemedMenuBar extends JMenuBar implements ThemedComponent {
     protected boolean darkMode;
     protected Color primaryColor;
     protected Color secondaryColor;
     protected final List<ThemedComponent> themedComponents;
 
-    public ThemedPanel() {
+    public ThemedMenuBar() {
         super();
         super.setFont(GuiResources.defaultFont);
+        super.setMargin(GuiResources.defaultMargin);
         super.setFocusable(false);
-        this.themedComponents = new ArrayList<>();
+        themedComponents = new ArrayList<>();
     }
+
 
     @Override
     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {

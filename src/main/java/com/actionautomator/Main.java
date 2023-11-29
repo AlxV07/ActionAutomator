@@ -1,19 +1,18 @@
 package com.actionautomator;
 
-import com.actionautomator.Gui.GuiMain;
+import com.actionautomator.Gui.GuiFrame;
 
 import java.awt.*;
 
 public class Main {
     /*
     TODO:
-        - Binding management cleanup
-        - Waypoint saving, Action interruption
         - CodeTextArea IDE functionality
             - variables, math, looping, etc.
+            - highlight errors
      */
     public static void main(String[] args) {
-        GuiMain guiMain = new GuiMain();
-        guiMain.start(true, Color.GREEN, Color.GRAY);
+        GuiFrame guiFrame = new GuiFrame();
+        guiFrame.start(true, Color.GREEN, Color.GRAY);
     }
 }

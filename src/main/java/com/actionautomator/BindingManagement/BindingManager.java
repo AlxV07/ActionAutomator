@@ -1,6 +1,7 @@
 package com.actionautomator.BindingManagement;
 
-import com.actionautomator.Gui.GuiMain.BindingPanelContainer.BindingPanel.BindingButton;
+import com.actionautomator.ActionManagement.CodeActionBuilder;
+import com.actionautomator.Gui.GuiFrame.BindingPanelContainer.BindingPanel.BindingButton;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 
 import java.util.HashMap;
@@ -11,14 +12,6 @@ public class BindingManager {
 
     public BindingManager() {
         this.bindings = new HashMap<>();
-    }
-
-    /**
-     * Creates and adds a new binding to the stored bindings, if a binding with the given name does not already exit
-     * @param name The name to set the new binding to
-     */
-    public void createNewBinding(String name) {
-        this.setBinding(name, new Binding(name));
     }
 
     public void setBinding(String name, Binding binding) {
@@ -56,18 +49,8 @@ public class BindingManager {
      * @param name The name of the target binding
      * @param code The new code to be set
      */
-    public void setBindingCode(String name, String code) {
+    public void setBindingCode(String name, String code) throws CodeActionBuilder.SyntaxError {
         bindings.get(name).setCode(code);
-    }
-
-    /**
-     * Renames the target binding
-     * @param oldName The name of the target binding
-     * @param newName The new name for the target binding
-     */
-    public void setBindingName(String oldName, String newName) {
-        bindings.get(oldName).setName(newName);
-        bindings.put(newName, bindings.remove(oldName));
     }
 
     public void startBindingButton(BindingButton bindingButton) {

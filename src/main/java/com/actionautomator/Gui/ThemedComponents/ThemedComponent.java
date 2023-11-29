@@ -1,4 +1,4 @@
-package com.actionautomator.Gui.Components;
+package com.actionautomator.Gui.ThemedComponents;
 
 import java.awt.*;
 

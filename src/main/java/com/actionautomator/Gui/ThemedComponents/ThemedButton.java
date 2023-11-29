@@ -1,26 +1,32 @@
-package com.actionautomator.Gui.Components;
+package com.actionautomator.Gui.ThemedComponents;
 
 import com.actionautomator.Gui.GuiResources;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class ThemedTextPane extends JTextPane implements ThemedComponent {
-    protected boolean darkMode;
+public class ThemedButton extends JButton implements ThemedComponent {
     protected Color primaryColor;
     protected Color secondaryColor;
+    protected boolean darkMode;
+
+    public ThemedButton(String title) {
+        super(title);
+        super.setFont(GuiResources.defaultFont);
+        super.setMargin(GuiResources.defaultMargin);
+        super.setFocusable(false);
+    }
 
     @Override
     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
-        this.darkMode = darkMode;
         this.primaryColor = primaryColor;
         this.secondaryColor = secondaryColor;
+        this.darkMode = darkMode;
+        setForeground(primaryColor);
         if (darkMode) {
-            setForeground(primaryColor);
             setBackground(GuiResources.darkThemeColor);
             setBorder(GuiResources.darkThemeBorder);
         } else {
-            setForeground(secondaryColor);
             setBackground(GuiResources.lightThemeColor);
             setBorder(GuiResources.lightThemeBorder);
         }

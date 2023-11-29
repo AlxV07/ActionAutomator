@@ -3,6 +3,7 @@ package com.actionautomator.ActionManagement;
 import com.actionautomator.ActionManagement.SubActions.ChangeSpeedSubAction;
 import com.actionautomator.ActionManagement.SubActions.SubAction;
 import com.actionautomator.ActionManagement.SubActions.SubActionType;
+import com.actionautomator.BindingManagement.Binding;
 
 import java.awt.*;
 
@@ -39,6 +40,10 @@ public class ActionExecutor {
 
     public void executeActionFromCode(String code, int delay) throws CodeActionBuilder.SyntaxError {
         this.executeAction(CodeActionBuilder.parseCodeIntoAction(code), delay);
+    }
+
+    public void executeActionFromBinding(Binding binding, int delay) {
+        this.executeAction(binding.getAction(), delay);
     }
 
     public boolean isRunning() {

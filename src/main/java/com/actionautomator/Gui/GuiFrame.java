@@ -6,8 +6,8 @@ import com.actionautomator.ActionManagement.NativeKeyConverter;
 import com.actionautomator.BindingManagement.Binding;
 import com.actionautomator.BindingManagement.BindingFileManager;
 import com.actionautomator.BindingManagement.BindingManager;
-import com.actionautomator.GlobalListener.NativeGlobalListener;
-import com.actionautomator.Gui.Components.*;
+import com.actionautomator.ActionManagement.NativeGlobalListener;
+import com.actionautomator.Gui.ThemedComponents.*;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
 
@@ -26,7 +26,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class GuiMain extends ThemedFrame {
+public class GuiFrame extends ThemedFrame {
     private final ActionExecutor actionExecutor;
     private final BindingManager bindingManager;
     private final BindingFileManager bindingFileManager;
@@ -37,10 +37,14 @@ public class GuiMain extends ThemedFrame {
     private final BindingPanelContainer bindingPanels;
 
     private final ThemedLabel coordLabel;
+    private final ThemedLabel waypointLabel;
+    private final ThemedLabel timerLabel;
     private final ThemedTextArea pressedLabel;
-    private final ThemedLabel debugLabel;
+    private final ThemedButton interruptButton;
+    private boolean timerCounting = false;
+    private long timerStartTime;
 
-    public GuiMain() {
+    public GuiFrame() {
         actionExecutor = new ActionExecutor();
         bindingManager = new BindingManager();
         pressedKeys = new Binding("Pressed Keys");
@@ -50,10 +54,7 @@ public class GuiMain extends ThemedFrame {
         super.add(mainMenuBar);
 
         codeTextPane = new CodeTextPane();
-//        ThemedScrollPane codeScrollPane = new ThemedScrollPane(codeTextPane);
         codeTextPane.setBounds(0, 270, 250, 230);
-//        codeScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-//        codeScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         super.add(codeTextPane);
 
         ThemedButton enableEditing = new ThemedButton("Lock");
@@ -79,20 +80,55 @@ public class GuiMain extends ThemedFrame {
         bindingFileManager = new BindingFileManager(bindingManager, bindingPanels);
 
         coordLabel = new ThemedLabel("Mouse Coords");
-        coordLabel.setBounds(250, 250, 250, 50);
+        coordLabel.setBounds(250, 250, 250, 40);
         coordLabel.setHorizontalAlignment(SwingConstants.CENTER);
         super.add(coordLabel);
+
+        waypointLabel = new ThemedLabel("Waypoint");
+        waypointLabel.setBounds(250, 290, 250, 40);
+        waypointLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        super.add(waypointLabel);
+
+        timerLabel = new ThemedLabel("Timer (ms)");
+        timerLabel.setBounds(290, 380, 210, 40);
+        timerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        super.add(timerLabel);
+
+        class TimerRunnable implements Runnable {
+            @Override
+            public void run() {
+                timerLabel.setText("Timer (ms): " + (System.currentTimeMillis() - timerStartTime));
+                try {
+                    Thread.sleep(10);
+                    if (timerCounting) {
+                        new TimerRunnable().run();
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        ThemedButton timerButton = new ThemedButton("|>");
+        timerButton.setBounds(250, 380, 40, 40);
+        timerButton.addActionListener(e -> {
+            if (!timerCounting) {
+                timerButton.setText("||");
+                timerCounting = true;
+                timerStartTime = System.currentTimeMillis();
+                SwingUtilities.invokeLater(() -> new Thread(() -> new TimerRunnable().run()).start());
+            } else {
+                timerButton.setText("|>");
+                timerCounting = false;
+            }
+        });
+        super.add(timerButton);
 
         pressedLabel = new ThemedTextArea();
         pressedLabel.setText(GuiResources.pressedKeysLabel);
         pressedLabel.setFont(GuiResources.defaultFont);
-        pressedLabel.setBounds(250, 300, 250, 50);
+        pressedLabel.setBounds(250, 330, 250, 50);
         super.add(pressedLabel);
-
-        debugLabel = new ThemedLabel(" Debug Label ");
-        debugLabel.setBounds(250, 350, 250, 50);
-        debugLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        super.add(debugLabel);
 
         ThemedButton newActionButton = new ThemedButton(" New Action ");
         newActionButton.addActionListener(e -> bindingPanels.newBinding());
@@ -121,13 +157,16 @@ public class GuiMain extends ThemedFrame {
                 return;
             }
             try {
-                actionExecutor.interrupt();
                 actionExecutor.executeActionFromCode(codeTextPane.getText(), 100);
             } catch (CodeActionBuilder.SyntaxError e1) {
-                debugLabel.setText(toString());
+                throw new RuntimeException(e1);
             }
         });
         mainMenuBar.add(runButton);
+
+        interruptButton = new ThemedButton(" Interrupt (Ecs) ");
+        interruptButton.addActionListener(e -> actionExecutor.interrupt());
+        mainMenuBar.add(interruptButton);
 
         SwingUtilities.invokeLater(() -> bindingFileManager.readBindings(GuiResources.cachePath));
         super.addWindowListener(new WindowAdapter() {
@@ -143,56 +182,6 @@ public class GuiMain extends ThemedFrame {
         super.setVisible(true);
         nativeGlobalListener.register();
     }
-
-    private final NativeGlobalListener nativeGlobalListener = new NativeGlobalListener() {
-        @Override
-        public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
-            int key = nativeKeyEvent.getKeyCode();
-
-            if (bindingManager.isBindingButton()) {
-                bindingManager.completeBindingButton(key);
-                return;
-            }
-
-            if (pressedKeys.getNofKeys() < pressedKeys.getKeySequence().length) {
-                if (!pressedKeys.containsKey(key)) {
-                    pressedKeys.addKey(key);
-                }
-                StringBuilder keyString = new StringBuilder(GuiResources.pressedKeysLabel);
-                for (int k : pressedKeys.getKeySequence()) {
-                    if (k == -1) break;
-                    keyString.append(NativeKeyConverter.nativeKeyToString(k)).append("+");
-                }
-                pressedLabel.setText(keyString.substring(0, Math.max(0, keyString.length() - 1)));
-
-                Binding binding = bindingManager.findBinding(pressedKeys);
-                if (binding != null) {
-                    try {
-                        actionExecutor.interrupt();
-                        actionExecutor.executeActionFromCode(binding.getCode(), 100);
-                    } catch (Exception e) {
-                        debugLabel.setText(e.toString());
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {
-            pressedKeys.removeKey(nativeKeyEvent.getKeyCode());
-            StringBuilder keyString = new StringBuilder(GuiResources.pressedKeysLabel);
-            for (int k : pressedKeys.getKeySequence()) {
-                if (k == -1) break;
-                keyString.append(NativeKeyConverter.nativeKeyToString(k)).append("+");
-            }
-            pressedLabel.setText(keyString.substring(0, Math.max(0, keyString.length() - 1)));
-        }
-
-        @Override
-        public void nativeMouseMoved(NativeMouseEvent nativeMouseEvent) {
-            coordLabel.setText(String.format("Mouse Coords: %s-X %s-Y", nativeMouseEvent.getX(), nativeMouseEvent.getY()));
-        }
-    };
 
     public class CodeTextPane extends ThemedTextPane {
         private final SimpleAttributeSet defaultAttributeSet;
@@ -228,10 +217,13 @@ public class GuiMain extends ThemedFrame {
 
         private void update() {
             if (bindingPanels.getSelected() == null) {
-                debugLabel.setText("No selected Action to edit.");
                 return;
             }
-            bindingManager.setBindingCode(bindingPanels.getSelected(), getText());
+            try {
+                // TODO FIX TIS
+                bindingManager.setBindingCode(bindingPanels.getSelected(), getText());
+            } catch (Exception ignored) {
+            }
             SwingUtilities.invokeLater(this::updateTextColor);
         }
 
@@ -260,7 +252,7 @@ public class GuiMain extends ThemedFrame {
                     idx += line.length() + 1;
                 }
             } catch (BadLocationException e) {
-                debugLabel.setText(e.toString());
+                throw new RuntimeException(e);
             }
         }
     }
@@ -362,9 +354,9 @@ public class GuiMain extends ThemedFrame {
                 this.selected = names.get(idx);
                 codeTextPane.setText(bindingManager.getBinding(selected).getCode());
             }
-            selectedLabel.setText(this.selected);
             SwingUtilities.invokeLater(codeTextPane::updateTextColor);
             updatePanels();
+            selectedLabel.setText(this.selected);
         }
 
         public class BindingPanel extends ThemedPanel {
@@ -471,4 +463,54 @@ public class GuiMain extends ThemedFrame {
             }
         }
     }
+
+    private final NativeGlobalListener nativeGlobalListener = new NativeGlobalListener() {
+        @Override
+        public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
+            int key = nativeKeyEvent.getKeyCode();
+
+            if (key == NativeKeyEvent.VC_ESCAPE) {
+                interruptButton.doClick();
+                waypointLabel.setText("Waypoint: " + coordLabel.getText().substring("Mouse Coords: ".length()));
+            }
+
+            if (bindingManager.isBindingButton()) {
+                bindingManager.completeBindingButton(key);
+                return;
+            }
+
+            if (pressedKeys.getNofKeys() < pressedKeys.getKeySequence().length) {
+                if (!pressedKeys.containsKey(key)) {
+                    pressedKeys.addKey(key);
+                }
+                StringBuilder keyString = new StringBuilder(GuiResources.pressedKeysLabel);
+                for (int k : pressedKeys.getKeySequence()) {
+                    if (k == -1) break;
+                    keyString.append(NativeKeyConverter.nativeKeyToString(k)).append("+");
+                }
+                pressedLabel.setText(keyString.substring(0, Math.max(0, keyString.length() - 1)));
+
+                Binding binding = bindingManager.findBinding(pressedKeys);
+                if (binding != null) {
+                    actionExecutor.executeActionFromBinding(binding, 100);
+                }
+            }
+        }
+
+        @Override
+        public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {
+            pressedKeys.removeKey(nativeKeyEvent.getKeyCode());
+            StringBuilder keyString = new StringBuilder(GuiResources.pressedKeysLabel);
+            for (int k : pressedKeys.getKeySequence()) {
+                if (k == -1) break;
+                keyString.append(NativeKeyConverter.nativeKeyToString(k)).append("+");
+            }
+            pressedLabel.setText(keyString.substring(0, Math.max(0, keyString.length() - 1)));
+        }
+
+        @Override
+        public void nativeMouseMoved(NativeMouseEvent nativeMouseEvent) {
+            coordLabel.setText(String.format("Mouse Coords: %s-X %s-Y", nativeMouseEvent.getX(), nativeMouseEvent.getY()));
+        }
+    };
 }

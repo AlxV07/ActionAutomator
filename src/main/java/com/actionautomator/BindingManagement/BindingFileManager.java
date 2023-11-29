@@ -1,6 +1,7 @@
 package com.actionautomator.BindingManagement;
 
-import com.actionautomator.Gui.GuiMain.BindingPanelContainer;
+import com.actionautomator.ActionManagement.CodeActionBuilder;
+import com.actionautomator.Gui.GuiFrame.BindingPanelContainer;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,8 +22,9 @@ public class BindingFileManager {
             for (String bindingName : bindingPanels.names) {
                 Binding binding = bindingManager.getBinding(bindingName);
                 writer.write(binding.getName().strip() + "\n");
-                if (binding.getCode() == null) binding.setCode("");
-                writer.write(binding.getCode().strip() + "\n");
+                String code = binding.getCode();
+                if (code == null) code = "";
+                writer.write(code.strip() + "\n");
                 writer.write("===\n");
             }
         } catch (IOException ex) {
@@ -43,7 +45,10 @@ public class BindingFileManager {
                     idx += 1;
                 }
                 Binding binding = new Binding(name);
-                binding.setCode(code.toString());
+                try {
+                    binding.setCode(code.toString());
+                } catch (CodeActionBuilder.SyntaxError ignored) {
+                }
                 bindingPanels.addBinding(name, binding);
                 idx += 1;
             }

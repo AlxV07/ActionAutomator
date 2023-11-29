@@ -1,11 +1,12 @@
 package com.actionautomator.BindingManagement;
 
 import com.actionautomator.ActionManagement.Action;
+import com.actionautomator.ActionManagement.CodeActionBuilder;
 
 import java.util.Arrays;
 
 public class Binding {
-    private String name;
+    private final String name;
     private String code;
     private Action action;
     private final int[] keySequence;
@@ -25,14 +26,6 @@ public class Binding {
     }
 
     /**
-     * Rename the binding
-     * @param name A new name for the binding
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
      * @return The action code of the binding
      */
     public String getCode() {
@@ -43,9 +36,9 @@ public class Binding {
      * Set the action code for the binding
      * @param code New action code
      */
-    public void setCode(String code) {
+    public void setCode(String code) throws CodeActionBuilder.SyntaxError {
         this.code = code;
-//        this.action = CodeActionBuilder.parseCodeIntoAction(code);
+        this.action = CodeActionBuilder.parseCodeIntoAction(code);
     }
 
 
