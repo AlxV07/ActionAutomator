@@ -54,7 +54,7 @@ public class ProgInterface extends ThemedTextPane {
         if (bindingManager.getSelected() == null) {
             return;
         }
-        SwingUtilities.invokeLater(this::updateTextColor);
+        SwingUtilities.invokeLater(this::updateTextDisplay);
     }
 
     public void onSelectedChanged() {
@@ -64,20 +64,20 @@ public class ProgInterface extends ThemedTextPane {
         if (bindingManager.getSelected() != null) {
             setText(bindingManager.getBinding(bindingManager.getSelected()).getCode());
         }
-        SwingUtilities.invokeLater(this::updateTextColor);
+        SwingUtilities.invokeLater(this::updateTextDisplay);
     }
 
     @Override
     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
         super.updateColorTheme(darkMode, primaryColor, secondaryColor);
-        updateTextColor();
+        updateTextDisplay();
     }
 
     public void burnCode() {
 
     }
 
-    public void updateTextColor() {
+    public void updateTextDisplay() {
         if (darkMode) {
             setCaretColor(GuiResources.lightThemeColor);
             StyleConstants.setForeground(defaultAttributeSet, GuiResources.lightThemeColor);
@@ -104,21 +104,23 @@ public class ProgInterface extends ThemedTextPane {
                     String args = parts[1];
                     int argsStartIdx = commandEndIdx + 1, argsEndIdx = argsStartIdx + args.length();
                     doc.setCharacterAttributes(argsStartIdx, argsEndIdx, defaultAttributeSet, true);
-                    int nofArgs = CodeActionBuilder.commandsToNofArgs.get(command);
-                    String[] argParts = args.split(" ");
-                    if (nofArgs < argParts.length) {
-                        super.getHighlighter().addHighlight(argsEndIdx, argsEndIdx + 1, errorHighlighter);
-                    } else if (nofArgs > argParts.length) {
-                        int i = 0;
-                        for (int j = 0; j < nofArgs - argParts.length; j++) {
-                            i += argParts[argParts.length - j - 1].length() + 1;
+                    if (CodeActionBuilder.commandsToNofArgs.get(command) != null) {
+                        int nofArgs = CodeActionBuilder.commandsToNofArgs.get(command);
+                        String[] argParts = args.split(" ");
+                        if (nofArgs < argParts.length) {
+                            super.getHighlighter().addHighlight(argsEndIdx, argsEndIdx + 1, errorHighlighter);
+                        } else if (nofArgs > argParts.length) {
+                            int i = 0;
+                            for (int j = 0; j < nofArgs - argParts.length; j++) {
+                                i += argParts[argParts.length - j - 1].length() + 1;
+                            }
+                            super.getHighlighter().addHighlight(argsEndIdx - i, argsEndIdx, errorHighlighter);
                         }
-                        super.getHighlighter().addHighlight(argsEndIdx - i, argsEndIdx, errorHighlighter);
-                    }
-                    if (CodeActionBuilder.commandsWithNumberArgs.contains(command)) {
-                        for (int i = 0; i < args.length(); i++) {
-                            if (!Character.isDigit(args.charAt(i)) && !Character.isWhitespace(args.charAt(i))) {
-                                super.getHighlighter().addHighlight(argsStartIdx + i, argsStartIdx + i + 1, errorHighlighter);
+                        if (CodeActionBuilder.commandsWithNumberArgs.contains(command)) {
+                            for (int i = 0; i < args.length(); i++) {
+                                if (!Character.isDigit(args.charAt(i)) && !Character.isWhitespace(args.charAt(i))) {
+                                    super.getHighlighter().addHighlight(argsStartIdx + i, argsStartIdx + i + 1, errorHighlighter);
+                                }
                             }
                         }
                     }

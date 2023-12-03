@@ -27,7 +27,7 @@ public class GuiMainFrame extends ThemedFrame {
 
     private final ProgInterface progInterface;
     private final ThemedButton selectedDisplay;
-    private final BindingContainer bindingPanels;
+    private final BindingContainer bindingContainer;
 
     private final ThemedLabel mouseCoordLabel;
     private final ThemedLabel coordWaypointLabel;
@@ -47,17 +47,18 @@ public class GuiMainFrame extends ThemedFrame {
         super.add(mainMenuBar);
 
         progInterface = new ProgInterface(bindingManager);
-        progInterface.setBounds(0, 240, 250, 260);
-        super.add(progInterface);
+        ThemedScrollPane progInterfaceScrollPane = new ThemedScrollPane(progInterface);
+        progInterfaceScrollPane.setBounds(0, 240, 250, 260);
+        super.add(progInterfaceScrollPane);
 
-        bindingPanels = new BindingContainer();
-        ThemedScrollPane scrollPane = new ThemedScrollPane(bindingPanels);
-        scrollPane.setBounds(-1, 20, 500, 200);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        super.add(scrollPane);
+        bindingContainer = new BindingContainer();
+        ThemedScrollPane bindingContainerScrollPane = new ThemedScrollPane(bindingContainer);
+        bindingContainerScrollPane.setBounds(-1, 20, 500, 200);
+        bindingContainerScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        bindingContainerScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        super.add(bindingContainerScrollPane);
 
-        bindingFileManager = new BindingFileManager(bindingManager, bindingPanels);
+        bindingFileManager = new BindingFileManager(bindingManager, bindingContainer);
 
         selectedDisplay = new ThemedButton("null");
         selectedDisplay.setFocusable(true);
@@ -73,7 +74,7 @@ public class GuiMainFrame extends ThemedFrame {
                 JOptionPane.showMessageDialog(this, "Empty Action name.");
                 return;
             }
-            if (!bindingPanels.setBindingName(bindingManager.getSelected(), newName)) {
+            if (!bindingContainer.setBindingName(bindingManager.getSelected(), newName)) {
                 JOptionPane.showMessageDialog(this, "Invalid new name.");
             } else {
                 selectedDisplay.setText(bindingManager.getSelected());
@@ -82,7 +83,7 @@ public class GuiMainFrame extends ThemedFrame {
         super.add(selectedDisplay);
 
         bindingManager.setOnSelectedChanged(() -> {
-            bindingPanels.onSelectedChanged();
+            bindingContainer.onSelectedChanged();
             progInterface.onSelectedChanged();
             selectedDisplay.setText(bindingManager.getSelected());
         });
@@ -152,14 +153,14 @@ public class GuiMainFrame extends ThemedFrame {
         // Help
         ThemedMenu settingsMenu = new ThemedMenu("Settings");
 
-        ThemedButton helpButton = new ThemedButton("Help");
-        helpButton.addActionListener(e -> System.out.println("NOPE"));  // TODO
+        ThemedButton helpButton = new ThemedButton(" Open Help Page   ");
+        helpButton.addActionListener(e -> {});  // TODO
 
         // Theme
         ThemedButton toggleDarkMode = new ThemedButton(" Toggle Dark Mode ");
         toggleDarkMode.addActionListener(e -> updateColorTheme(!darkMode, primaryColor, secondaryColor));
 
-        ThemedButton setAAThemeColor = new ThemedButton(" Set Theme Color ");
+        ThemedButton setAAThemeColor = new ThemedButton(" Set Theme Color  ");
         setAAThemeColor.addActionListener(e -> {
             Color color = JColorChooser.showDialog(this, "ActionAutomator: Choose Theme Color", null);
             if (color != null) {
@@ -176,7 +177,7 @@ public class GuiMainFrame extends ThemedFrame {
 
         // New Action
         ThemedButton newActionButton = new ThemedButton(" New ");
-        newActionButton.addActionListener(e -> bindingPanels.newBinding());
+        newActionButton.addActionListener(e -> bindingContainer.newBinding());
         mainMenuBar.add(newActionButton);
 
         JFileChooser fileChooser = new JFileChooser();
@@ -192,7 +193,7 @@ public class GuiMainFrame extends ThemedFrame {
         mainMenuBar.add(openActionButton);
 
         ThemedButton removeActionButton = new ThemedButton(" Remove ");
-        removeActionButton.addActionListener(e -> bindingPanels.removeSelectedBinding());
+        removeActionButton.addActionListener(e -> bindingContainer.removeSelectedBinding());
         mainMenuBar.add(removeActionButton);
 
         ThemedButton runButton = new ThemedButton(" Run ");
@@ -442,8 +443,8 @@ public class GuiMainFrame extends ThemedFrame {
                 coordWaypointLabel.setText("Waypoint (Esc): " + mouseCoordLabel.getText().substring("Mouse Coords: ".length()));
             }
 
-            if (bindingPanels.isBindingButton()) {
-                bindingPanels.completeBindingButton(key);
+            if (bindingContainer.isBindingButton()) {
+                bindingContainer.completeBindingButton(key);
                 return;
             }
 

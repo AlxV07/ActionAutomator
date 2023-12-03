@@ -7,9 +7,8 @@ import java.awt.*;
 public class Main {
     /*
     TODO:
-        - CodeTextArea IDE functionality
+        - ProgInterface IDE functionality, Code
             - variables, math, looping, etc.
-            - highlight errors
             - Binding code "burning"
         - README, Help page, Logo
      */

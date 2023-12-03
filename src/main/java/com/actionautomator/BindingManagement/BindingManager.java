@@ -82,8 +82,10 @@ public class BindingManager {
         int idx = orderedBindingNames.indexOf(name);
         orderedBindingNames.remove(idx);
         if (orderedBindingNames.isEmpty()) {
+            selected = null; // To rotate to prevSelected in `setSelected`
             setSelected(null);
         } else {
+            selected = null;  // To rotated to prevSelected in `setSelected`
             setSelected(orderedBindingNames.get(Math.max(idx - 1, 0)));
         }
     }
