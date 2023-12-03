@@ -8,7 +8,7 @@ public class NativeKeyConverter {
     public static String nativeKeyToString(int key) {
         String str = NativeKeyEvent.getKeyText(key);
         if (str.startsWith("Unknown")) {
-            return String.format("Special {%s}", key);
+            return String.format("?Key{%s}", key);
         }
         switch (str) {
             case "Open Bracket" -> {return "[";}
@@ -26,8 +26,8 @@ public class NativeKeyConverter {
             case "Delete" -> {return "Del";}
             case "Backspace" -> {return "Back";}
             case "Caps Lock" -> {return "Caps";}
-            case "Page Up" -> {return "Pg.Up";}
-            case "Page Down" -> {return "Pg.Down";}
+            case "Page Up" -> {return "PgUp";}
+            case "Page Down" -> {return "PgDn";}
             default -> {return str;}
         }
     }

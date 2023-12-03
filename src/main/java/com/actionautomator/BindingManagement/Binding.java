@@ -6,28 +6,16 @@ import com.actionautomator.ActionManagement.CodeActionBuilder;
 import java.util.Arrays;
 
 public class Binding {
-    private final String name;
     private String code;
     private Action action;
     private final int[] keySequence;
     private int nofKeys;
 
-    public Binding(String name) {
-        this.name = name;
+    public Binding() {
         this.keySequence = new int[] {-1, -1, -1, -1};
         this.nofKeys = 0;
     }
 
-    /**
-     * @return the name of the binding
-     */
-    public String getName() {
-        return this.name;
-    }
-
-    /**
-     * @return The action code of the binding
-     */
     public String getCode() {
         return code;
     }
@@ -126,6 +114,6 @@ public class Binding {
 
     @Override
     public String toString() {
-        return "(" + this.name + " " + Arrays.toString(keySequence) + ")";
+        return "Binding(" + Arrays.toString(keySequence) + ", " + this.action.toString() + ")";
     }
 }

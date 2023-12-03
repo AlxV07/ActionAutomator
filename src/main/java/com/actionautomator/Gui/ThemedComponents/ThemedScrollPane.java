@@ -6,6 +6,7 @@ import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ThemedScrollPane extends JScrollPane implements ThemedComponent {
@@ -18,7 +19,7 @@ public class ThemedScrollPane extends JScrollPane implements ThemedComponent {
         super(component);
         super.setFont(GuiResources.defaultFont);
         super.setFocusable(false);
-        this.themedComponents = new ArrayList<>();
+        this.themedComponents = new ArrayList<>(List.of((ThemedComponent) component));
     }
 
     private class CustomScrollBarUI extends BasicScrollBarUI {

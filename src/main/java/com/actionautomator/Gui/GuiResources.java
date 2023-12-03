@@ -10,9 +10,13 @@ public class GuiResources {
     public static Font smallerFont = new Font("Source Code Pro", Font.PLAIN, 10);
     public static final Border lightThemeBorder = BorderFactory.createLineBorder(Color.BLACK);
     public static final Border darkThemeBorder = BorderFactory.createLineBorder(Color.WHITE);
+
+    public static final Border lightThemeThickBorder = BorderFactory.createLineBorder(Color.BLACK, 2);
+    public static final Border darkThemeThickBorder = BorderFactory.createLineBorder(Color.WHITE, 2);
+
     public static final Color lightThemeColor = Color.WHITE;
     public static final Color darkThemeColor = Color.BLACK;
 
-    public static String pressedKeysLabel = "\n   Pressed Keys: ";
+    public static String heldKeysLabelText = "\n  Held Keys: ";
     public static String cachePath = System.getProperty("user.home") + "/.actionAutomatorCache.action";
 }

@@ -7,14 +7,14 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ThemedMenuBar extends JMenuBar implements ThemedComponent {
+public class ThemedMenu extends JMenu implements ThemedComponent {
     protected boolean darkMode;
     protected Color primaryColor;
     protected Color secondaryColor;
     protected final List<ThemedComponent> themedComponents;
 
-    public ThemedMenuBar() {
-        super();
+    public ThemedMenu(String s) {
+        super(s);
         super.setFont(GuiResources.defaultFont);
         super.setMargin(GuiResources.defaultMargin);
         super.setFocusable(false);
@@ -25,26 +25,20 @@ public class ThemedMenuBar extends JMenuBar implements ThemedComponent {
     @Override
     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
         this.darkMode = darkMode;
-        this.primaryColor = primaryColor;
-        this.secondaryColor = secondaryColor;
+        this.primaryColor = secondaryColor;
+        this.secondaryColor = primaryColor;
         if (darkMode) {
-            setForeground(primaryColor);
+            setForeground(this.primaryColor);
             setBackground(GuiResources.darkThemeColor);
             setBorder(GuiResources.darkThemeThickBorder);
         } else {
-            setForeground(secondaryColor);
+            setForeground(this.secondaryColor);
             setBackground(GuiResources.lightThemeColor);
             setBorder(GuiResources.lightThemeThickBorder);
         }
         for (ThemedComponent themedComponent : themedComponents) {
             themedComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);
         }
-    }
-
-    @Override
-    public JMenu add(JMenu jMenu) {
-        themedComponents.add((ThemedComponent) jMenu);
-        return super.add(jMenu);
     }
 
     @Override

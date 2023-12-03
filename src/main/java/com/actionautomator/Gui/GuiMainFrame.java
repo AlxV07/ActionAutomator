@@ -23,77 +23,103 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 
-public class GuiFrame extends ThemedFrame {
+public class GuiMainFrame extends ThemedFrame {
     private final ActionExecutor actionExecutor;
     private final BindingManager bindingManager;
     private final BindingFileManager bindingFileManager;
-    private final Binding pressedKeys;
+    private final Binding heldKeys;
 
     private final CodeTextPane codeTextPane;
-    private final ThemedTextArea selectedLabel;
-    private final BindingPanelContainer bindingPanels;
+    private final ThemedButton selectedDisplay;
+    private final BindingContainer bindingPanels;
 
-    private final ThemedLabel coordLabel;
-    private final ThemedLabel waypointLabel;
+    private final ThemedLabel mouseCoordLabel;
+    private final ThemedLabel coordWaypointLabel;
     private final ThemedLabel timerLabel;
-    private final ThemedTextArea pressedLabel;
+    private final ThemedTextArea heldKeysLabel;
     private final ThemedButton interruptButton;
     private boolean timerCounting = false;
     private long timerStartTime;
 
-    public GuiFrame() {
+    public GuiMainFrame() {
         actionExecutor = new ActionExecutor();
         bindingManager = new BindingManager();
-        pressedKeys = new Binding("Pressed Keys");
+        heldKeys = new Binding();
 
         ThemedMenuBar mainMenuBar = new ThemedMenuBar();
-        mainMenuBar.setBounds(0, 0, 500, 21);
+        mainMenuBar.setBounds(0, 0, 500, 20);
         super.add(mainMenuBar);
 
         codeTextPane = new CodeTextPane();
-        codeTextPane.setBounds(0, 270, 250, 230);
+        codeTextPane.setBounds(0, 240, 250, 260);
         super.add(codeTextPane);
 
-        ThemedButton enableEditing = new ThemedButton("Lock");
-        enableEditing.setBounds(0, 250, 60, 20);
-        enableEditing.addActionListener(e -> {
-            codeTextPane.setEnabled(!codeTextPane.isEnabled());
-            enableEditing.setText(codeTextPane.isEnabled() ? "Lock" : "Unlock");
-        });
-        super.add(enableEditing);
-
-        selectedLabel = new ThemedTextArea() {@Override public void setText(String text) {super.setText(" " + text);}};
-        selectedLabel.setFont(GuiResources.defaultFont);
-        selectedLabel.setBounds(60, 250, 190, 20);
-        super.add(selectedLabel);
-
-        bindingPanels = new BindingPanelContainer();
+        bindingPanels = new BindingContainer();
         ThemedScrollPane scrollPane = new ThemedScrollPane(bindingPanels);
-        scrollPane.setBounds(0, 20, 500, 230);
+        scrollPane.setBounds(-1, 20, 500, 200);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         super.add(scrollPane);
 
         bindingFileManager = new BindingFileManager(bindingManager, bindingPanels);
 
-        coordLabel = new ThemedLabel("Mouse Coords");
-        coordLabel.setBounds(250, 250, 250, 40);
-        coordLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        super.add(coordLabel);
+        selectedDisplay = new ThemedButton("null");
+        selectedDisplay.setFocusable(true);
+        selectedDisplay.setFont(GuiResources.defaultFont);
+        selectedDisplay.setBounds(60, 220, 190, 20);
+        selectedDisplay.addActionListener(e -> {
+            String newName = JOptionPane.showInputDialog("Enter new name:");
+            if (newName == null) {
+                return;
+            }
+            newName = newName.strip();
+            if (newName.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Empty Action name.");
+                return;
+            }
+            if (!bindingPanels.setBindingName(bindingManager.getSelected(), newName)) {
+                JOptionPane.showMessageDialog(this, "Invalid new name.");
+            } else {
+                selectedDisplay.setText(bindingManager.getSelected());
+            }
+        });
+        super.add(selectedDisplay);
 
-        waypointLabel = new ThemedLabel("Waypoint");
-        waypointLabel.setBounds(250, 290, 250, 40);
-        waypointLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        super.add(waypointLabel);
+        bindingManager.setOnSelectedChanged(() -> {
+            bindingPanels.onSelectedChanged();
+            codeTextPane.onSelectedChanged();
+            selectedDisplay.setText(bindingManager.getSelected());
+        });
+
+        ThemedButton enableEditing = new ThemedButton("Lock");
+        enableEditing.setBounds(0, 220, 60, 20);
+        enableEditing.addActionListener(e -> {
+            codeTextPane.setEnabled(!codeTextPane.isEnabled());
+            selectedDisplay.setEnabled(!selectedDisplay.isEnabled());
+            enableEditing.setText(codeTextPane.isEnabled() ? "Lock" : "Unlock");
+        });
+        super.add(enableEditing);
+
+        mouseCoordLabel = new ThemedLabel("Mouse Coords");
+        mouseCoordLabel.setBounds(250, 270, 250, 40);
+        mouseCoordLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        super.add(mouseCoordLabel);
+
+        coordWaypointLabel = new ThemedLabel("Save Waypoint (Esc)");
+        coordWaypointLabel.setBounds(250, 310, 250, 40);
+        coordWaypointLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        super.add(coordWaypointLabel);
+
+        int timerComponentY = 360;
 
         timerLabel = new ThemedLabel("Timer (ms)");
-        timerLabel.setBounds(290, 380, 210, 40);
+        timerLabel.setBounds(290, timerComponentY, 210, 40);
         timerLabel.setHorizontalAlignment(SwingConstants.CENTER);
         super.add(timerLabel);
 
+        // Timer
         class TimerRunnable implements Runnable {
             @Override
             public void run() {
@@ -108,9 +134,8 @@ public class GuiFrame extends ThemedFrame {
                 }
             }
         }
-
         ThemedButton timerButton = new ThemedButton("|>");
-        timerButton.setBounds(250, 380, 40, 40);
+        timerButton.setBounds(250, timerComponentY, 40, 40);
         timerButton.addActionListener(e -> {
             if (!timerCounting) {
                 timerButton.setText("||");
@@ -124,20 +149,46 @@ public class GuiFrame extends ThemedFrame {
         });
         super.add(timerButton);
 
-        pressedLabel = new ThemedTextArea();
-        pressedLabel.setText(GuiResources.pressedKeysLabel);
-        pressedLabel.setFont(GuiResources.defaultFont);
-        pressedLabel.setBounds(250, 330, 250, 50);
-        super.add(pressedLabel);
+        // Held Keys
+        heldKeysLabel = new ThemedTextArea();
+        heldKeysLabel.setText(GuiResources.heldKeysLabelText);
+        heldKeysLabel.setBounds(250, 220, 250, 40);
+        super.add(heldKeysLabel);
 
-        ThemedButton newActionButton = new ThemedButton(" New Action ");
+        // Help
+        ThemedMenu settingsMenu = new ThemedMenu("Settings");
+
+        ThemedButton helpButton = new ThemedButton("Help");
+        helpButton.addActionListener(e -> System.out.println("NOPE"));  // TODO
+
+        // Theme
+        ThemedButton toggleDarkMode = new ThemedButton(" Toggle Dark Mode ");
+        toggleDarkMode.addActionListener(e -> updateColorTheme(!darkMode, primaryColor, secondaryColor));
+
+        ThemedButton setAAThemeColor = new ThemedButton(" Set Theme Color ");
+        setAAThemeColor.addActionListener(e -> {
+            Color color = JColorChooser.showDialog(this, "ActionAutomator: Choose Theme Color", null);
+            if (color != null) {
+                updateColorTheme(this.darkMode, color, Color.GRAY);
+            }
+        });
+        settingsMenu.add(toggleDarkMode);
+        settingsMenu.add(setAAThemeColor);
+        settingsMenu.add(helpButton);
+        settingsMenu.updateColorTheme(false, Color.GREEN, Color.RED);
+
+        mainMenuBar.add(settingsMenu);
+        mainMenuBar.add(new ThemedLabel("|"));
+
+        // New Action
+        ThemedButton newActionButton = new ThemedButton(" New ");
         newActionButton.addActionListener(e -> bindingPanels.newBinding());
         mainMenuBar.add(newActionButton);
 
         JFileChooser fileChooser = new JFileChooser();
-        FileNameExtensionFilter fileNameExtensionFilter = new FileNameExtensionFilter("ActionAutomator File", "action");
+        FileNameExtensionFilter fileNameExtensionFilter = new FileNameExtensionFilter("ActionAutomator File (.action)", "action");
         fileChooser.setFileFilter(fileNameExtensionFilter);
-        ThemedButton openActionButton = new ThemedButton(" Open Action ");
+        ThemedButton openActionButton = new ThemedButton(" Open ");
         openActionButton.addActionListener(e -> {
             fileChooser.showDialog(openActionButton, "Select");
             File file = fileChooser.getSelectedFile();
@@ -146,13 +197,13 @@ public class GuiFrame extends ThemedFrame {
         });
         mainMenuBar.add(openActionButton);
 
-        ThemedButton removeActionButton = new ThemedButton(" Remove Action ");
+        ThemedButton removeActionButton = new ThemedButton(" Remove ");
         removeActionButton.addActionListener(e -> bindingPanels.removeSelectedBinding());
         mainMenuBar.add(removeActionButton);
 
-        ThemedButton runButton = new ThemedButton(" Run Action ");
+        ThemedButton runButton = new ThemedButton(" Run ");
         runButton.addActionListener(e -> {
-            if (bindingPanels.getSelected() == null) {
+            if (bindingManager.getSelected() == null) {
                 JOptionPane.showMessageDialog(this, "No selected Action to run.");
                 return;
             }
@@ -164,7 +215,7 @@ public class GuiFrame extends ThemedFrame {
         });
         mainMenuBar.add(runButton);
 
-        interruptButton = new ThemedButton(" Interrupt (Ecs) ");
+        interruptButton = new ThemedButton(" Stop (Esc) ");
         interruptButton.addActionListener(e -> actionExecutor.interrupt());
         mainMenuBar.add(interruptButton);
 
@@ -173,6 +224,7 @@ public class GuiFrame extends ThemedFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 bindingFileManager.writeBindings(GuiResources.cachePath);
+                nativeGlobalListener.unregister();
             }
         });
     }
@@ -183,7 +235,7 @@ public class GuiFrame extends ThemedFrame {
         nativeGlobalListener.register();
     }
 
-    public class CodeTextPane extends ThemedTextPane {
+    public class CodeTextPane extends ThemedTextPane {  // TODO
         private final SimpleAttributeSet defaultAttributeSet;
         private final SimpleAttributeSet coloredAttributeSet;
 
@@ -216,15 +268,26 @@ public class GuiFrame extends ThemedFrame {
         }
 
         private void update() {
-            if (bindingPanels.getSelected() == null) {
+            if (bindingManager.getSelected() == null) {
                 return;
             }
-            try {
-                // TODO FIX TIS
-                bindingManager.setBindingCode(bindingPanels.getSelected(), getText());
-            } catch (Exception ignored) {
+            SwingUtilities.invokeLater(this::updateTextColor);
+        }
+
+        public void onSelectedChanged() {
+            if (bindingManager.getPrevSelected() != null) {
+                bindingManager.setBindingCode(bindingManager.getPrevSelected(), getText());
+            }
+            if (bindingManager.getSelected() != null) {
+                setText(bindingManager.getBinding(bindingManager.getSelected()).getCode());
             }
             SwingUtilities.invokeLater(this::updateTextColor);
+        }
+
+        @Override
+        public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
+            super.updateColorTheme(darkMode, primaryColor, secondaryColor);
+            updateTextColor();
         }
 
         public void updateTextColor() {
@@ -257,16 +320,60 @@ public class GuiFrame extends ThemedFrame {
         }
     }
 
-    public class BindingPanelContainer extends JPanel {
-        public final ArrayList<String> names;
+    public class BindingContainer extends ThemedPanel {
         private final HashMap<String, BindingPanel> bindingPanels;
-        private String selected;
+        private BindingPanel.BindingButton activeBindingButton;
 
-        public BindingPanelContainer() {
+        public BindingContainer() {
             super();
             super.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            this.names = new ArrayList<>();
             this.bindingPanels = new HashMap<>();
+        }
+
+        public void onSelectedChanged() {
+            if (bindingManager.getPrevSelected() != null) {
+                bindingPanels.get(bindingManager.getPrevSelected()).updateColorTheme(darkMode, primaryColor, secondaryColor);
+            }
+            if (bindingManager.getSelected() != null) {
+                BindingPanel bindingPanel = bindingPanels.get(bindingManager.getSelected());
+                bindingPanel.updateColorTheme(darkMode, primaryColor, secondaryColor);
+                bindingPanel.setBackground(secondaryColor);
+                bindingPanel.editButton.setBackground(secondaryColor);
+            }
+        }
+
+        public void startBindingButton(BindingPanel.BindingButton bindingButton) {
+            if (activeBindingButton != null) {
+                this.cancelBindingButton();
+            }
+            activeBindingButton = bindingButton;
+        }
+
+        public void cancelBindingButton() {
+            activeBindingButton.completeButtonBind(-1);
+            activeBindingButton = null;
+        }
+
+        public void completeBindingButton(int key) {
+            if (key == NativeKeyEvent.VC_ESCAPE) {
+                activeBindingButton.completeButtonBind(-1);
+            } else {
+                activeBindingButton.completeButtonBind(key);
+            }
+            activeBindingButton = null;
+        }
+
+        public boolean isBindingButton() {
+            return activeBindingButton != null;
+        }
+
+        public boolean setBindingName(String oldName, String newName) {
+            if (!bindingManager.setBindingName(oldName, newName)) {
+                return false;
+            }
+            bindingPanels.put(newName, bindingPanels.remove(oldName));
+            bindingPanels.get(newName).setBindingName(newName);
+            return true;
         }
 
         public void newBinding() {
@@ -279,105 +386,56 @@ public class GuiFrame extends ThemedFrame {
                 JOptionPane.showMessageDialog(this, "Empty Action name.");
                 return;
             }
-            if (names.contains(actionName)) {
+            if (!this.addBinding(actionName, new Binding())) {
                 JOptionPane.showMessageDialog(this, String.format("\"%s\" already exists.", actionName));
-                return;
             }
-            this.addBinding(actionName, new Binding(actionName));
         }
 
-        public void addBinding(String name, Binding binding) {
-            bindingManager.setBinding(name, binding);
-            BindingPanel bindingPanel = new BindingPanel(binding);
+        public boolean addBinding(String name, Binding binding) {
+            if (!bindingManager.addBinding(name, binding)) {
+                return false;
+            }
+            BindingPanel bindingPanel = new BindingPanel(name, binding);
             add(bindingPanel);
-            names.add(name);
             bindingPanels.put(name, bindingPanel);
-            setSelected(names.size() - 1);
+            bindingManager.setSelected(name);
+            return true;
         }
 
         public void removeSelectedBinding() {
-            String name = getSelected();
+            String name = bindingManager.getSelected();
             if (name == null) {
                 JOptionPane.showMessageDialog(this, "No selected Action to remove.");
                 return;
             }
             if (JOptionPane.showConfirmDialog(this, String.format("Remove Action \"%s\"?", name)) == JOptionPane.YES_OPTION) {
-                bindingManager.removeBinding(name);
                 super.remove(bindingPanels.remove(name));
-                int i = names.indexOf(name);
-                if (i == -1) {
-                    names.add(-1, "");
-                }
-                names.remove(i);
-                if (names.isEmpty()) {
-                    setSelected(-1);
-                } else {
-                    setSelected(Math.max(i - 1, 0));
-                }
+                bindingManager.removeBinding(name);
                 revalidate();
                 repaint();
-                updatePanels();
             }
         }
 
-        public String getSelected() {
-            return this.selected;
-        }
-
-        private void updatePanels() {
-            if (names != null) {
-                int i = 0;
-                while (i < names.size()) {
-                    String name = names.get(i);
-                    BindingPanel bindingPanel = bindingPanels.get(name);
-                    bindingPanel.updateColorTheme(darkMode, primaryColor, secondaryColor);
-                    if (name.equals(selected)) {
-                        bindingPanel.setBackground(secondaryColor);
-                        bindingPanel.editButton.setBackground(secondaryColor);
-                    } else {
-                        if (darkMode) {
-                            bindingPanel.setBackground(GuiResources.darkThemeColor);
-                        } else {
-                            bindingPanel.setBackground(GuiResources.lightThemeColor);
-                        }
-                    }
-                    i++;
-                }
-            }
-        }
-
-        public void setSelected(int idx) {
-            if (idx == -1) {
-                this.selected = null;
-                codeTextPane.setText("null");
-            } else {
-                this.selected = names.get(idx);
-                codeTextPane.setText(bindingManager.getBinding(selected).getCode());
-            }
-            SwingUtilities.invokeLater(codeTextPane::updateTextColor);
-            updatePanels();
-            selectedLabel.setText(this.selected);
-        }
 
         public class BindingPanel extends ThemedPanel {
-            /**
-             * JPanel interface for interacting w/ Binding classes through GUI
-             */
+            private String name;
             private final Binding binding;
             private final BindingButton[] bindingButtons;
-            public final ThemedButton editButton;
+            private final ThemedButton editButton;
+            private final ThemedTextArea nameDisplay;
 
-            public BindingPanel(Binding binding) {
+            public BindingPanel(String name, Binding binding) {
                 super();
                 this.setPreferredSize(new Dimension(500, 50));
+                this.name = name;
                 this.binding = binding;
-                ThemedTextArea nameLabel = new ThemedTextArea();
-                nameLabel.setText(binding.getName());
-                add(nameLabel);
-                nameLabel.setPreferredSize(new Dimension(105, 40));
+                this.nameDisplay = new ThemedTextArea();
+                nameDisplay.setText(this.name);
+                add(nameDisplay);
+                nameDisplay.setPreferredSize(new Dimension(105, 40));
                 this.editButton = new ThemedButton("Edit");
                 editButton.setPreferredSize(new Dimension(45, 40));
-                editButton.addActionListener(e -> setSelected(names.indexOf(binding.getName())));
+                editButton.addActionListener(e -> bindingManager.setSelected(this.name));
                 add(editButton);
                 this.bindingButtons = new BindingButton[] {
                         new BindingButton(0),
@@ -386,21 +444,21 @@ public class GuiFrame extends ThemedFrame {
                         new BindingButton(3),
                 };
                 for (BindingButton button : bindingButtons) {
-                    button.setPreferredSize(new Dimension(70, 40));
                     add(button);
                 }
                 this.completeBind(0, -1);
             }
 
+            public void setBindingName(String newName) {
+                this.name = newName;
+                this.nameDisplay.setText(newName);
+            }
 
-            /**
-             * Complete the binding for a given index and key
-             * @param idx The index of the bound key
-             * @param key The key that was bound (NativeKeyEvent VC)
-             */
             public void completeBind(int idx, int key) {
                 if (key == -1 || binding.containsKey(key)) {
-                    binding.removeKey(binding.getKeySequence()[idx]);
+                    if (binding.getKeySequence()[idx] != key) {
+                        binding.removeKey(binding.getKeySequence()[idx]);
+                    }
                     for (int i = idx; i < binding.getNofKeys() + 1; i++) {
                         bindingButtons[i].setEnabled(true);
                         bindingButtons[i].setKeyText(binding.getKeySequence()[i]);
@@ -425,9 +483,10 @@ public class GuiFrame extends ThemedFrame {
                 public BindingButton(int idx) {
                     super("null");
                     super.setFont(GuiResources.smallerFont);
+                    super.setPreferredSize(new Dimension(70, 40));
                     this.idx = idx;
                     addActionListener(e -> {
-                        bindingManager.startBindingButton(this);
+                        startBindingButton(this);
                         super.setText("Binding...");
                         super.setForeground(secondaryColor);
                         super.setBackground(primaryColor);
@@ -471,26 +530,26 @@ public class GuiFrame extends ThemedFrame {
 
             if (key == NativeKeyEvent.VC_ESCAPE) {
                 interruptButton.doClick();
-                waypointLabel.setText("Waypoint: " + coordLabel.getText().substring("Mouse Coords: ".length()));
+                coordWaypointLabel.setText("Waypoint (Esc): " + mouseCoordLabel.getText().substring("Mouse Coords: ".length()));
             }
 
-            if (bindingManager.isBindingButton()) {
-                bindingManager.completeBindingButton(key);
+            if (bindingPanels.isBindingButton()) {
+                bindingPanels.completeBindingButton(key);
                 return;
             }
 
-            if (pressedKeys.getNofKeys() < pressedKeys.getKeySequence().length) {
-                if (!pressedKeys.containsKey(key)) {
-                    pressedKeys.addKey(key);
+            if (heldKeys.getNofKeys() < heldKeys.getKeySequence().length) {
+                if (!heldKeys.containsKey(key)) {
+                    heldKeys.addKey(key);
                 }
-                StringBuilder keyString = new StringBuilder(GuiResources.pressedKeysLabel);
-                for (int k : pressedKeys.getKeySequence()) {
+                StringBuilder keyString = new StringBuilder(GuiResources.heldKeysLabelText);
+                for (int k : heldKeys.getKeySequence()) {
                     if (k == -1) break;
                     keyString.append(NativeKeyConverter.nativeKeyToString(k)).append("+");
                 }
-                pressedLabel.setText(keyString.substring(0, Math.max(0, keyString.length() - 1)));
+                heldKeysLabel.setText(keyString.substring(0, Math.max(0, keyString.length() - 1)));
 
-                Binding binding = bindingManager.findBinding(pressedKeys);
+                Binding binding = bindingManager.findBinding(heldKeys);
                 if (binding != null) {
                     actionExecutor.executeActionFromBinding(binding, 100);
                 }
@@ -499,18 +558,18 @@ public class GuiFrame extends ThemedFrame {
 
         @Override
         public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {
-            pressedKeys.removeKey(nativeKeyEvent.getKeyCode());
-            StringBuilder keyString = new StringBuilder(GuiResources.pressedKeysLabel);
-            for (int k : pressedKeys.getKeySequence()) {
+            heldKeys.removeKey(nativeKeyEvent.getKeyCode());
+            StringBuilder keyString = new StringBuilder(GuiResources.heldKeysLabelText);
+            for (int k : heldKeys.getKeySequence()) {
                 if (k == -1) break;
                 keyString.append(NativeKeyConverter.nativeKeyToString(k)).append("+");
             }
-            pressedLabel.setText(keyString.substring(0, Math.max(0, keyString.length() - 1)));
+            heldKeysLabel.setText(keyString.substring(0, Math.max(0, keyString.length() - 1)));
         }
 
         @Override
         public void nativeMouseMoved(NativeMouseEvent nativeMouseEvent) {
-            coordLabel.setText(String.format("Mouse Coords: %s-X %s-Y", nativeMouseEvent.getX(), nativeMouseEvent.getY()));
+            mouseCoordLabel.setText(String.format("Mouse Coords: %s-X %s-Y", nativeMouseEvent.getX(), nativeMouseEvent.getY()));
         }
     };
 }

@@ -1,7 +1,7 @@
 package com.actionautomator.BindingManagement;
 
 import com.actionautomator.ActionManagement.CodeActionBuilder;
-import com.actionautomator.Gui.GuiFrame.BindingPanelContainer;
+import com.actionautomator.Gui.GuiMainFrame.BindingContainer;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,17 +11,17 @@ import java.util.List;
 
 public class BindingFileManager {
     private final BindingManager bindingManager;
-    private final BindingPanelContainer bindingPanels;
+    private final BindingContainer bindingPanels;
 
-    public BindingFileManager(BindingManager bindingManager, BindingPanelContainer bindingPanels) {
+    public BindingFileManager(BindingManager bindingManager, BindingContainer bindingPanels) {
         this.bindingManager = bindingManager;
         this.bindingPanels = bindingPanels;
     }
     public void writeBindings(String targetPath) {
         try (FileWriter writer = new FileWriter(targetPath)) {
-            for (String bindingName : bindingPanels.names) {
+            for (String bindingName : bindingManager.getOrderedBindingNames()) {
                 Binding binding = bindingManager.getBinding(bindingName);
-                writer.write(binding.getName().strip() + "\n");
+                writer.write(bindingName + "\n");
                 String code = binding.getCode();
                 if (code == null) code = "";
                 writer.write(code.strip() + "\n");
@@ -44,7 +44,7 @@ public class BindingFileManager {
                     code.append(lines.get(idx)).append("\n");
                     idx += 1;
                 }
-                Binding binding = new Binding(name);
+                Binding binding = new Binding();
                 try {
                     binding.setCode(code.toString());
                 } catch (CodeActionBuilder.SyntaxError ignored) {
