@@ -1,6 +1,6 @@
 package com.actionautomator.Gui.ThemedComponents;
 
-import com.actionautomator.Gui.GuiResources;
+import com.actionautomator.Gui.ActionAutomatorResources;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +13,7 @@ public class ThemedLabel extends JLabel implements ThemedComponent {
     public ThemedLabel(String title) {
         super(title);
         super.setOpaque(true);
-        super.setFont(GuiResources.defaultFont);
+        super.setFont(ActionAutomatorResources.defaultFont);
         super.setFocusable(false);
     }
 
@@ -24,11 +24,11 @@ public class ThemedLabel extends JLabel implements ThemedComponent {
         this.secondaryColor = secondaryColor;
         setForeground(primaryColor);
         if (darkMode) {
-            setBackground(GuiResources.darkThemeColor);
-            setBorder(GuiResources.darkThemeBorder);
+            setBackground(ActionAutomatorResources.darkThemeColor);
+            setBorder(ActionAutomatorResources.darkThemeBorder);
         } else {
-            setBackground(GuiResources.lightThemeColor);
-            setBorder(GuiResources.lightThemeBorder);
+            setBackground(ActionAutomatorResources.lightThemeColor);
+            setBorder(ActionAutomatorResources.lightThemeBorder);
         }
     }
 }

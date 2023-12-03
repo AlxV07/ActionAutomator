@@ -2,7 +2,9 @@ package com.actionautomator.BindingManagement;
 
 import com.actionautomator.ActionManagement.CodeActionBuilder;
 import com.actionautomator.Gui.GuiMainFrame.BindingContainer;
+import com.actionautomator.Gui.ActionAutomatorResources;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,6 +20,10 @@ public class BindingFileManager {
         this.bindingPanels = bindingPanels;
     }
     public void writeBindings(String targetPath) {
+        File directory = new File(ActionAutomatorResources.directoryPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
         try (FileWriter writer = new FileWriter(targetPath)) {
             for (String bindingName : bindingManager.getOrderedBindingNames()) {
                 Binding binding = bindingManager.getBinding(bindingName);

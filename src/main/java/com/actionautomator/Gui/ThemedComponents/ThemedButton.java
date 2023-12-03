@@ -1,6 +1,6 @@
 package com.actionautomator.Gui.ThemedComponents;
 
-import com.actionautomator.Gui.GuiResources;
+import com.actionautomator.Gui.ActionAutomatorResources;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,8 +12,8 @@ public class ThemedButton extends JButton implements ThemedComponent {
 
     public ThemedButton(String title) {
         super(title);
-        super.setFont(GuiResources.defaultFont);
-        super.setMargin(GuiResources.defaultMargin);
+        super.setFont(ActionAutomatorResources.defaultFont);
+        super.setMargin(ActionAutomatorResources.defaultMargin);
         super.setFocusable(false);
     }
 
@@ -24,11 +24,11 @@ public class ThemedButton extends JButton implements ThemedComponent {
         this.darkMode = darkMode;
         setForeground(primaryColor);
         if (darkMode) {
-            setBackground(GuiResources.darkThemeColor);
-            setBorder(GuiResources.darkThemeBorder);
+            setBackground(ActionAutomatorResources.darkThemeColor);
+            setBorder(ActionAutomatorResources.darkThemeBorder);
         } else {
-            setBackground(GuiResources.lightThemeColor);
-            setBorder(GuiResources.lightThemeBorder);
+            setBackground(ActionAutomatorResources.lightThemeColor);
+            setBorder(ActionAutomatorResources.lightThemeBorder);
         }
     }
 }

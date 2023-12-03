@@ -1,12 +1,11 @@
 package com.actionautomator.Gui.ThemedComponents;
 
-import com.actionautomator.Gui.GuiResources;
+import com.actionautomator.Gui.ActionAutomatorResources;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class ThemedScrollPane extends JScrollPane implements ThemedComponent {
@@ -17,7 +16,7 @@ public class ThemedScrollPane extends JScrollPane implements ThemedComponent {
 
     public ThemedScrollPane(JComponent component) {
         super(component);
-        super.setFont(GuiResources.defaultFont);
+        super.setFont(ActionAutomatorResources.defaultFont);
         super.setFocusable(false);
         this.themedComponents = new ArrayList<>(List.of((ThemedComponent) component));
     }
@@ -59,12 +58,12 @@ public class ThemedScrollPane extends JScrollPane implements ThemedComponent {
         this.secondaryColor = secondaryColor;
         if (darkMode) {
             setForeground(primaryColor);
-            setBackground(GuiResources.darkThemeColor);
-            setBorder(GuiResources.darkThemeBorder);
+            setBackground(ActionAutomatorResources.darkThemeColor);
+            setBorder(ActionAutomatorResources.darkThemeBorder);
         } else {
             setForeground(secondaryColor);
-            setBackground(GuiResources.lightThemeColor);
-            setBorder(GuiResources.lightThemeBorder);
+            setBackground(ActionAutomatorResources.lightThemeColor);
+            setBorder(ActionAutomatorResources.lightThemeBorder);
         }
         for (ThemedComponent themedComponent : themedComponents) {
             themedComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);

@@ -26,7 +26,12 @@ public class Binding {
      */
     public void setCode(String code) throws CodeActionBuilder.SyntaxError {
         this.code = code;
-        this.action = CodeActionBuilder.parseCodeIntoAction(code);
+        try {
+            this.action = CodeActionBuilder.parseCodeIntoAction(code);
+        } catch (CodeActionBuilder.SyntaxError e) {
+            this.action = null;
+            throw e;
+        }
     }
 
 

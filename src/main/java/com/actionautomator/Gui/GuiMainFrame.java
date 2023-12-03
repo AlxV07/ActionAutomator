@@ -11,12 +11,15 @@ import com.actionautomator.Gui.ThemedComponents.*;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 
 public class GuiMainFrame extends ThemedFrame {
@@ -62,7 +65,7 @@ public class GuiMainFrame extends ThemedFrame {
 
         selectedDisplay = new ThemedButton("null");
         selectedDisplay.setFocusable(true);
-        selectedDisplay.setFont(GuiResources.defaultFont);
+        selectedDisplay.setFont(ActionAutomatorResources.defaultFont);
         selectedDisplay.setBounds(60, 220, 190, 20);
         selectedDisplay.addActionListener(e -> {
             String newName = JOptionPane.showInputDialog("Enter new name:");
@@ -146,7 +149,7 @@ public class GuiMainFrame extends ThemedFrame {
 
         // Held Keys
         heldKeysLabel = new ThemedTextArea();
-        heldKeysLabel.setText(GuiResources.heldKeysLabelText);
+        heldKeysLabel.setText(ActionAutomatorResources.heldKeysLabelText);
         heldKeysLabel.setBounds(250, 220, 250, 40);
         super.add(heldKeysLabel);
 
@@ -154,7 +157,15 @@ public class GuiMainFrame extends ThemedFrame {
         ThemedMenu settingsMenu = new ThemedMenu("Settings");
 
         ThemedButton helpButton = new ThemedButton(" Open Help Page   ");
-        helpButton.addActionListener(e -> {});  // TODO
+        helpButton.addActionListener(e -> {
+            try {
+                BufferedImage image = ImageIO.read(new File(ActionAutomatorResources.helpPage));
+                ImageIcon icon = new ImageIcon(image);
+                JOptionPane.showMessageDialog(null, new JLabel(icon));
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, "Could not find Help page :(");
+            }
+        });
 
         // Theme
         ThemedButton toggleDarkMode = new ThemedButton(" Toggle Dark Mode ");
@@ -214,11 +225,11 @@ public class GuiMainFrame extends ThemedFrame {
         interruptButton.addActionListener(e -> actionExecutor.interrupt());
         mainMenuBar.add(interruptButton);
 
-        SwingUtilities.invokeLater(() -> bindingFileManager.readBindings(GuiResources.cachePath));
+        SwingUtilities.invokeLater(() -> bindingFileManager.readBindings(ActionAutomatorResources.cachePath));
         super.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                bindingFileManager.writeBindings(GuiResources.cachePath);
+                bindingFileManager.writeBindings(ActionAutomatorResources.cachePath);
                 nativeGlobalListener.unregister();
             }
         });
@@ -392,7 +403,7 @@ public class GuiMainFrame extends ThemedFrame {
 
                 public BindingButton(int idx) {
                     super("null");
-                    super.setFont(GuiResources.smallerFont);
+                    super.setFont(ActionAutomatorResources.smallerFont);
                     super.setPreferredSize(new Dimension(70, 40));
                     this.idx = idx;
                     addActionListener(e -> {
@@ -423,9 +434,9 @@ public class GuiMainFrame extends ThemedFrame {
                 public void completeButtonBind(int key) {
                     super.setForeground(primaryColor);
                     if (darkMode) {
-                        super.setBackground(GuiResources.darkThemeColor);
+                        super.setBackground(ActionAutomatorResources.darkThemeColor);
                     } else {
-                        super.setBackground(GuiResources.lightThemeColor);
+                        super.setBackground(ActionAutomatorResources.lightThemeColor);
                     }
                     completeBind(this.idx, key);
                 }
@@ -452,7 +463,7 @@ public class GuiMainFrame extends ThemedFrame {
                 if (!heldKeys.containsKey(key)) {
                     heldKeys.addKey(key);
                 }
-                StringBuilder keyString = new StringBuilder(GuiResources.heldKeysLabelText);
+                StringBuilder keyString = new StringBuilder(ActionAutomatorResources.heldKeysLabelText);
                 for (int k : heldKeys.getKeySequence()) {
                     if (k == -1) break;
                     keyString.append(NativeKeyConverter.nativeKeyToString(k)).append("+");
@@ -469,7 +480,7 @@ public class GuiMainFrame extends ThemedFrame {
         @Override
         public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {
             heldKeys.removeKey(nativeKeyEvent.getKeyCode());
-            StringBuilder keyString = new StringBuilder(GuiResources.heldKeysLabelText);
+            StringBuilder keyString = new StringBuilder(ActionAutomatorResources.heldKeysLabelText);
             for (int k : heldKeys.getKeySequence()) {
                 if (k == -1) break;
                 keyString.append(NativeKeyConverter.nativeKeyToString(k)).append("+");

@@ -1,6 +1,6 @@
 package com.actionautomator.Gui.ThemedComponents;
 
-import com.actionautomator.Gui.GuiResources;
+import com.actionautomator.Gui.ActionAutomatorResources;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,12 +12,12 @@ public class ThemedTextArea extends JTextArea implements ThemedComponent {
 
     public ThemedTextArea() {
         super();
-        super.setFont(GuiResources.smallerFont);
+        super.setFont(ActionAutomatorResources.smallerFont);
         super.setFocusable(false);
         super.setOpaque(true);
         super.setWrapStyleWord(true);
         super.setLineWrap(true);
-        super.setMargin(GuiResources.defaultMargin);
+        super.setMargin(ActionAutomatorResources.defaultMargin);
     }
 
     @Override
@@ -27,11 +27,11 @@ public class ThemedTextArea extends JTextArea implements ThemedComponent {
         this.secondaryColor = secondaryColor;
         setForeground(primaryColor);
         if (darkMode) {
-            setBackground(GuiResources.darkThemeColor);
-            setBorder(GuiResources.darkThemeBorder);
+            setBackground(ActionAutomatorResources.darkThemeColor);
+            setBorder(ActionAutomatorResources.darkThemeBorder);
         } else {
-            setBackground(GuiResources.lightThemeColor);
-            setBorder(GuiResources.lightThemeBorder);
+            setBackground(ActionAutomatorResources.lightThemeColor);
+            setBorder(ActionAutomatorResources.lightThemeBorder);
         }
     }
 }

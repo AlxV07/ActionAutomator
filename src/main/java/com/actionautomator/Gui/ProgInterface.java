@@ -23,8 +23,8 @@ public class ProgInterface extends ThemedTextPane {
         super();
         this.bindingManager = bindingManager;
         super.setEnabled(true);
-        super.setFont(GuiResources.defaultFont);
-        super.setMargin(GuiResources.defaultMargin);
+        super.setFont(ActionAutomatorResources.defaultFont);
+        super.setMargin(ActionAutomatorResources.defaultMargin);
         StyledDocument doc = super.getStyledDocument();
         defaultAttributeSet = new SimpleAttributeSet();
         StyleConstants.setLeftIndent(defaultAttributeSet, 2);
@@ -79,11 +79,11 @@ public class ProgInterface extends ThemedTextPane {
 
     public void updateTextDisplay() {
         if (darkMode) {
-            setCaretColor(GuiResources.lightThemeColor);
-            StyleConstants.setForeground(defaultAttributeSet, GuiResources.lightThemeColor);
+            setCaretColor(ActionAutomatorResources.lightThemeColor);
+            StyleConstants.setForeground(defaultAttributeSet, ActionAutomatorResources.lightThemeColor);
         } else {
-            setCaretColor(GuiResources.darkThemeColor);
-            StyleConstants.setForeground(defaultAttributeSet, GuiResources.darkThemeColor);
+            setCaretColor(ActionAutomatorResources.darkThemeColor);
+            StyleConstants.setForeground(defaultAttributeSet, ActionAutomatorResources.darkThemeColor);
         }
         StyledDocument doc = getStyledDocument();
         super.getHighlighter().removeAllHighlights();

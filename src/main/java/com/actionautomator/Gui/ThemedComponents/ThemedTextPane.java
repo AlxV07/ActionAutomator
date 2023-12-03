@@ -1,6 +1,6 @@
 package com.actionautomator.Gui.ThemedComponents;
 
-import com.actionautomator.Gui.GuiResources;
+import com.actionautomator.Gui.ActionAutomatorResources;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,12 +17,12 @@ public class ThemedTextPane extends JTextPane implements ThemedComponent {
         this.secondaryColor = secondaryColor;
         if (darkMode) {
             setForeground(primaryColor);
-            setBackground(GuiResources.darkThemeColor);
-            setBorder(GuiResources.darkThemeBorder);
+            setBackground(ActionAutomatorResources.darkThemeColor);
+            setBorder(ActionAutomatorResources.darkThemeBorder);
         } else {
             setForeground(secondaryColor);
-            setBackground(GuiResources.lightThemeColor);
-            setBorder(GuiResources.lightThemeBorder);
+            setBackground(ActionAutomatorResources.lightThemeColor);
+            setBorder(ActionAutomatorResources.lightThemeBorder);
         }
     }
 }

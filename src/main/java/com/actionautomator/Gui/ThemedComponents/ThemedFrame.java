@@ -1,6 +1,6 @@
 package com.actionautomator.Gui.ThemedComponents;
 
-import com.actionautomator.Gui.GuiResources;
+import com.actionautomator.Gui.ActionAutomatorResources;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +15,7 @@ public class ThemedFrame extends JFrame implements ThemedComponent {
 
     public ThemedFrame() {
         super();
-        super.setFont(GuiResources.defaultFont);
+        super.setFont(ActionAutomatorResources.defaultFont);
         super.setFocusable(false);
         super.setTitle("ActionAutomator");
         super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -32,10 +32,10 @@ public class ThemedFrame extends JFrame implements ThemedComponent {
         this.secondaryColor = secondaryColor;
         if (darkMode) {
             setForeground(primaryColor);
-            super.getContentPane().setBackground(GuiResources.darkThemeColor);
+            super.getContentPane().setBackground(ActionAutomatorResources.darkThemeColor);
         } else {
             setForeground(secondaryColor);
-            super.getContentPane().setBackground(GuiResources.lightThemeColor);
+            super.getContentPane().setBackground(ActionAutomatorResources.lightThemeColor);
         }
         for (ThemedComponent themedComponent : themedComponents) {
             themedComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);

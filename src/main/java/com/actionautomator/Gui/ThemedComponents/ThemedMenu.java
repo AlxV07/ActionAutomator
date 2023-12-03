@@ -1,6 +1,6 @@
 package com.actionautomator.Gui.ThemedComponents;
 
-import com.actionautomator.Gui.GuiResources;
+import com.actionautomator.Gui.ActionAutomatorResources;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,8 +15,8 @@ public class ThemedMenu extends JMenu implements ThemedComponent {
 
     public ThemedMenu(String s) {
         super(s);
-        super.setFont(GuiResources.defaultFont);
-        super.setMargin(GuiResources.defaultMargin);
+        super.setFont(ActionAutomatorResources.defaultFont);
+        super.setMargin(ActionAutomatorResources.defaultMargin);
         super.setFocusable(false);
         themedComponents = new ArrayList<>();
     }
@@ -29,12 +29,12 @@ public class ThemedMenu extends JMenu implements ThemedComponent {
         this.secondaryColor = primaryColor;
         if (darkMode) {
             setForeground(this.primaryColor);
-            setBackground(GuiResources.darkThemeColor);
-            setBorder(GuiResources.darkThemeThickBorder);
+            setBackground(ActionAutomatorResources.darkThemeColor);
+            setBorder(ActionAutomatorResources.darkThemeThickBorder);
         } else {
             setForeground(this.secondaryColor);
-            setBackground(GuiResources.lightThemeColor);
-            setBorder(GuiResources.lightThemeThickBorder);
+            setBackground(ActionAutomatorResources.lightThemeColor);
+            setBorder(ActionAutomatorResources.lightThemeThickBorder);
         }
         for (ThemedComponent themedComponent : themedComponents) {
             themedComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);

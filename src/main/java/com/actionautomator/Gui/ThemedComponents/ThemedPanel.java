@@ -1,6 +1,6 @@
 package com.actionautomator.Gui.ThemedComponents;
 
-import com.actionautomator.Gui.GuiResources;
+import com.actionautomator.Gui.ActionAutomatorResources;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +15,7 @@ public class ThemedPanel extends JPanel implements ThemedComponent {
 
     public ThemedPanel() {
         super();
-        super.setFont(GuiResources.defaultFont);
+        super.setFont(ActionAutomatorResources.defaultFont);
         super.setFocusable(false);
         this.themedComponents = new ArrayList<>();
     }
@@ -27,12 +27,12 @@ public class ThemedPanel extends JPanel implements ThemedComponent {
         this.secondaryColor = secondaryColor;
         if (darkMode) {
             setForeground(primaryColor);
-            setBackground(GuiResources.darkThemeColor);
-            setBorder(GuiResources.darkThemeBorder);
+            setBackground(ActionAutomatorResources.darkThemeColor);
+            setBorder(ActionAutomatorResources.darkThemeBorder);
         } else {
             setForeground(secondaryColor);
-            setBackground(GuiResources.lightThemeColor);
-            setBorder(GuiResources.lightThemeBorder);
+            setBackground(ActionAutomatorResources.lightThemeColor);
+            setBorder(ActionAutomatorResources.lightThemeBorder);
         }
         for (ThemedComponent themedComponent : themedComponents) {
             themedComponent.updateColorTheme(darkMode, primaryColor, secondaryColor);
