@@ -2,18 +2,38 @@ package com.actionautomator.ActionManagement;
 
 import com.actionautomator.ActionManagement.SubActions.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class CodeActionBuilder {
+    public static final HashMap<String, Integer> commandsToNofArgs = new HashMap<>();
+    public static final HashSet<String> commandsWithNumberArgs = new HashSet<>(Set.of(
+            "move",
+            "wait",
+            "setspeed"
+    ));
+
+    static {
+        commandsToNofArgs.put("lclick", 0);
+        commandsToNofArgs.put("rclick", 0);
+        commandsToNofArgs.put("lup", 0);
+        commandsToNofArgs.put("ldown", 0);
+        commandsToNofArgs.put("rup", 0);
+        commandsToNofArgs.put("rdown", 0);
+        commandsToNofArgs.put("type", 1);
+        commandsToNofArgs.put("kup", 1);
+        commandsToNofArgs.put("kdown", 1);
+        commandsToNofArgs.put("move", 2);
+        commandsToNofArgs.put("wait", 1);
+        commandsToNofArgs.put("setspeed", 1);
+    }
+
     public static Action parseCodeIntoAction(String code) throws SyntaxError {
         List<SubAction> subActions = new ArrayList<>();
         for (String line : code.split("\n")) {
             if (line.isBlank()) {
                 continue;
             }
-            String[] parts = line.strip().split(" ");
+            String[] parts = line.strip().split(" ", 2);
             String command = parts[0];
 
             if (parts.length == 1) {
@@ -33,8 +53,7 @@ public class CodeActionBuilder {
                     case "rup" -> subActions.add(new MouseReleasedSubAction(2048));
                 }
             } else {
-                parts[0] = "";
-                String args = String.join(" ", parts).strip();
+                String args = parts[1];
                 switch (command) {
                     case "type" -> {
                         for (char c : args.toCharArray()) {
@@ -81,7 +100,7 @@ public class CodeActionBuilder {
                         }
                     }
 
-                    case "speed" -> {
+                    case "setspeed" -> {
                         try {
                             subActions.add(new ChangeSpeedSubAction(Integer.parseInt(args.strip())));
                         } catch (NumberFormatException e) {
@@ -90,7 +109,7 @@ public class CodeActionBuilder {
                     }
 
                     case "move" -> {
-                        String[] x_y = args.strip().split(",");
+                        String[] x_y = args.strip().split(" ");
                         try {
                             subActions.add(new MouseMovedSubAction(
                                             Integer.parseInt(x_y[0].strip()),

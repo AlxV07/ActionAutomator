@@ -12,13 +12,7 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -31,7 +25,7 @@ public class GuiMainFrame extends ThemedFrame {
     private final BindingFileManager bindingFileManager;
     private final Binding heldKeys;
 
-    private final CodeTextPane codeTextPane;
+    private final ProgInterface progInterface;
     private final ThemedButton selectedDisplay;
     private final BindingContainer bindingPanels;
 
@@ -49,12 +43,12 @@ public class GuiMainFrame extends ThemedFrame {
         heldKeys = new Binding();
 
         ThemedMenuBar mainMenuBar = new ThemedMenuBar();
-        mainMenuBar.setBounds(0, 0, 500, 20);
+        mainMenuBar.setBounds(0, 0, 500, 21);
         super.add(mainMenuBar);
 
-        codeTextPane = new CodeTextPane();
-        codeTextPane.setBounds(0, 240, 250, 260);
-        super.add(codeTextPane);
+        progInterface = new ProgInterface(bindingManager);
+        progInterface.setBounds(0, 240, 250, 260);
+        super.add(progInterface);
 
         bindingPanels = new BindingContainer();
         ThemedScrollPane scrollPane = new ThemedScrollPane(bindingPanels);
@@ -89,16 +83,16 @@ public class GuiMainFrame extends ThemedFrame {
 
         bindingManager.setOnSelectedChanged(() -> {
             bindingPanels.onSelectedChanged();
-            codeTextPane.onSelectedChanged();
+            progInterface.onSelectedChanged();
             selectedDisplay.setText(bindingManager.getSelected());
         });
 
         ThemedButton enableEditing = new ThemedButton("Lock");
         enableEditing.setBounds(0, 220, 60, 20);
         enableEditing.addActionListener(e -> {
-            codeTextPane.setEnabled(!codeTextPane.isEnabled());
+            progInterface.setEnabled(!progInterface.isEnabled());
             selectedDisplay.setEnabled(!selectedDisplay.isEnabled());
-            enableEditing.setText(codeTextPane.isEnabled() ? "Lock" : "Unlock");
+            enableEditing.setText(progInterface.isEnabled() ? "Lock" : "Unlock");
         });
         super.add(enableEditing);
 
@@ -208,7 +202,7 @@ public class GuiMainFrame extends ThemedFrame {
                 return;
             }
             try {
-                actionExecutor.executeActionFromCode(codeTextPane.getText(), 100);
+                actionExecutor.executeActionFromCode(progInterface.getText(), 100);
             } catch (CodeActionBuilder.SyntaxError e1) {
                 throw new RuntimeException(e1);
             }
@@ -233,91 +227,6 @@ public class GuiMainFrame extends ThemedFrame {
         super.updateColorTheme(darkMode, primaryColor, secondaryColor);
         super.setVisible(true);
         nativeGlobalListener.register();
-    }
-
-    public class CodeTextPane extends ThemedTextPane {  // TODO
-        private final SimpleAttributeSet defaultAttributeSet;
-        private final SimpleAttributeSet coloredAttributeSet;
-
-        public CodeTextPane() {
-            super();
-            super.setEnabled(true);
-            super.setFont(GuiResources.defaultFont);
-            super.setMargin(GuiResources.defaultMargin);
-            StyledDocument doc = super.getStyledDocument();
-            defaultAttributeSet = new SimpleAttributeSet();
-            StyleConstants.setLeftIndent(defaultAttributeSet, 2);
-            StyleConstants.setRightIndent(defaultAttributeSet, 2);
-            StyleConstants.setSpaceAbove(defaultAttributeSet, 2);
-            coloredAttributeSet = new SimpleAttributeSet();
-            doc.setParagraphAttributes(0, doc.getLength(), defaultAttributeSet, true);
-            super.getDocument().addDocumentListener(new DocumentListener() {
-                @Override
-                public void insertUpdate(DocumentEvent e) {
-                    update();
-                }
-
-                @Override
-                public void removeUpdate(DocumentEvent e) {
-                    update();
-                }
-
-                @Override
-                public void changedUpdate(DocumentEvent e) {}
-            });
-        }
-
-        private void update() {
-            if (bindingManager.getSelected() == null) {
-                return;
-            }
-            SwingUtilities.invokeLater(this::updateTextColor);
-        }
-
-        public void onSelectedChanged() {
-            if (bindingManager.getPrevSelected() != null) {
-                bindingManager.setBindingCode(bindingManager.getPrevSelected(), getText());
-            }
-            if (bindingManager.getSelected() != null) {
-                setText(bindingManager.getBinding(bindingManager.getSelected()).getCode());
-            }
-            SwingUtilities.invokeLater(this::updateTextColor);
-        }
-
-        @Override
-        public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
-            super.updateColorTheme(darkMode, primaryColor, secondaryColor);
-            updateTextColor();
-        }
-
-        public void updateTextColor() {
-            StyledDocument doc = getStyledDocument();
-            try {
-                int idx = 0;
-                for (String line : doc.getText(0, doc.getLength()).split("\n")) {
-                    int i = 0;
-                    while (i < line.length()) {
-                        if (line.charAt(i) == ' ') {
-                            break;
-                        }
-                        i += 1;
-                    }
-                    StyleConstants.setForeground(coloredAttributeSet, primaryColor);
-                    doc.setCharacterAttributes(idx, i, coloredAttributeSet, true);
-                    if (darkMode) {
-                        setCaretColor(GuiResources.lightThemeColor);
-                        StyleConstants.setForeground(defaultAttributeSet, GuiResources.lightThemeColor);
-                    } else {
-                        setCaretColor(GuiResources.darkThemeColor);
-                        StyleConstants.setForeground(defaultAttributeSet, GuiResources.darkThemeColor);
-                    }
-                    doc.setCharacterAttributes(idx + i, line.length() - i, defaultAttributeSet, true);
-                    idx += line.length() + 1;
-                }
-            } catch (BadLocationException e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     public class BindingContainer extends ThemedPanel {
