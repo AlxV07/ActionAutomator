@@ -28,7 +28,7 @@ public class ThemedMenu extends JMenu implements ThemedComponent {
         this.primaryColor = secondaryColor;
         this.secondaryColor = primaryColor;
         if (darkMode) {
-            setForeground(this.primaryColor);
+            setForeground(this.secondaryColor);
             setBackground(ActionAutomatorResources.darkThemeColor);
             setBorder(ActionAutomatorResources.darkThemeThickBorder);
         } else {

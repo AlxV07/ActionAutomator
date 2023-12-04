@@ -10,7 +10,7 @@ public class Main {
         - ProgInterface IDE functionality, Code
             - variables, math, looping, etc.
             - Binding code "burning"
-        - README, Help page, Logo
+        - README, Logo
      */
     public static void main(String[] args) {
         GuiMainFrame guiMainFrame = new GuiMainFrame();

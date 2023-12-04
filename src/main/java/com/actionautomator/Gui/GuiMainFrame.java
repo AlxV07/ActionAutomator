@@ -15,9 +15,10 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -29,31 +30,48 @@ public class GuiMainFrame extends ThemedFrame {
     private final Binding heldKeys;
 
     private final ProgInterface progInterface;
-    private final ThemedButton selectedDisplay;
+    private final ThemedButton nameSelectedButton;
     private final BindingContainer bindingContainer;
 
     private final ThemedLabel mouseCoordLabel;
     private final ThemedLabel coordWaypointLabel;
     private final ThemedLabel timerLabel;
     private final ThemedTextArea heldKeysLabel;
-    private final ThemedButton interruptButton;
+    private final ThemedButton stopButton;
     private boolean timerCounting = false;
     private long timerStartTime;
+    private final ThemedTextArea helpDisplay;
 
     public GuiMainFrame() {
         actionExecutor = new ActionExecutor();
         bindingManager = new BindingManager();
         heldKeys = new Binding();
 
+        helpDisplay = new ThemedTextArea();
+        helpDisplay.setText(ActionAutomatorResources.helpDisplayDoc);
+        helpDisplay.setBounds(250, 380, 250, 120);
+        helpDisplay.setHelp(helpDisplay, ActionAutomatorResources.helpDisplayDoc);
+        helpDisplay.setLineWrap(true);
+        helpDisplay.setFont(ActionAutomatorResources.defaultFont);
+        add(helpDisplay);
+
         ThemedMenuBar mainMenuBar = new ThemedMenuBar();
         mainMenuBar.setBounds(0, 0, 500, 21);
         super.add(mainMenuBar);
 
+        // Prog Interface
         progInterface = new ProgInterface(bindingManager);
         ThemedScrollPane progInterfaceScrollPane = new ThemedScrollPane(progInterface);
         progInterfaceScrollPane.setBounds(0, 240, 250, 260);
+        progInterface.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                helpDisplay.setText(ActionAutomatorResources.progInterfaceDoc);
+            }
+        });
         super.add(progInterfaceScrollPane);
 
+        // Binding Container
         bindingContainer = new BindingContainer();
         ThemedScrollPane bindingContainerScrollPane = new ThemedScrollPane(bindingContainer);
         bindingContainerScrollPane.setBounds(-1, 20, 500, 200);
@@ -63,11 +81,12 @@ public class GuiMainFrame extends ThemedFrame {
 
         bindingFileManager = new BindingFileManager(bindingManager, bindingContainer);
 
-        selectedDisplay = new ThemedButton("null");
-        selectedDisplay.setFocusable(true);
-        selectedDisplay.setFont(ActionAutomatorResources.defaultFont);
-        selectedDisplay.setBounds(60, 220, 190, 20);
-        selectedDisplay.addActionListener(e -> {
+        // Name Selected
+        nameSelectedButton = new ThemedButton("null");
+        nameSelectedButton.setFocusable(true);
+        nameSelectedButton.setFont(ActionAutomatorResources.defaultFont);
+        nameSelectedButton.setBounds(60, 220, 190, 20);
+        nameSelectedButton.addActionListener(e -> {
             String newName = JOptionPane.showInputDialog("Enter new name:");
             if (newName == null) {
                 return;
@@ -80,44 +99,50 @@ public class GuiMainFrame extends ThemedFrame {
             if (!bindingContainer.setBindingName(bindingManager.getSelected(), newName)) {
                 JOptionPane.showMessageDialog(this, "Invalid new name.");
             } else {
-                selectedDisplay.setText(bindingManager.getSelected());
+                nameSelectedButton.setText(bindingManager.getSelected());
             }
         });
-        super.add(selectedDisplay);
+        nameSelectedButton.setHelp(helpDisplay, ActionAutomatorResources.nameSelectedButtonDoc);
+        super.add(nameSelectedButton);
 
         bindingManager.setOnSelectedChanged(() -> {
             bindingContainer.onSelectedChanged();
             progInterface.onSelectedChanged();
-            selectedDisplay.setText(bindingManager.getSelected());
+            nameSelectedButton.setText(bindingManager.getSelected());
         });
 
-        ThemedButton enableEditing = new ThemedButton("Lock");
-        enableEditing.setBounds(0, 220, 60, 20);
-        enableEditing.addActionListener(e -> {
+        // Lock Editing
+        ThemedButton lockEditingButton = new ThemedButton("Lock");
+        lockEditingButton.setBounds(0, 220, 60, 20);
+        lockEditingButton.addActionListener(e -> {
             progInterface.setEnabled(!progInterface.isEnabled());
-            selectedDisplay.setEnabled(!selectedDisplay.isEnabled());
-            enableEditing.setText(progInterface.isEnabled() ? "Lock" : "Unlock");
+            nameSelectedButton.setEnabled(!nameSelectedButton.isEnabled());
+            lockEditingButton.setText(progInterface.isEnabled() ? "Lock" : "Unlock");
         });
-        super.add(enableEditing);
+        lockEditingButton.setHelp(helpDisplay, ActionAutomatorResources.lockEditingButtonDoc);
+        super.add(lockEditingButton);
 
+        // Coords
         mouseCoordLabel = new ThemedLabel("Mouse Coords");
-        mouseCoordLabel.setBounds(250, 270, 250, 40);
+        mouseCoordLabel.setBounds(250, 270, 250, 31);
         mouseCoordLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        mouseCoordLabel.setHelp(helpDisplay, ActionAutomatorResources.mouseCoordLabelDoc);
         super.add(mouseCoordLabel);
 
         coordWaypointLabel = new ThemedLabel("Save Waypoint (Esc)");
-        coordWaypointLabel.setBounds(250, 310, 250, 40);
+        coordWaypointLabel.setBounds(250, 300, 250, 30);
         coordWaypointLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        coordWaypointLabel.setHelp(helpDisplay, ActionAutomatorResources.coordWayPointLabelDoc);
         super.add(coordWaypointLabel);
 
-        int timerComponentY = 360;
-
+        // Timer
+        int timerComponentY = 340;
         timerLabel = new ThemedLabel("Timer (ms)");
-        timerLabel.setBounds(290, timerComponentY, 210, 40);
+        timerLabel.setBounds(290, timerComponentY, 210, 30);
         timerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        timerLabel.setHelp(helpDisplay, ActionAutomatorResources.timerLabelDoc);
         super.add(timerLabel);
 
-        // Timer
         class TimerRunnable implements Runnable {
             @Override
             public void run() {
@@ -132,45 +157,45 @@ public class GuiMainFrame extends ThemedFrame {
                 }
             }
         }
-        ThemedButton timerButton = new ThemedButton("|>");
-        timerButton.setBounds(250, timerComponentY, 40, 40);
+        ThemedButton timerButton = new ThemedButton("(|>)");
+        timerButton.setBounds(250, timerComponentY, 40, 30);
         timerButton.addActionListener(e -> {
             if (!timerCounting) {
-                timerButton.setText("||");
+                timerButton.setText("(||)");
                 timerCounting = true;
                 timerStartTime = System.currentTimeMillis();
                 SwingUtilities.invokeLater(() -> new Thread(() -> new TimerRunnable().run()).start());
             } else {
-                timerButton.setText("|>");
+                timerButton.setText("(|>)");
                 timerCounting = false;
             }
         });
+        timerButton.setHelp(helpDisplay, ActionAutomatorResources.timerButtonDoc);
         super.add(timerButton);
 
         // Held Keys
         heldKeysLabel = new ThemedTextArea();
         heldKeysLabel.setText(ActionAutomatorResources.heldKeysLabelText);
         heldKeysLabel.setBounds(250, 220, 250, 40);
+        heldKeysLabel.setHelp(helpDisplay, ActionAutomatorResources.heldKeysLabelDoc);
         super.add(heldKeysLabel);
 
-        // Help
+        // Settings
         ThemedMenu settingsMenu = new ThemedMenu("Settings");
-
-        ThemedButton helpButton = new ThemedButton(" Open Help Page   ");
-        helpButton.addActionListener(e -> {
-            try {
-                BufferedImage image = ImageIO.read(new File(ActionAutomatorResources.helpPage));
-                ImageIcon icon = new ImageIcon(image);
-                JOptionPane.showMessageDialog(null, new JLabel(icon));
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(null, "Could not find Help page :(");
+        settingsMenu.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                helpDisplay.setText(ActionAutomatorResources.settingsMenuDoc);
             }
         });
 
-        // Theme
+        // Toggle DarkMode
         ThemedButton toggleDarkMode = new ThemedButton(" Toggle Dark Mode ");
         toggleDarkMode.addActionListener(e -> updateColorTheme(!darkMode, primaryColor, secondaryColor));
+        toggleDarkMode.setHelp(helpDisplay, ActionAutomatorResources.toggleDarkModeButtonDoc);
+        settingsMenu.add(toggleDarkMode);
 
+        // Theme
         ThemedButton setAAThemeColor = new ThemedButton(" Set Theme Color  ");
         setAAThemeColor.addActionListener(e -> {
             Color color = JColorChooser.showDialog(this, "ActionAutomator: Choose Theme Color", null);
@@ -178,10 +203,8 @@ public class GuiMainFrame extends ThemedFrame {
                 updateColorTheme(this.darkMode, color, Color.GRAY);
             }
         });
-        settingsMenu.add(toggleDarkMode);
+        setAAThemeColor.setHelp(helpDisplay, ActionAutomatorResources.setThemeButtonDoc);
         settingsMenu.add(setAAThemeColor);
-        settingsMenu.add(helpButton);
-        settingsMenu.updateColorTheme(false, Color.GREEN, Color.RED);
 
         mainMenuBar.add(settingsMenu);
         mainMenuBar.add(new ThemedLabel("|"));
@@ -189,8 +212,10 @@ public class GuiMainFrame extends ThemedFrame {
         // New Action
         ThemedButton newActionButton = new ThemedButton(" New ");
         newActionButton.addActionListener(e -> bindingContainer.newBinding());
+        newActionButton.setHelp(helpDisplay, ActionAutomatorResources.newButtonDoc);
         mainMenuBar.add(newActionButton);
 
+        // Open Action
         JFileChooser fileChooser = new JFileChooser();
         FileNameExtensionFilter fileNameExtensionFilter = new FileNameExtensionFilter("ActionAutomator File (.action)", "action");
         fileChooser.setFileFilter(fileNameExtensionFilter);
@@ -201,12 +226,16 @@ public class GuiMainFrame extends ThemedFrame {
             if (file == null) return;
             bindingFileManager.readBindings(file.getAbsolutePath());
         });
+        openActionButton.setHelp(helpDisplay, ActionAutomatorResources.openButtonDoc);
         mainMenuBar.add(openActionButton);
 
-        ThemedButton removeActionButton = new ThemedButton(" Remove ");
-        removeActionButton.addActionListener(e -> bindingContainer.removeSelectedBinding());
-        mainMenuBar.add(removeActionButton);
+        // Delete Action
+        ThemedButton deleteActionButton = new ThemedButton(" Delete ");
+        deleteActionButton.addActionListener(e -> bindingContainer.removeSelectedBinding());
+        deleteActionButton.setHelp(helpDisplay, ActionAutomatorResources.deleteButtonDoc);
+        mainMenuBar.add(deleteActionButton);
 
+        // Run Action
         ThemedButton runButton = new ThemedButton(" Run ");
         runButton.addActionListener(e -> {
             if (bindingManager.getSelected() == null) {
@@ -219,12 +248,16 @@ public class GuiMainFrame extends ThemedFrame {
                 throw new RuntimeException(e1);
             }
         });
+        runButton.setHelp(helpDisplay, ActionAutomatorResources.runButtonDoc);
         mainMenuBar.add(runButton);
 
-        interruptButton = new ThemedButton(" Stop (Esc) ");
-        interruptButton.addActionListener(e -> actionExecutor.interrupt());
-        mainMenuBar.add(interruptButton);
+        // Stop Action
+        stopButton = new ThemedButton(" Stop (Esc) ");
+        stopButton.addActionListener(e -> actionExecutor.interrupt());
+        stopButton.setHelp(helpDisplay, ActionAutomatorResources.stopButtonDoc);
+        mainMenuBar.add(stopButton);
 
+        // Read Saved Bindings
         SwingUtilities.invokeLater(() -> bindingFileManager.readBindings(ActionAutomatorResources.cachePath));
         super.addWindowListener(new WindowAdapter() {
             @Override
@@ -236,8 +269,16 @@ public class GuiMainFrame extends ThemedFrame {
     }
 
     public void start(boolean darkMode, Color primaryColor, Color secondaryColor) {
+        super.setTitle("ActionAutomator");
+        super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        super.setLayout(null);
+        super.setSize(500, 500);
+        super.setResizable(false);
         super.updateColorTheme(darkMode, primaryColor, secondaryColor);
         super.setVisible(true);
+        try {
+            super.setIconImage(ImageIO.read(new File(ActionAutomatorResources.logoPath)));
+        } catch (IOException ignored) {}
         nativeGlobalListener.register();
     }
 
@@ -352,11 +393,13 @@ public class GuiMainFrame extends ThemedFrame {
                 this.binding = binding;
                 this.nameDisplay = new ThemedTextArea();
                 nameDisplay.setText(this.name);
+                nameDisplay.setHelp(helpDisplay, ActionAutomatorResources.bindingNameLabelDoc);
                 add(nameDisplay);
                 nameDisplay.setPreferredSize(new Dimension(105, 40));
                 this.editButton = new ThemedButton("Edit");
                 editButton.setPreferredSize(new Dimension(45, 40));
                 editButton.addActionListener(e -> bindingManager.setSelected(this.name));
+                editButton.setHelp(helpDisplay, ActionAutomatorResources.bindingEditButtonDoc);
                 add(editButton);
                 this.bindingButtons = new BindingButton[] {
                         new BindingButton(0),
@@ -413,6 +456,7 @@ public class GuiMainFrame extends ThemedFrame {
                         super.setBackground(primaryColor);
                         super.requestFocusInWindow();
                     });
+                    this.setHelp(helpDisplay, ActionAutomatorResources.bindingButtonDoc);
                 }
 
                 /**
@@ -450,7 +494,7 @@ public class GuiMainFrame extends ThemedFrame {
             int key = nativeKeyEvent.getKeyCode();
 
             if (key == NativeKeyEvent.VC_ESCAPE) {
-                interruptButton.doClick();
+                stopButton.doClick();
                 coordWaypointLabel.setText("Waypoint (Esc): " + mouseCoordLabel.getText().substring("Mouse Coords: ".length()));
             }
 

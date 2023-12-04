@@ -17,11 +17,6 @@ public class ThemedFrame extends JFrame implements ThemedComponent {
         super();
         super.setFont(ActionAutomatorResources.defaultFont);
         super.setFocusable(false);
-        super.setTitle("ActionAutomator");
-        super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        super.setLayout(null);
-        super.setSize(500, 500);
-        super.setResizable(false);
         themedComponents = new ArrayList<>();
     }
 

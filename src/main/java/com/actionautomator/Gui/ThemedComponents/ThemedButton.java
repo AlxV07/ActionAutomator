@@ -4,6 +4,8 @@ import com.actionautomator.Gui.ActionAutomatorResources;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class ThemedButton extends JButton implements ThemedComponent {
     protected Color primaryColor;
@@ -30,5 +32,15 @@ public class ThemedButton extends JButton implements ThemedComponent {
             setBackground(ActionAutomatorResources.lightThemeColor);
             setBorder(ActionAutomatorResources.lightThemeBorder);
         }
+    }
+
+
+    public void setHelp(ThemedTextArea helpLabel, String doc) {
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                helpLabel.setText(doc);
+            }
+        });
     }
 }
