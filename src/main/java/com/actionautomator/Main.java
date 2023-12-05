@@ -7,7 +7,6 @@ import java.awt.*;
 public class Main {
     /*
     TODO:
-        - Naming Bindings
         - ProgInterface IDE highlighting
         - Code Documentation (README)
         - Logo

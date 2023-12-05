@@ -94,8 +94,15 @@ public class GuiMainFrame extends ThemedFrame {
                 JOptionPane.showMessageDialog(this, "Empty Action name.");
                 return;
             }
+            newName = newName.replaceAll(" ", "_");
+            for (char c : newName.toCharArray()) {
+                if (!Character.isDigit(c) && !Character.isAlphabetic(c) && c != '_') {
+                    JOptionPane.showMessageDialog(this, "Illegal Action name:\nOnly Letters, Digits, '_' allowed");
+                    return;
+                }
+            }
             if (!bindingContainer.setBindingName(bindingManager.getSelected(), newName)) {
-                JOptionPane.showMessageDialog(this, "Invalid new name.");
+                JOptionPane.showMessageDialog(this, "New given Action name already in use.");
             } else {
                 renameSelectedButton.setText(bindingManager.getSelected());
             }
@@ -355,19 +362,32 @@ public class GuiMainFrame extends ThemedFrame {
                 JOptionPane.showMessageDialog(this, "Empty Action name.");
                 return;
             }
+            actionName = actionName.replaceAll(" ", "_");
+            for (char c : actionName.toCharArray()) {
+                if (!Character.isDigit(c) && !Character.isAlphabetic(c) && c != '_') {
+                    JOptionPane.showMessageDialog(this, "Illegal Action name:\nOnly Letters, Digits, '_' allowed");
+                    return;
+                }
+            }
             if (!this.addBinding(actionName, new Binding())) {
                 JOptionPane.showMessageDialog(this, String.format("\"%s\" already exists.", actionName));
             }
         }
 
-        public boolean addBinding(String name, Binding binding) {
-            if (!bindingManager.addBinding(name, binding)) {
+        public boolean addBinding(String actionName, Binding binding) {
+            actionName = actionName.replaceAll(" ", "_");
+            for (char c : actionName.toCharArray()) {
+                if (!Character.isDigit(c) && !Character.isAlphabetic(c) && c != '_') {
+                    return false;
+                }
+            }
+            if (!bindingManager.addBinding(actionName, binding)) {
                 return false;
             }
-            BindingPanel bindingPanel = new BindingPanel(name, binding);
+            BindingPanel bindingPanel = new BindingPanel(actionName, binding);
             add(bindingPanel);
-            bindingPanels.put(name, bindingPanel);
-            bindingManager.setSelected(name);
+            bindingPanels.put(actionName, bindingPanel);
+            bindingManager.setSelected(actionName);
             return true;
         }
 
