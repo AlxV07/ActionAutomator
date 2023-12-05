@@ -65,12 +65,12 @@ public class BindingManager {
         return true;
     }
 
-    public boolean setBindingCode(String name, String code) {
+    public boolean setBindingCode(String name, String code, CodeActionBuilder codeActionBuilder) {
         try {
             if (bindings.get(name) == null) {
                 return false;
             }
-            bindings.get(name).setCode(code);
+            bindings.get(name).setCode(code, codeActionBuilder);
             return true;
         } catch (CodeActionBuilder.SyntaxError e) {
             return false;

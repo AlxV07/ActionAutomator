@@ -17,12 +17,14 @@ public class ProgInterface extends ThemedTextPane {
     private final SimpleAttributeSet defaultAttributeSet;
     private final SimpleAttributeSet coloredAttributeSet;
     private final BindingManager bindingManager;
+    private final CodeActionBuilder codeActionBuilder;
     private final SquigglePainter errorHighlighter;
     private Runnable onCodeChanged;
 
-    public ProgInterface(BindingManager bindingManager) {
+    public ProgInterface(BindingManager bindingManager, CodeActionBuilder codeActionBuilder) {
         super();
         this.bindingManager = bindingManager;
+        this.codeActionBuilder = codeActionBuilder;
         super.setEnabled(true);
         super.setFont(ActionAutomatorResources.defaultFont);
         super.setMargin(ActionAutomatorResources.defaultMargin);
@@ -66,7 +68,7 @@ public class ProgInterface extends ThemedTextPane {
 
     public void onSelectedChanged() {
         if (bindingManager.getPrevSelected() != null) {
-            bindingManager.setBindingCode(bindingManager.getPrevSelected(), getText());
+            bindingManager.setBindingCode(bindingManager.getPrevSelected(), getText(), codeActionBuilder);
         }
         if (bindingManager.getSelected() != null) {
             String text = bindingManager.getBinding(bindingManager.getSelected()).getCode();
@@ -84,7 +86,7 @@ public class ProgInterface extends ThemedTextPane {
 
     public boolean saveCode(String bindingName) {
         // Action gets set to null if code doesn't compile
-        return bindingManager.setBindingCode(bindingName, getText());
+        return bindingManager.setBindingCode(bindingName, getText(), codeActionBuilder);
     }
 
     public void setOnCodeChanged(Runnable runnable) {
@@ -116,7 +118,7 @@ public class ProgInterface extends ThemedTextPane {
                 int commandStartIdx = idx, commandEndIdx = idx + command.length();
                 StyleConstants.setForeground(coloredAttributeSet, primaryColor);
                 doc.setCharacterAttributes(commandStartIdx, commandEndIdx, coloredAttributeSet, true);
-                if (!CodeActionBuilder.commandsToNofArgs.containsKey(command)) {
+                if (!codeActionBuilder.commandsToNofArgs.containsKey(command)) {
                     super.getHighlighter().addHighlight(commandStartIdx, commandEndIdx, errorHighlighter);
                 }
 
@@ -124,8 +126,8 @@ public class ProgInterface extends ThemedTextPane {
                     String args = parts[1];
                     int argsStartIdx = commandEndIdx + 1, argsEndIdx = argsStartIdx + args.length();
                     doc.setCharacterAttributes(argsStartIdx, argsEndIdx, defaultAttributeSet, true);
-                    if (CodeActionBuilder.commandsToNofArgs.get(command) != null) {
-                        int nofArgs = CodeActionBuilder.commandsToNofArgs.get(command);
+                    if (codeActionBuilder.commandsToNofArgs.get(command) != null) {
+                        int nofArgs = codeActionBuilder.commandsToNofArgs.get(command);
                         String[] argParts = args.split(" ");
                         if (nofArgs < argParts.length) {
                             super.getHighlighter().addHighlight(argsEndIdx, argsEndIdx + 1, errorHighlighter);
@@ -136,7 +138,7 @@ public class ProgInterface extends ThemedTextPane {
                             }
                             super.getHighlighter().addHighlight(argsEndIdx - i, argsEndIdx, errorHighlighter);
                         }
-                        if (CodeActionBuilder.commandsWithNumberArgs.contains(command)) {
+                        if (codeActionBuilder.commandsWithNumberArgs.contains(command)) {
                             for (int i = 0; i < args.length(); i++) {
                                 if (!Character.isDigit(args.charAt(i)) && !Character.isWhitespace(args.charAt(i))) {
                                     super.getHighlighter().addHighlight(argsStartIdx + i, argsStartIdx + i + 1, errorHighlighter);

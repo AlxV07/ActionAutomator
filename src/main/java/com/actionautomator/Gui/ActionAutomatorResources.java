@@ -24,7 +24,7 @@ public class ActionAutomatorResources {
 
     public final static String bindingButtonDoc = """
 Key Bind Button:
-Set a key in the key-sequence for the corresponding Action.
+Set a key in the key-sequence to run the corresponding Action (press Esc to cancel bind).
 """;
     public final static String bindingEditButtonDoc = """
 Edit:

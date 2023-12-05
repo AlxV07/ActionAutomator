@@ -48,7 +48,7 @@ public class NativeKeyConverter {
             case "META" -> {
                 return VK_META;
             }
-            case "BACKSPACE" -> {
+            case "BACK" -> {
                 return VK_BACK_SPACE;
             }
             case "SHIFT" -> {
@@ -57,16 +57,16 @@ public class NativeKeyConverter {
             case "CTRL" -> {
                 return VK_CONTROL;
             }
-            case "CAPSLOCK" -> {
+            case "CAPS" -> {
                 return VK_CAPS_LOCK;
             }
             case "TAB" -> {
                 return VK_TAB;
             }
-            case "ESCAPE" -> {
+            case "ESC" -> {
                 return VK_ESCAPE;
             }
-            case "DELETE" -> {
+            case "DEL" -> {
                 return VK_DELETE;
             }
             case "HOME" -> {

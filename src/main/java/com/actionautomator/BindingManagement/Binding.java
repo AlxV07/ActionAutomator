@@ -24,10 +24,10 @@ public class Binding {
      * Set the action code for the binding
      * @param code New action code
      */
-    public void setCode(String code) throws CodeActionBuilder.SyntaxError {
+    public void setCode(String code, CodeActionBuilder codeActionBuilder) throws CodeActionBuilder.SyntaxError {
         this.code = code;
         try {
-            this.action = CodeActionBuilder.parseCodeIntoAction(code);
+            this.action = codeActionBuilder.parseCodeIntoAction(code);
         } catch (CodeActionBuilder.SyntaxError e) {
             this.action = null;
             throw e;

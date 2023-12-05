@@ -1,216 +1,247 @@
 package com.actionautomator.ActionManagement;
 
 import com.actionautomator.ActionManagement.SubActions.*;
+import com.actionautomator.BindingManagement.Binding;
+import com.actionautomator.BindingManagement.BindingManager;
 
 import java.util.*;
 
 public class CodeActionBuilder {
-    public static final HashMap<String, Integer> commandsToNofArgs = new HashMap<>();
-    public static final HashSet<String> commandsWithNumberArgs = new HashSet<>(Set.of(
+    public final HashSet<String> commandsWithNumberArgs = new HashSet<>(Set.of(
             "move",
             "wait",
             "setspeed"
     ));
 
-    public static final HashSet<String> commandsWithKeyArgs = new HashSet<>(Set.of(
+    public final HashSet<String> commandsWithKeyArgs = new HashSet<>(Set.of(
             "kpress",
             "kup",
             "kdown"
     ));
 
-    public static final HashSet<String> saveCommands = new HashSet<>(Set.of(
+    public final HashSet<String> saveCommands = new HashSet<>(Set.of(
             "savestr",
             "saveint"
     ));
+    public final HashMap<String, Integer> commandsToNofArgs = new HashMap<>();
 
-    static {
-        commandsToNofArgs.put("move", 2);
+    private final BindingManager bindingManager;
+
+    public CodeActionBuilder(BindingManager bindingManager) {
+        this.bindingManager = bindingManager;
         commandsToNofArgs.put("lclick", 0);
+        commandsToNofArgs.put("lup", 0);
+        commandsToNofArgs.put("ldown", 0);
         commandsToNofArgs.put("rclick", 0);
         commandsToNofArgs.put("rup", 0);
         commandsToNofArgs.put("rdown", 0);
-        commandsToNofArgs.put("lup", 0);
-        commandsToNofArgs.put("ldown", 0);
-        commandsToNofArgs.put("type", 1);
         commandsToNofArgs.put("kpress", 1);
         commandsToNofArgs.put("kdown", 1);
         commandsToNofArgs.put("kup", 1);
+        commandsToNofArgs.put("type", 1);
+        commandsToNofArgs.put("move", 2);
         commandsToNofArgs.put("wait", 1);
         commandsToNofArgs.put("setspeed", 1);
-        commandsToNofArgs.put("run", 1);
         commandsToNofArgs.put("repeat", 1);
         commandsToNofArgs.put("savestr", 2);
         commandsToNofArgs.put("saveint", 2);
+        commandsToNofArgs.put("run", 1);
     }
 
+    private int symbolToInt(String symbol, HashMap<String, Integer> savedInts) {
+        if (savedInts.get(symbol) != null) {
+            return savedInts.get(symbol);
+        }
+        return Integer.parseInt(symbol);
+    }
 
-    public static Action parseCodeIntoAction(String code) throws SyntaxError {
+    private String symbolToStr(String symbol, HashMap<String, String> savedStrs) {
+        if (savedStrs.get(symbol) != null) {
+            return savedStrs.get(symbol);
+        }
+        return (symbol);
+    }
+
+    public Action parseCodeIntoAction(String code) throws SyntaxError {
+        return new Action(parseCodeIntoSubActions(code));
+    }
+
+    public List<SubAction> parseCodeIntoSubActions(String code) throws SyntaxError {
         List<SubAction> subActions = new ArrayList<>();
-        for (String line : code.split("\n")) {
+        HashMap<String, String> savedStrs = new HashMap<>();
+        HashMap<String, Integer> savedInts = new HashMap<>();
+        String[] lines = code.split("\n");
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
             if (line.isBlank()) {
                 continue;
             }
-            String[] parts = line.strip().split(" ", 2);
-            String command = parts[0];
-            if (parts.length == 1) {
-                switch (command) {
-                    case "lclick" -> {
-                        subActions.add(new MousePressedSubAction(1024));
-                        subActions.add(new MouseReleasedSubAction(1024));
-                    }
-                    case "ldown" -> subActions.add(new MousePressedSubAction(1024));
-                    case "lup" -> subActions.add(new MouseReleasedSubAction(1024));
+            line = line.replaceAll(" ", "");
+            int openParenIdx = line.indexOf("(");
+            if (openParenIdx == -1) {
+                throw new SyntaxError(line);
+            }
+            String command = line.substring(0, openParenIdx);
+            int closeParenIdx = line.length() - 1 - (new StringBuilder(line).reverse()).indexOf(")");
+            if (closeParenIdx == -1) {
+                throw new SyntaxError(line);
+            }
+            String baseArgs = line.substring(openParenIdx + 1, closeParenIdx);
+            String[] args = baseArgs.split(",");
 
-                    case "rclick" -> {
-                        subActions.add(new MousePressedSubAction(2048));
-                        subActions.add(new MouseReleasedSubAction(2048));
+            if (args.length == 1) {
+                if (args[0].isEmpty()) { // 0 args
+                    switch (command) {
+                        // Mouse click commands
+                        case "lclick" -> {
+                            subActions.add(new MousePressedSubAction(1024));
+                            subActions.add(new MouseReleasedSubAction(1024));
+                        }
+                        case "lup" -> subActions.add(new MouseReleasedSubAction(1024));
+                        case "ldown" -> subActions.add(new MousePressedSubAction(1024));
+
+                        case "rclick" -> {
+                            subActions.add(new MousePressedSubAction(2048));
+                            subActions.add(new MouseReleasedSubAction(2048));
+                        }
+                        case "rup" -> subActions.add(new MouseReleasedSubAction(2048));
+                        case "rdown" -> subActions.add(new MousePressedSubAction(2048));
+                        default -> throw new SyntaxError(line);
                     }
-                    case "rdown" -> subActions.add(new MousePressedSubAction(2048));
-                    case "rup" -> subActions.add(new MouseReleasedSubAction(2048));
-                    default -> throw new SyntaxError();
+                } else { // 1 arg
+                    String arg = args[0];
+                    switch (command) {
+                        // Key commands
+                        case "kpress" -> {
+                            int[] vk_keys = NativeKeyConverter.stringToKeyEventVK(arg);
+                            if (vk_keys == null) {
+                                throw new SyntaxError(line);
+                            }
+                            for (int j : vk_keys) {
+                                subActions.add(new KeyPressedSubAction(j));
+                                subActions.add(new KeyReleasedSubAction(j));
+                            }
+                        }
+                        case "kup" -> {
+                            int[] vk_keys = NativeKeyConverter.stringToKeyEventVK(arg);
+                            if (vk_keys == null) {
+                                throw new SyntaxError(line);
+                            }
+                            for (int j : vk_keys) {
+                                subActions.add(new KeyReleasedSubAction(j));
+                            }
+                        }
+                        case "kdown" -> {
+                            int[] vk_keys = NativeKeyConverter.stringToKeyEventVK(arg);
+                            if (vk_keys == null) {
+                                throw new SyntaxError(line);
+                            }
+                            for (int j : vk_keys) {
+                                subActions.add(new KeyPressedSubAction(j));
+                            }
+                        }
+                        case "type" -> {
+                            String str = symbolToStr(baseArgs, savedStrs);
+                            for (char c : str.toCharArray()) {
+                                int[] vk_keys = NativeKeyConverter.charToKeyEventVK(c);
+                                if (vk_keys == null) {
+                                    throw new SyntaxError(line);
+                                }
+                                for (int key : vk_keys) {
+                                    subActions.add(new KeyPressedSubAction(key));
+                                }
+                                for (int idx = vk_keys.length - 1; idx >= 0; idx--) {
+                                    subActions.add(new KeyReleasedSubAction(vk_keys[idx]));
+                                }
+                            }
+                        }
+                        // Number commands
+                        case "wait" -> {
+                            try {
+                                subActions.add(new WaitSubAction(symbolToInt(arg, savedInts)));
+                            } catch (NumberFormatException e) {
+                                throw new SyntaxError(line);
+                            }
+                        }
+                        case "setspeed" -> {
+                            try {
+                                subActions.add(new ChangeSpeedSubAction(symbolToInt(arg, savedInts)));
+                            } catch (NumberFormatException e) {
+                                throw new SyntaxError(line);
+                            }
+                        }
+                        case "repeat" -> {
+                            int repeatTimes;
+                            try {
+                                repeatTimes = symbolToInt(arg, savedInts);
+                            } catch (NumberFormatException e) {
+                                throw new SyntaxError(line);
+                            }
+                            if (!line.endsWith("{")) {
+                                throw new SyntaxError(line);
+                            }
+                            boolean broken = false;
+                            for (int j = i + 1; j < lines.length; j++) {
+                                String candLine = lines[j];
+                                if (candLine.strip().equals("}")) {
+                                    ArrayList<String> repeatedLines = new ArrayList<>(Arrays.asList(lines).subList(i + 1, j));
+                                    for (int k = 0; k < repeatTimes; k++) {
+                                        subActions.addAll(parseCodeIntoSubActions(String.join("\n", repeatedLines)));
+                                    }
+                                    broken = true;
+                                    i = j;
+                                    break;
+                                }
+                            }
+                            if (!broken) {
+                                throw new SyntaxError(line + " Unclosed {");
+                            }
+                        }
+                        case "run" -> {
+                            Binding binding = bindingManager.getBinding(arg);
+                            if (binding == null) {
+                                throw new SyntaxError(line);
+                            }
+                            subActions.addAll(binding.getAction().subActions());
+                        }
+                        default -> throw new SyntaxError(line);
+                    }
                 }
-            } else {
-                String args = parts[1];
+            } else if (args.length == 2) {  // 2 args
                 switch (command) {
-                    case "type" -> {
-                        for (char c : args.toCharArray()) {
-                            List<Integer> vk_keys = new ArrayList<>();
-                            int[] vk_key_supplemental = NativeKeyConverter.charToKeyEventVK(c);
-                            if (vk_key_supplemental == null) {
-                                throw new SyntaxError();
-                            }
-                            for (int i : vk_key_supplemental) {
-                                vk_keys.add(i);
-                            }
-                            for (Integer i: vk_keys) {
-                                subActions.add(new KeyPressedSubAction(i));
-                            }
-                            Collections.reverse(vk_keys);
-                            for (Integer i: vk_keys) {
-                                subActions.add(new KeyReleasedSubAction(i));
-                            }
-                        }
-                    }
-                    case "kdown" -> {
-                        int[] vk_keys = NativeKeyConverter.stringToKeyEventVK(args);
-                        if (vk_keys == null) {
-                            throw new SyntaxError();
-                        }
-                        for (int i : vk_keys) {
-                            subActions.add(new KeyPressedSubAction(i));
-                        }
-                    }
-                    case "kup" -> {
-                        int[] vk_keys = NativeKeyConverter.stringToKeyEventVK(args);
-                        if (vk_keys == null) {
-                            throw new SyntaxError();
-                        }
-                        for (int i : vk_keys) {
-                            subActions.add(new KeyReleasedSubAction(i));
-                        }
-                    }
-                    case "wait" -> {
-                        try {
-                            subActions.add(new WaitSubAction(Integer.parseInt(args.strip())));
-                        } catch (NumberFormatException e) {
-                            throw new SyntaxError();
-                        }
-                    }
-
-                    case "setspeed" -> {
-                        try {
-                            subActions.add(new ChangeSpeedSubAction(Integer.parseInt(args.strip())));
-                        } catch (NumberFormatException e) {
-                            throw new SyntaxError();
-                        }
-                    }
-
                     case "move" -> {
-                        String[] x_y = args.strip().split(" ");
                         try {
                             subActions.add(new MouseMovedSubAction(
-                                            Integer.parseInt(x_y[0].strip()),
-                                            Integer.parseInt(x_y[1].strip())
-                                    )
-                            );
+                                    symbolToInt(args[0], savedInts),
+                                    symbolToInt(args[1], savedInts)));
                         } catch (NumberFormatException e) {
-                            throw new SyntaxError();
+                            throw new SyntaxError(line);
                         }
                     }
-                    default -> throw new SyntaxError();
+                    case "savestr" -> {
+                        if (!Character.isAlphabetic(args[0].charAt(0))) {
+                            throw new SyntaxError(line);
+                        }
+                        savedStrs.put(args[0], symbolToStr(args[1], savedStrs));
+                    }
+                    case "saveint" -> {
+                        if (!Character.isAlphabetic(args[0].charAt(0))) {
+                            throw new SyntaxError(line);
+                        }
+                        savedInts.put(args[0], symbolToInt(args[1], savedInts));
+                    }
+                    default -> throw new SyntaxError(line);
                 }
+            } else { // >=3 args
+                throw new SyntaxError(line);
             }
         }
-        return new Action(subActions);
+        return subActions;
     }
 
-    record Range(int start, int end, int type) {
-        /*
-        [Inclusive, exclusive] indices
-        Types:
-        0 = error
-        1 = command
-         */
-    }
-
-    public static void scanCodeForErrors(String code) {
-        List<Range> highlights = new ArrayList<>();
-        String[] lines = code.split(";");
-        int idx = 0;
-        for (String line: lines) {
-            int endOfCommand = line.indexOf("(");
-            if (endOfCommand == -1) {
-                highlights.add(new Range(idx + line.length() - 1, idx + line.length(), 0));
-                continue;
-            }
-            String command = line.substring(endOfCommand);
-            if (commandsToNofArgs.get(command) == null) {
-                highlights.add(new Range(idx, idx + command.length(), 0));
-                continue;
-            }
-            int nofArgs = commandsToNofArgs.get(command);
-            highlights.add(new Range(idx, idx + command.length(), 1));
-            if (nofArgs == 0) {
-
-            }
-            int actualArgs = 0;
-            List<String> args = new ArrayList<>();
-            boolean stringBuilding = false;
-            StringBuilder string = new StringBuilder();
-            for (int i = endOfCommand; i < line.length(); i++) {
-                if (line.charAt(i) == ')') {
-
-                } else if (line.charAt(i) == '"') {
-
-                } else if (line.charAt(i) == '\\') {
-
-                } else if (line.charAt(i) == ',') {
-
-                }
-            }
+    public static class SyntaxError extends Exception {
+        public SyntaxError(String line) {
+            super(line);
         }
     }
-
-    /* Syntax
-    names = alpha_numeric_with_underscore_lowercase # cannot start with a digit
-    str = enclosed within double-quotes, escape: \", \\
-    int = all digits
-    key = ALLUPPERCASENOSPACES
-    ```
-    # Comment
-    method_name();
-    method_name(arg);
-    method_name(arg1, arg2);
-    save_int(a_name, 0123);
-    save_str(a_name, "hello\" there");
-    kpress(CTRL);
-    repeat (5) {
-    run(an_action);  # no recursion allowed
-    kpress(SHIFT);
-    }
-    ```
-
-     */
-
-    public static class SyntaxError extends Exception {}
 }

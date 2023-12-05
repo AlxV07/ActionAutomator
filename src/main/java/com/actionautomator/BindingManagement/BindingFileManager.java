@@ -14,10 +14,12 @@ import java.util.List;
 public class BindingFileManager {
     private final BindingManager bindingManager;
     private final BindingContainer bindingPanels;
+    private final CodeActionBuilder codeActionBuilder;
 
-    public BindingFileManager(BindingManager bindingManager, BindingContainer bindingPanels) {
+    public BindingFileManager(BindingManager bindingManager, BindingContainer bindingPanels, CodeActionBuilder codeActionBuilder) {
         this.bindingManager = bindingManager;
         this.bindingPanels = bindingPanels;
+        this.codeActionBuilder = codeActionBuilder;
     }
     public void writeBindings(String targetPath) {
         File directory = new File(ActionAutomatorResources.directoryPath);
@@ -52,7 +54,7 @@ public class BindingFileManager {
                 }
                 Binding binding = new Binding();
                 try {
-                    binding.setCode(code.toString());
+                    binding.setCode(code.toString(), codeActionBuilder);
                 } catch (CodeActionBuilder.SyntaxError ignored) {
                 }
                 bindingPanels.addBinding(name, binding);

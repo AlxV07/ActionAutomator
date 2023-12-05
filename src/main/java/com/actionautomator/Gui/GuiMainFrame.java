@@ -24,6 +24,7 @@ public class GuiMainFrame extends ThemedFrame {
     private final ActionExecutor actionExecutor;
     private final BindingManager bindingManager;
     private final BindingFileManager bindingFileManager;
+    private final CodeActionBuilder codeActionBuilder;
     private final Binding heldKeys;
 
     private final ProgInterface progInterface;
@@ -42,6 +43,7 @@ public class GuiMainFrame extends ThemedFrame {
     public GuiMainFrame() {
         actionExecutor = new ActionExecutor();
         bindingManager = new BindingManager();
+        codeActionBuilder = new CodeActionBuilder(bindingManager);
         heldKeys = new Binding();
 
         helpDisplay = new ThemedTextArea();
@@ -57,7 +59,7 @@ public class GuiMainFrame extends ThemedFrame {
         super.add(mainMenuBar);
 
         // Prog Interface
-        progInterface = new ProgInterface(bindingManager);
+        progInterface = new ProgInterface(bindingManager, codeActionBuilder);
         ThemedScrollPane progInterfaceScrollPane = new ThemedScrollPane(progInterface);
         progInterfaceScrollPane.setBounds(0, 240, 250, 260);
         progInterface.addMouseListener(new MouseAdapter() {
@@ -76,7 +78,7 @@ public class GuiMainFrame extends ThemedFrame {
         bindingContainerScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         super.add(bindingContainerScrollPane);
 
-        bindingFileManager = new BindingFileManager(bindingManager, bindingContainer);
+        bindingFileManager = new BindingFileManager(bindingManager, bindingContainer, codeActionBuilder);
 
         // Name Selected
         renameSelectedButton = new ThemedButton("null");
@@ -108,33 +110,25 @@ public class GuiMainFrame extends ThemedFrame {
         });
         progInterface.setOnCodeChanged(bindingContainer::onCodeChanged);
 
-
-        // Save Code
-        ThemedButton saveCodeButton = new ThemedButton("Save");
-        saveCodeButton.setBounds(60, 220, 50, 20);
-        saveCodeButton.addActionListener(e -> bindingContainer.saveCode());
-        saveCodeButton.setHelp(helpDisplay, ActionAutomatorResources.saveCodeButtonDoc);
-        super.add(saveCodeButton);
-
         // Lock Editing
         ThemedButton lockEditingButton = new ThemedButton("Lock");
         lockEditingButton.setBounds(0, 220, 60, 20);
         lockEditingButton.addActionListener(e -> {
             progInterface.setEnabled(!progInterface.isEnabled());
             renameSelectedButton.setEnabled(!renameSelectedButton.isEnabled());
-            saveCodeButton.setEnabled(!saveCodeButton.isEnabled());
             lockEditingButton.setText(progInterface.isEnabled() ? "Lock" : "Unlock");
         });
         lockEditingButton.setHelp(helpDisplay, ActionAutomatorResources.lockEditingButtonDoc);
         super.add(lockEditingButton);
 
-        // Coords
+        // Mouse-Coords
         mouseCoordLabel = new ThemedLabel("Mouse Coords");
         mouseCoordLabel.setBounds(250, 270, 250, 31);
         mouseCoordLabel.setHorizontalAlignment(SwingConstants.CENTER);
         mouseCoordLabel.setHelp(helpDisplay, ActionAutomatorResources.mouseCoordLabelDoc);
         super.add(mouseCoordLabel);
 
+        // Waypoint
         coordWaypointLabel = new ThemedLabel("Save Waypoint (Esc)");
         coordWaypointLabel.setBounds(250, 300, 250, 30);
         coordWaypointLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -148,7 +142,6 @@ public class GuiMainFrame extends ThemedFrame {
         timerLabel.setHorizontalAlignment(SwingConstants.CENTER);
         timerLabel.setHelp(helpDisplay, ActionAutomatorResources.timerLabelDoc);
         super.add(timerLabel);
-
         class TimerRunnable implements Runnable {
             @Override
             public void run() {
@@ -240,6 +233,12 @@ public class GuiMainFrame extends ThemedFrame {
         deleteActionButton.addActionListener(e -> bindingContainer.removeSelectedBinding());
         deleteActionButton.setHelp(helpDisplay, ActionAutomatorResources.deleteButtonDoc);
         mainMenuBar.add(deleteActionButton);
+
+        // Save Code
+        ThemedButton saveCodeButton = new ThemedButton(" Save ");
+        saveCodeButton.addActionListener(e -> bindingContainer.saveCode());
+        saveCodeButton.setHelp(helpDisplay, ActionAutomatorResources.saveCodeButtonDoc);
+        mainMenuBar.add(saveCodeButton);
 
         // Run Action
         ThemedButton runButton = new ThemedButton(" Run ");
@@ -378,7 +377,7 @@ public class GuiMainFrame extends ThemedFrame {
                 JOptionPane.showMessageDialog(this, "No selected Action to remove.");
                 return;
             }
-            if (JOptionPane.showConfirmDialog(this, String.format("Remove Action \"%s\"?", name)) == JOptionPane.YES_OPTION) {
+            if (JOptionPane.showConfirmDialog(this, String.format("Delete: Action \"%s\"?", name)) == JOptionPane.YES_OPTION) {
                 super.remove(bindingPanels.remove(name));
                 bindingManager.removeBinding(name);
                 revalidate();
@@ -402,7 +401,7 @@ public class GuiMainFrame extends ThemedFrame {
             private final ThemedButton editButton;
             private final ThemedLabel codeStatusLabel;
             private final ThemedTextArea nameDisplay;
-            private boolean codeStatus = true;
+            private boolean codeStatus = false;
 
             public BindingPanel(String name, Binding binding) {
                 super();
@@ -411,7 +410,7 @@ public class GuiMainFrame extends ThemedFrame {
                 this.binding = binding;
 
                 int height = 40;
-                this.codeStatusLabel = new ThemedLabel( "<✓>") {
+                this.codeStatusLabel = new ThemedLabel( "<->") {
                     @Override
                     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
                         super.updateColorTheme(darkMode, primaryColor, secondaryColor);

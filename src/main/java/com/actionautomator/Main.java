@@ -7,9 +7,9 @@ import java.awt.*;
 public class Main {
     /*
     TODO:
-        - ProgInterface IDE functionality, Code
-            - variables, math, looping, etc.
-            - Documentation (README)
+        - Naming Bindings
+        - ProgInterface IDE highlighting
+        - Code Documentation (README)
         - Logo
      */
     public static void main(String[] args) {

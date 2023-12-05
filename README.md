@@ -6,23 +6,23 @@ GUI help in-application.
 
 ### Action Code Interface Documentation
 
-{Unfinished & Undocumented} Commands:
+Commands:
 ```
-move x,y
-lclick
-rclick
-rup
-rdown
-lup
-ldown
-type text
-kpress key
-kdown key
-kup key
-wait time
-setspeed time
-run action
-repeat nof_times {}
-savestr name str
-saveint name int
+lclick()
+lup()
+ldown()
+rclick()
+rup()
+rdown()
+kpress(key)
+kup(key)
+kdown(key)
+type(text)
+wait(time)
+setspeed(time)
+repeat(nof_times) {}
+run(action)
+move(x,y)
+savestr(name str)
+saveint(name,int)
 ```
