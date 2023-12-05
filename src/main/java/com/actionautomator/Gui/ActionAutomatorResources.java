@@ -64,7 +64,7 @@ Start/Stop the millisecond timer. Once stopped, the next start will both reset &
 """;
     public static String lockEditingButtonDoc = """
 Lock/Unlock Button:
-Lock / unlock the Rename Button and editing in the Programming Interface.
+Lock / unlock the Rename Button, the Save Button, and editing in the Programming Interface.
 """;
     public static String nameSelectedButtonDoc = """
 Rename Button:
@@ -102,5 +102,16 @@ Open the ActionAutomator settings drop-down menu.
     public static String helpDisplayDoc = """
 Help Display:
 Display the help prompt for any component in the ActionAutomator interface. Hover over any component to try it out!
+""";
+    public static String saveCodeButtonDoc = """
+Save Button:
+Save code in the Programming Interface to the selected Action. The Code Status Indicator will update to display the change.
+""";
+    public static String codeStatusLabelDoc = """
+Code Status Indicator:
+The Action's code is:
+<✓> : saved & can run.
+<-> : unsaved & unknown run result.
+<X> : bugged & cannot run.
 """;
 }

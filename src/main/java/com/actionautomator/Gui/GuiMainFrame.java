@@ -15,10 +15,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -84,7 +81,7 @@ public class GuiMainFrame extends ThemedFrame {
         // Name Selected
         renameSelectedButton = new ThemedButton("null");
         renameSelectedButton.setFont(ActionAutomatorResources.defaultFont);
-        renameSelectedButton.setBounds(60, 220, 190, 20);
+        renameSelectedButton.setBounds(110, 220, 140, 20);
         renameSelectedButton.addActionListener(e -> {
             String newName = JOptionPane.showInputDialog("Enter new name:");
             if (newName == null) {
@@ -111,12 +108,21 @@ public class GuiMainFrame extends ThemedFrame {
         });
         progInterface.setOnCodeChanged(bindingContainer::onCodeChanged);
 
+
+        // Save Code
+        ThemedButton saveCodeButton = new ThemedButton("Save");
+        saveCodeButton.setBounds(60, 220, 50, 20);
+        saveCodeButton.addActionListener(e -> {bindingContainer.saveCode();});
+        saveCodeButton.setHelp(helpDisplay, ActionAutomatorResources.saveCodeButtonDoc);
+        super.add(saveCodeButton);
+
         // Lock Editing
         ThemedButton lockEditingButton = new ThemedButton("Lock");
         lockEditingButton.setBounds(0, 220, 60, 20);
         lockEditingButton.addActionListener(e -> {
             progInterface.setEnabled(!progInterface.isEnabled());
             renameSelectedButton.setEnabled(!renameSelectedButton.isEnabled());
+            saveCodeButton.setEnabled(!saveCodeButton.isEnabled());
             lockEditingButton.setText(progInterface.isEnabled() ? "Lock" : "Unlock");
         });
         lockEditingButton.setHelp(helpDisplay, ActionAutomatorResources.lockEditingButtonDoc);
@@ -381,7 +387,11 @@ public class GuiMainFrame extends ThemedFrame {
         }
 
         public void onCodeChanged() {
-            bindingPanels.get(bindingManager.getSelected()).updateCodeStatus(false);
+            bindingPanels.get(bindingManager.getSelected()).updateCodeStatus();
+        }
+
+        public void saveCode() {
+            bindingPanels.get(bindingManager.getSelected()).saveCode();
         }
 
 
@@ -413,6 +423,7 @@ public class GuiMainFrame extends ThemedFrame {
                 codeStatusLabel.setPreferredSize(new Dimension(23, height));
                 codeStatusLabel.getInsets().set(0, 0, 0, 0);
                 codeStatusLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+                codeStatusLabel.setHelp(helpDisplay, ActionAutomatorResources.codeStatusLabelDoc);
                 add(codeStatusLabel);
 
                 this.nameDisplay = new ThemedTextArea();
@@ -444,6 +455,12 @@ public class GuiMainFrame extends ThemedFrame {
                 } else {
                     this.codeStatusLabel.setText("<X>");
                 }
+                codeStatusLabel.updateColorTheme(darkMode, primaryColor, secondaryColor);
+            }
+
+            public void updateCodeStatus() {
+                codeStatus = false;
+                this.codeStatusLabel.setText("<->");
                 codeStatusLabel.updateColorTheme(darkMode, primaryColor, secondaryColor);
             }
 
