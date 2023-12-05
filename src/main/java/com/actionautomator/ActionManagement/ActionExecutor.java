@@ -20,6 +20,9 @@ public class ActionExecutor {
     }
 
     public void executeAction(Action action, int delay) {
+        if (action == null) {
+            return;
+        }
         this.interrupt();
         this.runningActionThread = new Thread(() -> {
             long runIntervalDelay = delay;
@@ -37,10 +40,6 @@ public class ActionExecutor {
             }
         });
         this.runningActionThread.start();
-    }
-
-    public void executeActionFromCode(String code, int delay) throws CodeActionBuilder.SyntaxError {
-        this.executeAction(CodeActionBuilder.parseCodeIntoAction(code), delay);
     }
 
     public void executeActionFromBinding(Binding binding, int delay) {

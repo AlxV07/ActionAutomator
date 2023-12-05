@@ -112,7 +112,7 @@ public class GuiMainFrame extends ThemedFrame {
         // Save Code
         ThemedButton saveCodeButton = new ThemedButton("Save");
         saveCodeButton.setBounds(60, 220, 50, 20);
-        saveCodeButton.addActionListener(e -> {bindingContainer.saveCode();});
+        saveCodeButton.addActionListener(e -> bindingContainer.saveCode());
         saveCodeButton.setHelp(helpDisplay, ActionAutomatorResources.saveCodeButtonDoc);
         super.add(saveCodeButton);
 
@@ -248,10 +248,10 @@ public class GuiMainFrame extends ThemedFrame {
                 JOptionPane.showMessageDialog(this, "No selected Action to run.");
                 return;
             }
-            try {
-                actionExecutor.executeActionFromCode(progInterface.getText(), 100);
-            } catch (CodeActionBuilder.SyntaxError e1) {
-                throw new RuntimeException(e1);
+            saveCodeButton.doClick();
+            BindingContainer.BindingPanel bindingPanel = bindingContainer.bindingPanels.get(bindingManager.getSelected());
+            if (bindingPanel.isRunnable()) {
+                actionExecutor.executeActionFromBinding(bindingPanel.binding, 100);
             }
         });
         runButton.setHelp(helpDisplay, ActionAutomatorResources.runButtonDoc);
@@ -464,7 +464,7 @@ public class GuiMainFrame extends ThemedFrame {
                 codeStatusLabel.updateColorTheme(darkMode, primaryColor, secondaryColor);
             }
 
-            public boolean getCodeStatus() {
+            public boolean isRunnable() {
                 return codeStatus;
             }
 

@@ -9,7 +9,6 @@ public class Main {
     TODO:
         - ProgInterface IDE functionality, Code
             - variables, math, looping, etc.
-            - Binding code "burning"
             - Documentation (README)
         - Logo
      */
