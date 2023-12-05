@@ -12,20 +12,37 @@ public class CodeActionBuilder {
             "setspeed"
     ));
 
+    public static final HashSet<String> commandsWithKeyArgs = new HashSet<>(Set.of(
+            "kpress",
+            "kup",
+            "kdown"
+    ));
+
+    public static final HashSet<String> saveCommands = new HashSet<>(Set.of(
+            "savestr",
+            "saveint"
+    ));
+
     static {
+        commandsToNofArgs.put("move", 2);
         commandsToNofArgs.put("lclick", 0);
         commandsToNofArgs.put("rclick", 0);
-        commandsToNofArgs.put("lup", 0);
-        commandsToNofArgs.put("ldown", 0);
         commandsToNofArgs.put("rup", 0);
         commandsToNofArgs.put("rdown", 0);
+        commandsToNofArgs.put("lup", 0);
+        commandsToNofArgs.put("ldown", 0);
         commandsToNofArgs.put("type", 1);
-        commandsToNofArgs.put("kup", 1);
+        commandsToNofArgs.put("kpress", 1);
         commandsToNofArgs.put("kdown", 1);
-        commandsToNofArgs.put("move", 2);
+        commandsToNofArgs.put("kup", 1);
         commandsToNofArgs.put("wait", 1);
         commandsToNofArgs.put("setspeed", 1);
+        commandsToNofArgs.put("run", 1);
+        commandsToNofArgs.put("repeat", 1);
+        commandsToNofArgs.put("savestr", 2);
+        commandsToNofArgs.put("saveint", 2);
     }
+
 
     public static Action parseCodeIntoAction(String code) throws SyntaxError {
         List<SubAction> subActions = new ArrayList<>();
@@ -35,7 +52,6 @@ public class CodeActionBuilder {
             }
             String[] parts = line.strip().split(" ", 2);
             String command = parts[0];
-
             if (parts.length == 1) {
                 switch (command) {
                     case "lclick" -> {
@@ -51,6 +67,7 @@ public class CodeActionBuilder {
                     }
                     case "rdown" -> subActions.add(new MousePressedSubAction(2048));
                     case "rup" -> subActions.add(new MouseReleasedSubAction(2048));
+                    default -> throw new SyntaxError();
                 }
             } else {
                 String args = parts[1];
@@ -120,11 +137,80 @@ public class CodeActionBuilder {
                             throw new SyntaxError();
                         }
                     }
+                    default -> throw new SyntaxError();
                 }
             }
         }
         return new Action(subActions);
     }
+
+    record Range(int start, int end, int type) {
+        /*
+        [Inclusive, exclusive] indices
+        Types:
+        0 = error
+        1 = command
+         */
+    }
+
+    public static void scanCodeForErrors(String code) {
+        List<Range> highlights = new ArrayList<>();
+        String[] lines = code.split(";");
+        int idx = 0;
+        for (String line: lines) {
+            int endOfCommand = line.indexOf("(");
+            if (endOfCommand == -1) {
+                highlights.add(new Range(idx + line.length() - 1, idx + line.length(), 0));
+                continue;
+            }
+            String command = line.substring(endOfCommand);
+            if (commandsToNofArgs.get(command) == null) {
+                highlights.add(new Range(idx, idx + command.length(), 0));
+                continue;
+            }
+            int nofArgs = commandsToNofArgs.get(command);
+            highlights.add(new Range(idx, idx + command.length(), 1));
+            if (nofArgs == 0) {
+
+            }
+            int actualArgs = 0;
+            List<String> args = new ArrayList<>();
+            boolean stringBuilding = false;
+            StringBuilder string = new StringBuilder();
+            for (int i = endOfCommand; i < line.length(); i++) {
+                if (line.charAt(i) == ')') {
+
+                } else if (line.charAt(i) == '"') {
+
+                } else if (line.charAt(i) == '\\') {
+
+                } else if (line.charAt(i) == ',') {
+
+                }
+            }
+        }
+    }
+
+    /* Syntax
+    names = alpha_numeric_with_underscore_lowercase # cannot start with a digit
+    str = enclosed within double-quotes, escape: \", \\
+    int = all digits
+    key = ALLUPPERCASENOSPACES
+    ```
+    # Comment
+    method_name();
+    method_name(arg);
+    method_name(arg1, arg2);
+    save_int(a_name, 0123);
+    save_str(a_name, "hello\" there");
+    kpress(CTRL);
+    repeat (5) {
+    run(an_action);  # no recursion allowed
+    kpress(SHIFT);
+    }
+    ```
+
+     */
 
     public static class SyntaxError extends Exception {}
 }

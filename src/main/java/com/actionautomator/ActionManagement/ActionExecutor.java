@@ -27,8 +27,9 @@ public class ActionExecutor {
                 try {
                     if (subAction.getType() == SubActionType.CHANGE_SPEED) {
                         runIntervalDelay = ((ChangeSpeedSubAction) subAction).getSpeed();
+                    } else {
+                        subAction.execute(this.actionExecutor);
                     }
-                    subAction.execute(this.actionExecutor);
                     Thread.sleep(runIntervalDelay);
                 } catch (InterruptedException e) {
                     break;

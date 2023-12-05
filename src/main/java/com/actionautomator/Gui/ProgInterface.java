@@ -18,6 +18,7 @@ public class ProgInterface extends ThemedTextPane {
     private final SimpleAttributeSet coloredAttributeSet;
     private final BindingManager bindingManager;
     private final SquigglePainter errorHighlighter;
+    private Runnable onCodeChanged;
 
     public ProgInterface(BindingManager bindingManager) {
         super();
@@ -50,10 +51,16 @@ public class ProgInterface extends ThemedTextPane {
         errorHighlighter = new SquigglePainter(Color.RED);
     }
 
+    private String prevCode = null;
+
     private void update() {
         if (bindingManager.getSelected() == null) {
             return;
         }
+        if (prevCode != null && !prevCode.isEmpty() && !getText().isEmpty() && !getText().strip().equals(prevCode.strip())) {
+            runOnCodeChanged();
+        }
+        prevCode = getText().strip();
         SwingUtilities.invokeLater(this::updateTextDisplay);
     }
 
@@ -62,7 +69,9 @@ public class ProgInterface extends ThemedTextPane {
             bindingManager.setBindingCode(bindingManager.getPrevSelected(), getText());
         }
         if (bindingManager.getSelected() != null) {
-            setText(bindingManager.getBinding(bindingManager.getSelected()).getCode());
+            String text = bindingManager.getBinding(bindingManager.getSelected()).getCode();
+            prevCode = text;
+            setText(text);
         }
         SwingUtilities.invokeLater(this::updateTextDisplay);
     }
@@ -73,8 +82,19 @@ public class ProgInterface extends ThemedTextPane {
         updateTextDisplay();
     }
 
-    public void burnCode() {
+    public boolean saveCode(String bindingName) {
+        // Action gets set to null if code doesn't compile
+        return bindingManager.setBindingCode(bindingName, getText());
+    }
 
+    public void setOnCodeChanged(Runnable runnable) {
+        this.onCodeChanged = runnable;
+    }
+
+    private void runOnCodeChanged() {
+        if (onCodeChanged != null) {
+            onCodeChanged.run();
+        }
     }
 
     public void updateTextDisplay() {
@@ -128,7 +148,6 @@ public class ProgInterface extends ThemedTextPane {
                 idx += line.length() + 1;
 
             }
-
 
         } catch (BadLocationException e) {
             throw new RuntimeException(e);

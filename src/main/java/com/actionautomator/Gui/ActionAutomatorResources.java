@@ -23,7 +23,7 @@ public class ActionAutomatorResources {
     public final static String logoPath = System.getProperty("user.home") + "/.actionAutomator/aaLogo.png";
 
     public final static String bindingButtonDoc = """
-Binding Button:
+Key Bind Button:
 Set a key in the key-sequence for the corresponding Action.
 """;
     public final static String bindingEditButtonDoc = """
@@ -60,14 +60,14 @@ Self-evident ;)
 """;
     public static String timerButtonDoc = """
 (|>) / (||) Button:
-Start/Stop the millisecond timer. Once stopped, the next start will reset & start the timer.
+Start/Stop the millisecond timer. Once stopped, the next start will both reset & start the timer.
 """;
     public static String lockEditingButtonDoc = """
 Lock/Unlock Button:
 Lock / unlock the Rename Button and editing in the Programming Interface.
 """;
     public static String nameSelectedButtonDoc = """
-Rename:
+Rename Button:
 Change the name of the selected Action.
 """;
     public static String timerLabelDoc = """

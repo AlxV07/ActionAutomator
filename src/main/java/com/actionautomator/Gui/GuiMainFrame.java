@@ -30,7 +30,7 @@ public class GuiMainFrame extends ThemedFrame {
     private final Binding heldKeys;
 
     private final ProgInterface progInterface;
-    private final ThemedButton nameSelectedButton;
+    private final ThemedButton renameSelectedButton;
     private final BindingContainer bindingContainer;
 
     private final ThemedLabel mouseCoordLabel;
@@ -82,11 +82,10 @@ public class GuiMainFrame extends ThemedFrame {
         bindingFileManager = new BindingFileManager(bindingManager, bindingContainer);
 
         // Name Selected
-        nameSelectedButton = new ThemedButton("null");
-        nameSelectedButton.setFocusable(true);
-        nameSelectedButton.setFont(ActionAutomatorResources.defaultFont);
-        nameSelectedButton.setBounds(60, 220, 190, 20);
-        nameSelectedButton.addActionListener(e -> {
+        renameSelectedButton = new ThemedButton("null");
+        renameSelectedButton.setFont(ActionAutomatorResources.defaultFont);
+        renameSelectedButton.setBounds(60, 220, 190, 20);
+        renameSelectedButton.addActionListener(e -> {
             String newName = JOptionPane.showInputDialog("Enter new name:");
             if (newName == null) {
                 return;
@@ -99,24 +98,25 @@ public class GuiMainFrame extends ThemedFrame {
             if (!bindingContainer.setBindingName(bindingManager.getSelected(), newName)) {
                 JOptionPane.showMessageDialog(this, "Invalid new name.");
             } else {
-                nameSelectedButton.setText(bindingManager.getSelected());
+                renameSelectedButton.setText(bindingManager.getSelected());
             }
         });
-        nameSelectedButton.setHelp(helpDisplay, ActionAutomatorResources.nameSelectedButtonDoc);
-        super.add(nameSelectedButton);
+        renameSelectedButton.setHelp(helpDisplay, ActionAutomatorResources.nameSelectedButtonDoc);
+        super.add(renameSelectedButton);
 
         bindingManager.setOnSelectedChanged(() -> {
             bindingContainer.onSelectedChanged();
             progInterface.onSelectedChanged();
-            nameSelectedButton.setText(bindingManager.getSelected());
+            renameSelectedButton.setText(bindingManager.getSelected());
         });
+        progInterface.setOnCodeChanged(bindingContainer::onCodeChanged);
 
         // Lock Editing
         ThemedButton lockEditingButton = new ThemedButton("Lock");
         lockEditingButton.setBounds(0, 220, 60, 20);
         lockEditingButton.addActionListener(e -> {
             progInterface.setEnabled(!progInterface.isEnabled());
-            nameSelectedButton.setEnabled(!nameSelectedButton.isEnabled());
+            renameSelectedButton.setEnabled(!renameSelectedButton.isEnabled());
             lockEditingButton.setText(progInterface.isEnabled() ? "Lock" : "Unlock");
         });
         lockEditingButton.setHelp(helpDisplay, ActionAutomatorResources.lockEditingButtonDoc);
@@ -294,7 +294,9 @@ public class GuiMainFrame extends ThemedFrame {
 
         public void onSelectedChanged() {
             if (bindingManager.getPrevSelected() != null) {
-                bindingPanels.get(bindingManager.getPrevSelected()).updateColorTheme(darkMode, primaryColor, secondaryColor);
+                BindingPanel bindingPanel = bindingPanels.get(bindingManager.getPrevSelected());
+                bindingPanel.updateColorTheme(darkMode, primaryColor, secondaryColor);
+                bindingPanel.saveCode();
             }
             if (bindingManager.getSelected() != null) {
                 BindingPanel bindingPanel = bindingPanels.get(bindingManager.getSelected());
@@ -378,26 +380,48 @@ public class GuiMainFrame extends ThemedFrame {
             }
         }
 
+        public void onCodeChanged() {
+            bindingPanels.get(bindingManager.getSelected()).updateCodeStatus(false);
+        }
+
 
         public class BindingPanel extends ThemedPanel {
             private String name;
             private final Binding binding;
             private final BindingButton[] bindingButtons;
             private final ThemedButton editButton;
+            private final ThemedLabel codeStatusLabel;
             private final ThemedTextArea nameDisplay;
+            private boolean codeStatus = true;
 
             public BindingPanel(String name, Binding binding) {
                 super();
                 this.setPreferredSize(new Dimension(500, 50));
                 this.name = name;
                 this.binding = binding;
+
+                int height = 40;
+                this.codeStatusLabel = new ThemedLabel( "<✓>") {
+                    @Override
+                    public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
+                        super.updateColorTheme(darkMode, primaryColor, secondaryColor);
+                        if (!codeStatus) {
+                            setForeground(secondaryColor);
+                        }
+                    }
+                };
+                codeStatusLabel.setPreferredSize(new Dimension(23, height));
+                codeStatusLabel.getInsets().set(0, 0, 0, 0);
+                codeStatusLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+                add(codeStatusLabel);
+
                 this.nameDisplay = new ThemedTextArea();
                 nameDisplay.setText(this.name);
                 nameDisplay.setHelp(helpDisplay, ActionAutomatorResources.bindingNameLabelDoc);
                 add(nameDisplay);
-                nameDisplay.setPreferredSize(new Dimension(105, 40));
+                nameDisplay.setPreferredSize(new Dimension(100, height));
                 this.editButton = new ThemedButton("Edit");
-                editButton.setPreferredSize(new Dimension(45, 40));
+                editButton.setPreferredSize(new Dimension(40, height));
                 editButton.addActionListener(e -> bindingManager.setSelected(this.name));
                 editButton.setHelp(helpDisplay, ActionAutomatorResources.bindingEditButtonDoc);
                 add(editButton);
@@ -411,6 +435,24 @@ public class GuiMainFrame extends ThemedFrame {
                     add(button);
                 }
                 this.completeBind(0, -1);
+            }
+
+            public void updateCodeStatus(boolean saved) {
+                codeStatus = saved;
+                if (saved) {
+                    this.codeStatusLabel.setText("<✓>");
+                } else {
+                    this.codeStatusLabel.setText("<X>");
+                }
+                codeStatusLabel.updateColorTheme(darkMode, primaryColor, secondaryColor);
+            }
+
+            public boolean getCodeStatus() {
+                return codeStatus;
+            }
+
+            public void saveCode() {
+                updateCodeStatus(progInterface.saveCode(this.name));
             }
 
             public void setBindingName(String newName) {
@@ -447,11 +489,11 @@ public class GuiMainFrame extends ThemedFrame {
                 public BindingButton(int idx) {
                     super("null");
                     super.setFont(ActionAutomatorResources.smallerFont);
-                    super.setPreferredSize(new Dimension(70, 40));
+                    super.setPreferredSize(new Dimension(60, 40));
                     this.idx = idx;
                     addActionListener(e -> {
                         startBindingButton(this);
-                        super.setText("Binding...");
+                        super.setText("Bind...");
                         super.setForeground(secondaryColor);
                         super.setBackground(primaryColor);
                         super.requestFocusInWindow();
