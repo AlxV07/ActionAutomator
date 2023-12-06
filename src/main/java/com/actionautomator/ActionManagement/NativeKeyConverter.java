@@ -34,6 +34,10 @@ public class NativeKeyConverter {
 
     public static int[] stringToKeyEventVK(String str) {
         if (str.length() > 1) {
+            int key = NativeKeyConverter.specialStringToKeyEventVK(str);
+            if (key == -1) {
+                return null;
+            }
             return new int[]{NativeKeyConverter.specialStringToKeyEventVK(str)};
         } else {
             return NativeKeyConverter.charToKeyEventVK(str.charAt(0));
@@ -42,6 +46,12 @@ public class NativeKeyConverter {
 
     public static int specialStringToKeyEventVK(String str) {
         switch (str) {
+            case "PAGEUP" -> {
+                return VK_PAGE_UP;
+            }
+            case "PAGEDOWN" -> {
+                return VK_PAGE_DOWN;
+            }
             case "ALT" -> {
                 return VK_ALT;
             }

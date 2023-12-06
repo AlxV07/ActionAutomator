@@ -6,6 +6,7 @@ import com.actionautomator.BindingManagement.BindingManager;
 
 import java.util.*;
 
+
 public class CodeActionBuilder {
     public final HashSet<String> commandsWithNumberArgs = new HashSet<>(Set.of(
             "move",
@@ -52,7 +53,7 @@ public class CodeActionBuilder {
         if (savedInts.get(symbol) != null) {
             return savedInts.get(symbol);
         }
-        return Integer.parseInt(symbol);
+        return Integer.parseInt(symbol.strip());
     }
 
     private String symbolToStr(String symbol, HashMap<String, String> savedStrs) {
@@ -76,12 +77,11 @@ public class CodeActionBuilder {
             if (line.isBlank()) {
                 continue;
             }
-            line = line.replaceAll(" ", "");
             int openParenIdx = line.indexOf("(");
             if (openParenIdx == -1) {
                 throw new SyntaxError(line);
             }
-            String command = line.substring(0, openParenIdx);
+            String command = line.substring(0, openParenIdx).strip();
             int closeParenIdx = line.length() - 1 - (new StringBuilder(line).reverse()).indexOf(")");
             if (closeParenIdx == -1) {
                 throw new SyntaxError(line);
@@ -90,7 +90,7 @@ public class CodeActionBuilder {
             String[] args = baseArgs.split(",");
 
             if (args.length == 1) {
-                if (args[0].isEmpty()) { // 0 args
+                if (args[0].isBlank()) { // 0 args
                     switch (command) {
                         // Mouse click commands
                         case "lclick" -> {
@@ -109,7 +109,7 @@ public class CodeActionBuilder {
                         default -> throw new SyntaxError(line);
                     }
                 } else { // 1 arg
-                    String arg = args[0];
+                    String arg = args[0].strip();
                     switch (command) {
                         // Key commands
                         case "kpress" -> {
@@ -202,12 +202,15 @@ public class CodeActionBuilder {
                             if (binding == null) {
                                 throw new SyntaxError(line);
                             }
-                            subActions.addAll(binding.getAction().subActions());
+                            subActions.add(new RunSubAction(arg));
                         }
                         default -> throw new SyntaxError(line);
                     }
                 }
             } else if (args.length == 2) {  // 2 args
+                for (int j = 0; j < args.length; j++) {
+                    args[j] = args[j].strip();
+                }
                 switch (command) {
                     case "move" -> {
                         try {
@@ -219,13 +222,13 @@ public class CodeActionBuilder {
                         }
                     }
                     case "savestr" -> {
-                        if (!Character.isAlphabetic(args[0].charAt(0))) {
+                        if (!Character.isAlphabetic(args[0].charAt(0)) && args[0].charAt(0) != '_') {
                             throw new SyntaxError(line);
                         }
                         savedStrs.put(args[0], symbolToStr(args[1], savedStrs));
                     }
                     case "saveint" -> {
-                        if (!Character.isAlphabetic(args[0].charAt(0))) {
+                        if (!Character.isAlphabetic(args[0].charAt(0)) && args[0].charAt(0) != '_') {
                             throw new SyntaxError(line);
                         }
                         savedInts.put(args[0], symbolToInt(args[1], savedInts));
@@ -242,6 +245,7 @@ public class CodeActionBuilder {
     public static class SyntaxError extends Exception {
         public SyntaxError(String line) {
             super(line);
+            System.out.println(line);
         }
     }
 }

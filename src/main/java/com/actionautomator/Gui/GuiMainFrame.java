@@ -24,7 +24,6 @@ public class GuiMainFrame extends ThemedFrame {
     private final ActionExecutor actionExecutor;
     private final BindingManager bindingManager;
     private final BindingFileManager bindingFileManager;
-    private final CodeActionBuilder codeActionBuilder;
     private final Binding heldKeys;
 
     private final ProgInterface progInterface;
@@ -41,9 +40,9 @@ public class GuiMainFrame extends ThemedFrame {
     private final ThemedTextArea helpDisplay;
 
     public GuiMainFrame() {
-        actionExecutor = new ActionExecutor();
         bindingManager = new BindingManager();
-        codeActionBuilder = new CodeActionBuilder(bindingManager);
+        actionExecutor = new ActionExecutor(bindingManager);
+        CodeActionBuilder codeActionBuilder = new CodeActionBuilder(bindingManager);
         heldKeys = new Binding();
 
         helpDisplay = new ThemedTextArea();
@@ -81,9 +80,14 @@ public class GuiMainFrame extends ThemedFrame {
         bindingFileManager = new BindingFileManager(bindingManager, bindingContainer, codeActionBuilder);
 
         // Name Selected
-        renameSelectedButton = new ThemedButton("null");
+        renameSelectedButton = new ThemedButton("null") {
+            @Override
+            public void setText(String text) {
+                super.setText("Rename: " + text);
+            }
+        };
         renameSelectedButton.setFont(ActionAutomatorResources.defaultFont);
-        renameSelectedButton.setBounds(110, 220, 140, 20);
+        renameSelectedButton.setBounds(60, 220, 190, 20);
         renameSelectedButton.addActionListener(e -> {
             String newName = JOptionPane.showInputDialog("Enter new name:");
             if (newName == null) {

@@ -10,4 +10,6 @@ public enum SubActionType {
 
     WAIT,
     CHANGE_SPEED,
+
+    RUN,
 }

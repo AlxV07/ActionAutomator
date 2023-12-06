@@ -1,17 +1,21 @@
 package com.actionautomator.ActionManagement;
 
 import com.actionautomator.ActionManagement.SubActions.ChangeSpeedSubAction;
+import com.actionautomator.ActionManagement.SubActions.RunSubAction;
 import com.actionautomator.ActionManagement.SubActions.SubAction;
 import com.actionautomator.ActionManagement.SubActions.SubActionType;
 import com.actionautomator.BindingManagement.Binding;
+import com.actionautomator.BindingManagement.BindingManager;
 
 import java.awt.*;
 
 public class ActionExecutor {
     private final Robot actionExecutor;
+    private final BindingManager bindingManager;
     private Thread runningActionThread;
 
-    public ActionExecutor() {
+    public ActionExecutor(BindingManager bindingManager) {
+        this.bindingManager = bindingManager;
         try {
             this.actionExecutor = new Robot();
         } catch (AWTException e) {
@@ -19,7 +23,7 @@ public class ActionExecutor {
         }
     }
 
-    public void executeAction(Action action, int delay) {
+    public void executeAction(Action action, long delay) {
         if (action == null) {
             return;
         }
@@ -30,6 +34,8 @@ public class ActionExecutor {
                 try {
                     if (subAction.getType() == SubActionType.CHANGE_SPEED) {
                         runIntervalDelay = ((ChangeSpeedSubAction) subAction).getSpeed();
+                    } else if (subAction.getType() == SubActionType.RUN){
+                        executeAction(bindingManager.bindings.get(((RunSubAction) subAction).getName()).getAction(), runIntervalDelay);
                     } else {
                         subAction.execute(this.actionExecutor);
                     }
