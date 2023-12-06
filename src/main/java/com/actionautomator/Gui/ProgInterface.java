@@ -134,7 +134,6 @@ public class ProgInterface extends ThemedTextPane {
         StyleConstants.setForeground(keyAttributeSet, primaryColor);
         StyleConstants.setForeground(runAttributeSet, primaryColor);
         StyleConstants.setForeground(varAttributeSet, primaryColor);
-        HashSet<String> knownStrsVars = new HashSet<>();
         HashSet<String> knownIntsVars = new HashSet<>();
         try {
             int idx = 0;
@@ -143,11 +142,15 @@ public class ProgInterface extends ThemedTextPane {
                     idx ++;
                     continue;
                 }
-                if (line.equals("}")) {
+                if (line.strip().equals("}")) {
                     idx+=2;
                     continue;
                 }
-                    doc.setCharacterAttributes(idx, idx + line.length(), defaultAttributeSet, true);  // Reset
+                doc.setCharacterAttributes(idx, idx + line.length(), defaultAttributeSet, true);  // Reset
+                if (line.startsWith("#")) {
+                    idx += line.length() + 1;
+                    continue;
+                }
                 // Command & parentheses
                 int openParenIdx = line.indexOf("(");
                 if (openParenIdx == -1) {
@@ -239,8 +242,6 @@ public class ProgInterface extends ThemedTextPane {
                     if (!broken) {
                         if (command.equals("saveint")) {
                             knownIntsVars.add(args[0].strip());
-                        } else {
-                            knownStrsVars.add(args[0].strip());
                         }
                         doc.setCharacterAttributes(argsStartIdx, args[0].strip().length(), runAttributeSet, true);
                     }

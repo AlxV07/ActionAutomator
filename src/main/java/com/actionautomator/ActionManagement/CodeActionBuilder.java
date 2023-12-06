@@ -77,6 +77,9 @@ public class CodeActionBuilder {
             if (line.isBlank()) {
                 continue;
             }
+            if (line.startsWith("#")) {
+                continue;
+            }
             int openParenIdx = line.indexOf("(");
             if (openParenIdx == -1) {
                 throw new SyntaxError(line);
@@ -85,6 +88,14 @@ public class CodeActionBuilder {
             int closeParenIdx = line.length() - 1 - (new StringBuilder(line).reverse()).indexOf(")");
             if (closeParenIdx == -1) {
                 throw new SyntaxError(line);
+            }
+            if (command.equals("repeat")) {
+                int x = line.indexOf("{");
+                if (x != -1) {
+                    line = line.substring(0, x + 1);
+                }
+            } else {
+                line = line.substring(0, closeParenIdx + 1);
             }
             String baseArgs = line.substring(openParenIdx + 1, closeParenIdx);
             String[] args = baseArgs.split(",");

@@ -124,6 +124,18 @@ public class NativeKeyConverter {
             case "F12" -> {
                 return VK_F12;
             }
+            case "UP" -> {
+                return VK_UP;
+            }
+            case "DOWN" -> {
+                return VK_DOWN;
+            }
+            case "LEFT" -> {
+                return VK_LEFT;
+            }
+            case "RIGHT" -> {
+                return VK_RIGHT;
+            }
         }
         return -1;
     }
