@@ -1,6 +1,6 @@
 # ActionAutomator
 
-![alt text](https://github.com/AlxV05/ActionAutomator/blob/main/logo.png?raw=true)
+![ActionAutomatorLogo](https://github.com/AlxV05/ActionAutomator/blob/main/aaLogo.png)
 
 A flexible light-weight Java GUI Application for fast &amp; easy global keyboard + mouse automation & keybinding using JNativeHook.
 
