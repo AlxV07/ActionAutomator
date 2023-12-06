@@ -60,7 +60,7 @@ public class GuiMainFrame extends ThemedFrame {
         // Prog Interface
         progInterface = new ProgInterface(bindingManager, codeActionBuilder);
         ThemedScrollPane progInterfaceScrollPane = new ThemedScrollPane(progInterface);
-        progInterfaceScrollPane.setBounds(0, 240, 250, 260);
+        progInterfaceScrollPane.setBounds(0, 240, 250, 230);
         progInterface.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
