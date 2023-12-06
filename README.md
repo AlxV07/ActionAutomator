@@ -2,6 +2,8 @@
 
 A flexible light-weight Java GUI Application for fast &amp; easy global keyboard + mouse automation & keybinding using JNativeHook.
 
+https://github.com/AlxV05/ActionAutomator/releases/tag/v.1.0.0
+
 In-GUI help can be found in the bottom right display.
 
 ### Action Code Interface Documentation
