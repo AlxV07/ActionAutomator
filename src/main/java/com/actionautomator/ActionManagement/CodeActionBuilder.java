@@ -256,7 +256,6 @@ public class CodeActionBuilder {
     public static class SyntaxError extends Exception {
         public SyntaxError(String line) {
             super(line);
-            System.out.println(line);
         }
     }
 }

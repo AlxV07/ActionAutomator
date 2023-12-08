@@ -19,8 +19,8 @@ public class ActionAutomatorResources {
 
     public final static String heldKeysLabelText = "\n  Held Keys: ";
     public final static String directoryPath = System.getProperty("user.home") + "/.actionAutomator";
-    public final static String cachePath = System.getProperty("user.home") + "/.actionAutomator/actionCache.action";
-    public final static String logoPath = System.getProperty("user.home") + "/.actionAutomator/aaLogo.png";
+    public final static String orderedActionsPath = directoryPath + "/orderedActions.txt";
+    public final static String logoPath = directoryPath + "/aaLogo.png";
 
     public final static String bindingButtonDoc = """
 Key Bind Button:
@@ -64,7 +64,7 @@ Start/Stop the millisecond timer. Once stopped, the next start will both reset &
 """;
     public static String lockEditingButtonDoc = """
 Lock/Unlock Button:
-Lock / unlock the Rename Button, the Save Button, and editing in the Programming Interface.
+Lock / unlock the Rename Button and editing in the Programming Interface.
 """;
     public static String nameSelectedButtonDoc = """
 Rename Button:

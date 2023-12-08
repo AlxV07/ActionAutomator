@@ -4,7 +4,7 @@ import com.actionautomator.ActionManagement.ActionExecutor;
 import com.actionautomator.ActionManagement.CodeActionBuilder;
 import com.actionautomator.ActionManagement.NativeKeyConverter;
 import com.actionautomator.BindingManagement.Binding;
-import com.actionautomator.BindingManagement.BindingFileManager;
+import com.actionautomator.ActionManagement.ActionFileManager;
 import com.actionautomator.BindingManagement.BindingManager;
 import com.actionautomator.ActionManagement.NativeGlobalListener;
 import com.actionautomator.Gui.ThemedComponents.*;
@@ -23,7 +23,7 @@ import java.util.HashMap;
 public class GuiMainFrame extends ThemedFrame {
     private final ActionExecutor actionExecutor;
     private final BindingManager bindingManager;
-    private final BindingFileManager bindingFileManager;
+    private final ActionFileManager actionFileManager;
     private final Binding heldKeys;
 
     private final ProgInterface progInterface;
@@ -45,6 +45,7 @@ public class GuiMainFrame extends ThemedFrame {
         CodeActionBuilder codeActionBuilder = new CodeActionBuilder(bindingManager);
         heldKeys = new Binding();
 
+        // Help Display
         helpDisplay = new ThemedTextArea();
         helpDisplay.setText(ActionAutomatorResources.helpDisplayDoc);
         helpDisplay.setBounds(250, 380, 250, 120);
@@ -77,9 +78,9 @@ public class GuiMainFrame extends ThemedFrame {
         bindingContainerScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         super.add(bindingContainerScrollPane);
 
-        bindingFileManager = new BindingFileManager(bindingManager, bindingContainer, codeActionBuilder);
+        actionFileManager = new ActionFileManager(bindingManager, bindingContainer, codeActionBuilder);
 
-        // Name Selected
+        // Rename Selected
         renameSelectedButton = new ThemedButton("null") {
             @Override
             public void setText(String text) {
@@ -114,6 +115,7 @@ public class GuiMainFrame extends ThemedFrame {
         renameSelectedButton.setHelp(helpDisplay, ActionAutomatorResources.nameSelectedButtonDoc);
         super.add(renameSelectedButton);
 
+        // On Changed Setting
         bindingManager.setOnSelectedChanged(() -> {
             bindingContainer.onSelectedChanged();
             progInterface.onSelectedChanged();
@@ -216,6 +218,28 @@ public class GuiMainFrame extends ThemedFrame {
         setAAThemeColor.setHelp(helpDisplay, ActionAutomatorResources.setThemeButtonDoc);
         settingsMenu.add(setAAThemeColor);
 
+        ThemedLabel helpLabel = new ThemedLabel(" Highlight Help   ");
+        helpLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                helpDisplay.setBorder(BorderFactory.createLineBorder(primaryColor, 3));
+                MouseListener[] mouseListeners = helpDisplay.getMouseListeners();
+                for (MouseListener mouseListener: mouseListeners) {
+                    mouseListener.mouseEntered(e);
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                helpDisplay.setBorder(darkMode ? ActionAutomatorResources.darkThemeBorder : ActionAutomatorResources.lightThemeBorder);
+                MouseListener[] mouseListeners = helpDisplay.getMouseListeners();
+                for (MouseListener mouseListener: mouseListeners) {
+                    mouseListener.mouseExited(e);
+                }
+            }
+        });
+        settingsMenu.add(helpLabel);
+
         mainMenuBar.add(settingsMenu);
         mainMenuBar.add(new ThemedLabel("|"));
 
@@ -234,7 +258,7 @@ public class GuiMainFrame extends ThemedFrame {
             fileChooser.showDialog(openActionButton, "Select");
             File file = fileChooser.getSelectedFile();
             if (file == null) return;
-            bindingFileManager.readBindings(file.getAbsolutePath());
+            actionFileManager.readAction(file.getAbsolutePath());
         });
         openActionButton.setHelp(helpDisplay, ActionAutomatorResources.openButtonDoc);
         mainMenuBar.add(openActionButton);
@@ -245,9 +269,14 @@ public class GuiMainFrame extends ThemedFrame {
         deleteActionButton.setHelp(helpDisplay, ActionAutomatorResources.deleteButtonDoc);
         mainMenuBar.add(deleteActionButton);
 
+        mainMenuBar.add(new ThemedLabel("|"));
+
         // Save Code
         ThemedButton saveCodeButton = new ThemedButton(" Save ");
-        saveCodeButton.addActionListener(e -> bindingContainer.saveCode());
+        saveCodeButton.addActionListener(e -> {
+            actionFileManager.saveAction(bindingManager.getSelected());
+            bindingContainer.saveCode();
+        });
         saveCodeButton.setHelp(helpDisplay, ActionAutomatorResources.saveCodeButtonDoc);
         mainMenuBar.add(saveCodeButton);
 
@@ -274,11 +303,14 @@ public class GuiMainFrame extends ThemedFrame {
         mainMenuBar.add(stopButton);
 
         // Read Saved Bindings
-        SwingUtilities.invokeLater(() -> bindingFileManager.readBindings(ActionAutomatorResources.cachePath));
+        SwingUtilities.invokeLater(() -> {
+            actionFileManager.readAllSavedActions();
+            saveCodeButton.doClick();
+        });
         super.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                bindingFileManager.writeBindings(ActionAutomatorResources.cachePath);
+                actionFileManager.saveAllActions();
                 nativeGlobalListener.unregister();
             }
         });
