@@ -42,6 +42,7 @@ By using ActionAutomator, you acknowledge the fact that the possibility for erro
 ### Running ActionAutomator:
 
 Requirements: Java 17+
+In a terminal: 
 ```
 java -jar /path/to/ActionAutomator.jar
 ```
