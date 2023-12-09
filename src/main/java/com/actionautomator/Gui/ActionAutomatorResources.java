@@ -114,4 +114,5 @@ The Action's code is:
 <-> : unsaved & unknown run result.
 <X> : bugged & cannot run.
 """;
+    public static String logoURL = "https://raw.githubusercontent.com/AlxV05/ActionAutomator/main/aaLogo.png";
 }

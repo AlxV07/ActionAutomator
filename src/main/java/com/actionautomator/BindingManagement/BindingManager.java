@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 public class BindingManager {
     public final HashMap<String, Binding> bindings;
-    public final ArrayList<String> orderedBindingNames;
+    private final ArrayList<String> orderedBindingNames;
     private Runnable onSelectedChanged;
     private String selected;
     private String prevSelected;

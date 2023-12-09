@@ -15,7 +15,7 @@ public class CodeActionBuilder {
     ));
 
     public final HashSet<String> commandsWithKeyArgs = new HashSet<>(Set.of(
-            "kpress",
+            "ktap",
             "kup",
             "kdown"
     ));
@@ -36,7 +36,7 @@ public class CodeActionBuilder {
         commandsToNofArgs.put("rclick", 0);
         commandsToNofArgs.put("rup", 0);
         commandsToNofArgs.put("rdown", 0);
-        commandsToNofArgs.put("kpress", 1);
+        commandsToNofArgs.put("ktap", 1);
         commandsToNofArgs.put("kdown", 1);
         commandsToNofArgs.put("kup", 1);
         commandsToNofArgs.put("type", 1);
@@ -123,7 +123,7 @@ public class CodeActionBuilder {
                     String arg = args[0].strip();
                     switch (command) {
                         // Key commands
-                        case "kpress" -> {
+                        case "ktap" -> {
                             int[] vk_keys = NativeKeyConverter.stringToKeyEventVK(arg);
                             if (vk_keys == null) {
                                 throw new SyntaxError(line);

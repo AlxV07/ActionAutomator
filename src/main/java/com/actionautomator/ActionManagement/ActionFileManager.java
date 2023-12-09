@@ -24,10 +24,6 @@ public class ActionFileManager {
     }
 
     public void saveAllActions() {
-        File directory = new File(ActionAutomatorResources.directoryPath);
-        if (!directory.exists()) {
-            if (!directory.mkdirs()) throw new RuntimeException();
-        }
         try (FileWriter writer = new FileWriter(ActionAutomatorResources.orderedActionsPath)) {
             for (String bindingName : bindingManager.getOrderedBindingNames()) {
                 writer.write(bindingName + "\n");
@@ -39,6 +35,10 @@ public class ActionFileManager {
     }
 
     public void saveAction(String bindingName) {
+        File directory = new File(ActionAutomatorResources.directoryPath);
+        if (!directory.exists()) {
+            if (!directory.mkdirs()) throw new RuntimeException();
+        }
         try (FileWriter writer = new FileWriter(ActionAutomatorResources.directoryPath + "/" + bindingName.strip() + ".action")) {
             Binding binding = bindingManager.getBinding(bindingName);
             writer.write(bindingName + "\n");
@@ -51,15 +51,18 @@ public class ActionFileManager {
     }
 
     public void readAllSavedActions() {
-        try {
-            List<String> lines = Files.readAllLines(Path.of(ActionAutomatorResources.orderedActionsPath));
-            for (String line : lines) {
-                readAction(
-                        ActionAutomatorResources.directoryPath + "/" + line.strip() + ".action"
-                );
+        File file = new File(ActionAutomatorResources.orderedActionsPath);
+        if (file.exists()) {
+            try {
+                List<String> lines = Files.readAllLines(Path.of(ActionAutomatorResources.orderedActionsPath));
+                for (String line : lines) {
+                    readAction(
+                            ActionAutomatorResources.directoryPath + "/" + line.strip() + ".action"
+                    );
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -77,8 +80,7 @@ public class ActionFileManager {
             } catch (CodeActionBuilder.SyntaxError ignored) {
             }
             bindingPanels.addBinding(bindingName, binding);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+        } catch (IOException ignored) {
         }
     }
 }

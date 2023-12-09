@@ -16,8 +16,13 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 public class GuiMainFrame extends ThemedFrame {
@@ -251,14 +256,17 @@ public class GuiMainFrame extends ThemedFrame {
 
         // Open Action
         JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setMultiSelectionEnabled(true);
         FileNameExtensionFilter fileNameExtensionFilter = new FileNameExtensionFilter("ActionAutomator File (.action)", "action");
         fileChooser.setFileFilter(fileNameExtensionFilter);
         ThemedButton openActionButton = new ThemedButton(" Open ");
         openActionButton.addActionListener(e -> {
             fileChooser.showDialog(openActionButton, "Select");
-            File file = fileChooser.getSelectedFile();
-            if (file == null) return;
-            actionFileManager.readAction(file.getAbsolutePath());
+            File[] files = fileChooser.getSelectedFiles();
+            for (File file : files) {
+                if (file == null) return;
+                actionFileManager.readAction(file.getAbsolutePath());
+            }
         });
         openActionButton.setHelp(helpDisplay, ActionAutomatorResources.openButtonDoc);
         mainMenuBar.add(openActionButton);
@@ -305,6 +313,9 @@ public class GuiMainFrame extends ThemedFrame {
         // Read Saved Bindings
         SwingUtilities.invokeLater(() -> {
             actionFileManager.readAllSavedActions();
+            if (bindingManager.getOrderedBindingNames().isEmpty()) {
+                bindingContainer.addBinding("blank_template_action", new Binding());
+            }
             saveCodeButton.doClick();
         });
         super.addWindowListener(new WindowAdapter() {
@@ -325,8 +336,19 @@ public class GuiMainFrame extends ThemedFrame {
         super.updateColorTheme(darkMode, primaryColor, secondaryColor);
         super.setVisible(true);
         try {
+            URL url = new URI(ActionAutomatorResources.logoURL).toURL();
+            Path path = Paths.get(ActionAutomatorResources.logoPath);
+            Files.createDirectories(path.getParent());
+            try (InputStream in = url.openStream();
+                 OutputStream out = new FileOutputStream(ActionAutomatorResources.logoPath)) {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+            }
             super.setIconImage(ImageIO.read(new File(ActionAutomatorResources.logoPath)));
-        } catch (IOException ignored) {}
+        } catch (IOException | URISyntaxException ignored) {}
         nativeGlobalListener.register();
     }
 
@@ -433,6 +455,10 @@ public class GuiMainFrame extends ThemedFrame {
                 JOptionPane.showMessageDialog(this, "No selected Action to remove.");
                 return;
             }
+            if (bindingManager.getOrderedBindingNames().size() == 1) {
+                JOptionPane.showMessageDialog(this, "At least 1 Action required.");
+                return;
+            }
             if (JOptionPane.showConfirmDialog(this, String.format("Delete: Action \"%s\"?", name)) == JOptionPane.YES_OPTION) {
                 super.remove(bindingPanels.remove(name));
                 bindingManager.removeBinding(name);
@@ -466,7 +492,7 @@ public class GuiMainFrame extends ThemedFrame {
                 this.binding = binding;
 
                 int height = 40;
-                this.codeStatusLabel = new ThemedLabel( "<->") {
+                this.codeStatusLabel = new ThemedLabel( "<->", SwingConstants.CENTER) {
                     @Override
                     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
                         super.updateColorTheme(darkMode, primaryColor, secondaryColor);
@@ -475,9 +501,7 @@ public class GuiMainFrame extends ThemedFrame {
                         }
                     }
                 };
-                codeStatusLabel.setPreferredSize(new Dimension(23, height));
-                codeStatusLabel.getInsets().set(0, 0, 0, 0);
-                codeStatusLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+                codeStatusLabel.setPreferredSize(new Dimension(34, height));
                 codeStatusLabel.setHelp(helpDisplay, ActionAutomatorResources.codeStatusLabelDoc);
                 add(codeStatusLabel);
 

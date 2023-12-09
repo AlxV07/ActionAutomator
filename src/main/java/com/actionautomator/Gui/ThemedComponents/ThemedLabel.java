@@ -19,6 +19,13 @@ public class ThemedLabel extends JLabel implements ThemedComponent {
         super.setFocusable(false);
     }
 
+    public ThemedLabel(String title, int x) {
+        super(title, x);
+        super.setOpaque(true);
+        super.setFont(ActionAutomatorResources.defaultFont);
+        super.setFocusable(false);
+    }
+
     @Override
     public void updateColorTheme(boolean darkMode, Color primaryColor, Color secondaryColor) {
         this.darkMode = darkMode;

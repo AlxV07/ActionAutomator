@@ -55,8 +55,11 @@ public class NativeKeyConverter {
             case "ALT" -> {
                 return VK_ALT;
             }
-            case "META" -> {
+            case "CMND" -> {  // Mac Command
                 return VK_META;
+            }
+            case "WINDOWS" -> {  // Windows
+                return VK_WINDOWS;
             }
             case "BACK" -> {
                 return VK_BACK_SPACE;

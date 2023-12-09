@@ -35,6 +35,8 @@ Requirements: Java 17+
 ```
 java -jar /path/to/ActionAutomator.jar
 ```
+Macbook: on run, allow access to Accessibility Settings
+
 (See "releases" page for jar file.)
 
 ### Gui Explanation:
@@ -51,7 +53,7 @@ Menu Bar:
 - `Open`: Open an Action (.action) file
 
 - `Delete`: Delete the selected Action from the current ActionAutomator session (.action file will still be kept in the saved actions and will be re-opened in following sessions if not manually removed)
-- `Save`: Save the code in the Programming Interface into the .action file with the corresponding Action name (.action files can be found in the directory $HOME/.actionAutomator/).
+- `Save`: Save the code in the Programming Interface into the .action file with the corresponding Action name (.action files can be found in the directory $HOME/.actionAutomator/). Remember to save every time after editing; running an unsaved action will run the code from the previously saved action!
 - `Run`: execute the selected Action
 - `Stop`: Stop the execution of any running Action, also is bound globally to the Esc key for emergency purposes.
 
@@ -106,7 +108,7 @@ rdown()
 type(Any text works here! No need to escape these ) extra parentheses!)
 
 # 1 key at a time (will highlight if valid key in IDE)
-kpress(CTRL)
+ktap(CTRL)
 kdown(SHIFT)
 kdown(ENTER)
 # Don't forget to lift the keys!
@@ -143,7 +145,7 @@ rup()     # lift right mouse button
 
 # single character or ALLUPPERCASENOSPACE e.x. "CTRL" or "PAGEUP"
 # equivalent of `kdown` and then `kup`
-kpress(key)  
+ktap(key)  
 kdown(key)
 kup(key)
 
@@ -166,14 +168,15 @@ saveint(var_name, any_number_or_already_assigned_int)
 run(action_name)
 
 Valid "keys" for k-commands:
-{All type-able single characters on your keyboard}
+{+includes all type-able single characters on your keyboard}
 PAGEUP
 PAGEDOWN
 ALT
-META
+CMND  # Macbook: "Command" key
+WINDOWS # Windows: "Windows" key
+CTRL  # Macbook: "Control" key, Other: "Ctrl" key 
 BACK
 SHIFT
-CTRL
 CAPS
 TAB
 ESC
