@@ -1,5 +1,15 @@
 # ActionAutomator
 
+**
+Table of Contents
+- Overview
+- Kudos
+- Privacy Concerns & TOS
+- Running ActionAutomator
+- GUI Explanation
+- Action Code Interface Documentation
+**
+
 ![ActionAutomatorLogo](https://github.com/AlxV05/ActionAutomator/blob/main/aaLogo.png)  
 
 A flexible, light-weight, Java GUI Application for fast &amp; easy global keyboard + mouse automation & keybinding using JNativeHook & JavaAWTRobot.
@@ -29,7 +39,7 @@ ActionAutomator is an offline application and does not save pictures on-screen o
 
 By using ActionAutomator, you acknowledge the fact that the possibility for error is never completely 0%. You take full responsibility for any harm caused by your usage of robot automation.  If you have any further concerns, feel free to contact the author of ActionAutomator.
 
-### Running:
+### Running ActionAutomator:
 
 Requirements: Java 17+
 ```
