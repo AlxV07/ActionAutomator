@@ -1,14 +1,13 @@
 # ActionAutomator
 
-**
-Table of Contents
+### Table of Contents
 - Overview
 - Kudos
 - Privacy Concerns & TOS
 - Running ActionAutomator
 - GUI Explanation
 - Action Code Interface Documentation
-**
+
 
 ![ActionAutomatorLogo](https://github.com/AlxV05/ActionAutomator/blob/main/aaLogo.png)  
 
@@ -42,6 +41,8 @@ By using ActionAutomator, you acknowledge the fact that the possibility for erro
 ### Running ActionAutomator:
 
 Requirements: Java 17+
+
+In a terminal: 
 ```
 java -jar /path/to/ActionAutomator.jar
 ```
@@ -62,7 +63,7 @@ Menu Bar:
 
 - `Open`: Open an Action (.action) file
 
-- `Delete`: Delete the selected Action from the current ActionAutomator session (.action file will still be kept in the saved actions and will be re-opened in following sessions if not manually removed)
+- `Delete`: Delete the selected Action from the current ActionAutomator session (.action file will still be kept in the .actionAutomator folder)
 - `Save`: Save the code in the Programming Interface into the .action file with the corresponding Action name (.action files can be found in the directory $HOME/.actionAutomator/). Remember to save every time after editing; running an unsaved action will run the code from the previously saved action!
 - `Run`: execute the selected Action
 - `Stop`: Stop the execution of any running Action, also is bound globally to the Esc key for emergency purposes.
