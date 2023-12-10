@@ -1,14 +1,13 @@
 # ActionAutomator
 
-**
-Table of Contents
+### Table of Contents
 - Overview
 - Kudos
 - Privacy Concerns & TOS
 - Running ActionAutomator
 - GUI Explanation
 - Action Code Interface Documentation
-**
+
 
 ![ActionAutomatorLogo](https://github.com/AlxV05/ActionAutomator/blob/main/aaLogo.png)  
 
