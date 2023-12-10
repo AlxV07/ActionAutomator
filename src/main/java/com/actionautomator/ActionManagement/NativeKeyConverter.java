@@ -46,6 +46,9 @@ public class NativeKeyConverter {
 
     public static int specialStringToKeyEventVK(String str) {
         switch (str) {
+            case "SPACE" -> {
+                return VK_SPACE;
+            }
             case "PAGEUP" -> {
                 return VK_PAGE_UP;
             }
