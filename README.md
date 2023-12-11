@@ -15,7 +15,7 @@ A flexible, light-weight, Java GUI Application for fast &amp; easy global keyboa
 
 ### Overview:
 
-ActionAutomator is a Java Swing GUI Application which enables users to bind global-keybinds to user-defined actions.
+ActionAutomator is a Java Swing GUI Application which enables users to bind global-keybinds to user-defined actions.  Actions are saved in the generated User-Home-Directory/.actionAutomator directory
 
 Definitions to understand the above statement:
 
