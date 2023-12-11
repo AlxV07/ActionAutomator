@@ -15,14 +15,14 @@ A flexible, light-weight, Java GUI Application for fast &amp; easy global keyboa
 
 ### Overview:
 
-ActionAutomator is a Java Swing GUI Application which enables users to bind global-keybinds to user-defined actions.  Actions are saved in the generated User-Home-Directory/.actionAutomator directory
+ActionAutomator is a Java Swing GUI Application which enables users to bind global-keybinds to user-defined actions.  
 
 Definitions to understand the above statement:
 
 Global Keybind: Like a keyboard-shortcut, except not just for inside a single window or application; key-presses and mouse movement ANYWHERE ON-SCREEN DESPITE THE SELECTED WINDOW are registered to ActionAutomator.  A user can create a "binding", defining a sequence of keys, which, if all keys in the sequence are pressed in the correct order by the user, will execute the corresponding Action.
 
 Action:
-An series of instructions for a JavaAWTRobot to execute, representing a series of key presses & releases + mouse movement & clicks entered into the ActionAutomator by the user. When executed, each "sub-action" will subsequently be executed by the JavaAWTRobot onscreen, whether it be pressing down a key, moving the mouse to a specified location, etc. (See Action Code Interface Documentation).
+An series of instructions for a JavaAWTRobot to execute, representing a series of key presses & releases + mouse movement & clicks.  These are written by the user into the ActionAutomator using the Programming Interface. When executed, each code statement will subsequently be executed by the JavaAWTRobot onscreen, whether it be pressing down a key, moving the mouse to a specified location, etc. For practicality, a default delay of 100ms is set between the execution of each statement. This delay can be overriden with the `setspeed` command (See Action Code Interface Documentation). Actions are saved in the generated User-Home-Directory/.actionAutomator directory.
 
 ### Kudos:
 - Java Swing & AWT
